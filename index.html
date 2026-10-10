@@ -377,6 +377,16 @@ async function pHome(){
   await loadActs();
   const el = $('#up'); if (!el || view !== 'home') return;
   const up = acts.filter(a => !isPast(a)).slice(0, 3);
+  // حساب عدد الأعضاء المقبولين تلقائياً من Supabase
+const { count: usersCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'approved');
+
+// تحديث الإحصائيات أوتوماتيكياً
+const dynamicStats = [
+  ['calendar', acts.length + '+', 'فعالية'],
+  ['users', (usersCount || 0) + '+', 'عضو فعّال'],
+  ['graduation', '8', 'أقسام علمية'],
+  ['trophy', '12', 'جائزة ومرتبة']
+];
   el.innerHTML = up.length ? `<div class="cards">${up.map(evCard).join('')}</div>` : '<p class="lead" style="margin:10px auto 30px">لا توجد فعاليات قادمة حالياً – تابعونا قريباً.</p>';
 }
 
