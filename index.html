@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LST Club | جامعة عبد الحميد ابن باديس - مستغانم</title>
-<link rel="icon" href="logo.jpg">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -169,8 +168,8 @@ td small{display:block;color:var(--mut)}
 
 <script>
 // ===== ضع بيانات مشروعك هنا (Project Settings > API) =====
-const SUPABASE_URL = 'https://qqmtuimijxcoixwuzmtt.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxbXR1aW1panhjb2l4d3V6bXR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MjQxMDUsImV4cCI6MjEwNzIwMDEwNX0.kfS3GT_GpGdEVtv5QP2_K8BAQfv3xr6xYq0aY5FSAys';
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
 // =========================================================
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = s => document.querySelector(s);
@@ -226,7 +225,7 @@ camera:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2
 };
 const ic = (n, s = 22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n] || ''}</svg>`;
 
-let STATS = [['calendar','0+','فعالية سنوياً'],['users','0+','عضو فعّال'],['graduation','8','أقسام علمية'],['trophy','12','جائزة ومرتبة']];
+const STATS = [['calendar','40+','فعالية سنوياً'],['users','350+','عضو فعّال'],['graduation','8','أقسام علمية'],['trophy','12','جائزة ومرتبة']];
 const COMMS = [
  {k:'tech',t:'التقنية والبرمجة',i:'code',d:'تطوير المواقع والتطبيقات، البرمجة التنافسية، وتطبيقات الذكاء الاصطناعي.'},
  {k:'media',t:'الإعلام والتصميم',i:'palette',d:'الهوية البصرية، تصميم المنشورات، التصوير، وإدارة منصات النادي.'},
@@ -242,7 +241,7 @@ const DEF = {club_name:'LST Club', university:'جامعة عبد الحميد ا
 let me = null, S = {...DEF}, view = 'home', tab = 'ov', acts = [], counts = {}, mine = new Set(), chan = null, dmChan = null, curDM = null;
 let P = [], rf = 'all', mf = 'all', MB = {}, MBL = [], unread = 0;
 const loader = '<div class="mut c" style="padding:30px">جارٍ التحميل…</div>';
-const AP = () => P;
+const AP = () => P.filter(p => p.role !== 'admin');
 const isPast = a => a.event_date && new Date(a.event_date) < new Date(new Date().setHours(0,0,0,0));
 const fd = d => { if (!d) return 'يحدد لاحقاً'; const x = new Date(d), t = x.getHours() || x.getMinutes();
   return x.toLocaleDateString('ar-u-nu-latn', {dateStyle:'long'}) + (t ? ' • ' + x.toLocaleTimeString('ar-u-nu-latn', {hour:'2-digit', minute:'2-digit'}) : ''); };
@@ -288,7 +287,7 @@ async function loadActs(){
 async function loadP(){ const {data} = await sb.from('profiles').select('*').order('created_at', {ascending:false}); P = data || []; }
 
 // ===== الهيكل =====
-const logo = () => `<span class="lg"><img src="logo.jpg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none">${ic('flask',26)}</span></span>`;
+const logo = () => `<span class="lg"><img src="logo.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none">${ic('flask',26)}</span></span>`;
 function drawMenu(){
   if (!$('#mbtn')) return;
   $('#mbtn').innerHTML = ic('menu', 30) + (unread ? '<i class="dot"></i>' : '');
@@ -348,44 +347,29 @@ function evCard(a){
 
 // ===== الرئيسية =====
 async function pHome(){
-  // 1. جلب الفعاليات والأعضاء الحقيقيين من قاعدة البيانات
-  await loadActs();
-  
-  // جلب عدد الأعضاء المقبولين من جدول profiles
-  const { count: usersCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'approved');
-  
-  // 2. تحديث أرقام الإحصائيات أوتوماتيكياً
-  STATS[1][1] = (usersCount || 0) + '+'; // عدد الأعضاء الحقيقي
-  STATS[0][1] = acts.length + '+';       // عدد الفعاليات الحقيقي
-
-  const prim = me ? `<a class="btn gold" href="#inbox">الرسائل والأعضاء ${ic('arrow-left',22)}</a>` : `<a class="btn gold" href="#join">انضم إلى النادي ${ic('arrow-left',22)}</a>`;
-  
+  const prim = me ? `<a class="btn gold" href="#inbox">الرسائل والأعضاء${ic('arrow-left',22)}</a>` : `<a class="btn gold" href="#join">انضم إلى النادي${ic('arrow-left',22)}</a>`;
   main.innerHTML = `
   <section class="hero dark"><span class="pill">${ic('flask',18)} ${esc(S.club_name)} – ${esc(S.university)}</span>
    <h1>فضاء علمي يُطلق <em>طاقات الطلاب</em> نحو الابتكار والاكتشاف</h1>
    <p>نحن مجتمع طلابي متعدد التخصصات ننظم ورش العمل والأيام المفتوحة والمسابقات العلمية، ونرافقك من فكرة مشروعك الأولى حتى منصة التتويج.</p>
-   <div class="hbtn">${prim}<a class="btn out" href="#events">${ic('calendar',22)} استعرض الفعاليات</a></div>
-   <div class="stats">${STATS.map(([i,n,l]) => `<div class="st">\${ic(i,34)}<b>${n}</b><span>${l}</span></div>`).join('')}</div></section>
-  
-  <section class="sec"><span class="chip">${ic('sparkles',18)} لجاننا</span><h2>اختر اللجنة التي تشبه شغفك</h2>
+   <div class="hbtn">${prim}<a class="btn out" href="#events">${ic('calendar',22)}استعرض الفعاليات</a></div>
+   <div class="stats">${STATS.map(([i,n,l]) => `<div class="st">${ic(i,34)}<b>${n}</b><span>${l}</span></div>`).join('')}</div></section>
+  <section class="sec"><span class="chip">${ic('sparkles',18)}لجاننا</span><h2>اختر اللجنة التي تشبه شغفك</h2>
    <p class="lead">خمس لجان متخصصة تعمل جنباً إلى جنب – اختر ما يناسب مهاراتك أو جرّب مجالاً جديداً بالكامل.</p>
-   <div class="cards">${COMMS.map(c => `<div class="cd"><div class="ico">\${ic(c.i,28)}</div><h3>${c.t}</h3><p>${c.d}</p></div>`).join('')}</div>
-   ${me ? '' : `<div class="call"><h3>لم تجد ما يناسبك؟</h3><p>سارع بالتقديم وسنراجع طلبك ونرشح لك اللجنة الأقرب لميولك.</p><a class="btn gold" href="#join">قدّم طلبك الآن \${ic('arrow-left',20)}</a></div>`}</section>
-  
-  <div class="alt"><section class="sec"><span class="chip">${ic('sparkles',18)} رسالتنا</span><h2>نصنع تجربة علمية متكاملة</h2>
+   <div class="cards">${COMMS.map(c => `<div class="cd"><div class="ico">${ic(c.i,28)}</div><h3>${c.t}</h3><p>${c.d}</p></div>`).join('')}</div>
+   ${me ? '' : `<div class="call"><h3>لم تجد ما يناسبك؟</h3><p>سارع بالتقديم وسنراجع طلبك ونرشح لك اللجنة الأقرب لميولك.</p><a class="btn gold" href="#join">قدّم طلبك الآن ${ic('arrow-left',20)}</a></div>`}</section>
+  <div class="alt"><section class="sec"><span class="chip">${ic('sparkles',18)}رسالتنا</span><h2>نصنع تجربة علمية متكاملة</h2>
    <p class="lead">ثلاث ركائز تحكم كل ما نفعله داخل النادي، من أول اجتماع إلى آخر فعالية في الموسم.</p>
    <div class="cards">
     <div class="cd"><div class="ico g">${ic('bulb',28)}</div><h3>الفضول أولاً</h3><p>نطرح الأسئلة الجريئة ونبحث عن إجاباتها بمنهجية علمية، ونشجع كل عضو على استكشاف ما يثير فضوله.</p></div>
     <div class="cd"><div class="ico g">${ic('users',28)}</div><h3>التعلم بالممارسة</h3><p>لا نكتفي بالنظريات؛ نبني مشاريع حقيقية وننظم فعاليات ميدانية يديرها الأعضاء بأنفسهم.</p></div>
     <div class="cd"><div class="ico g">${ic('rocket',28)}</div><h3>أثر ممتد</h3><p>مخرجاتنا تتجاوز أسوار الجامعة: مسابقات مفتوحة، أوراق طلابية، ومبادرات تخدم المجتمع.</p></div></div></section></div>
-  
-  <section class="sec"><span class="chip">${ic('sparkles',18)} الأحداث القادمة</span><h2>لا تفوّت القادم في أجندتنا</h2>
+  <section class="sec"><span class="chip">${ic('sparkles',18)}الأحداث القادمة</span><h2>لا تفوّت القادم في أجندتنا</h2>
    <p class="lead">أيام مفتوحة وورش عمل ومحاضرات – الفعاليات مفتوحة للجميع وبعضها يتطلب تسجيلاً مسبقاً.</p>
    <div id="up">${loader}</div><a class="btn line" href="#events" style="margin-top:20px">كل الفعاليات والإعلانات ${ic('arrow-left',20)}</a></section>
-  
-  ${me ? '' : `<section class="cta dark"><h2>مقعدك في \${esc(S.club_name)} <em>محجوز لك</em></h2><p>التقديم مفتوح طوال الفصل الدراسي، وتستقبل اللجان أعضاءها الجدد في بداية كل شهر. املأ النموذج في أقل من دقيقتين.</p><a class="btn gold" href="#join">\${ic('users',22)} ابدأ طلب الانضمام</a></section>`}`;
-
-  const el = \$('#up'); if (!el || view !== 'home') return;
+  ${me ? '' : `<section class="cta dark"><h2>مقعدك في ${esc(S.club_name)} <em>محجوز لك</em></h2><p>التقديم مفتوح طوال الفصل الدراسي، وتستقبل اللجان أعضاءها الجدد في بداية كل شهر. املأ النموذج في أقل من دقيقتين.</p><a class="btn gold" href="#join">${ic('users',22)}ابدأ طلب الانضمام</a></section>`}`;
+  await loadActs();
+  const el = $('#up'); if (!el || view !== 'home') return;
   const up = acts.filter(a => !isPast(a)).slice(0, 3);
   el.innerHTML = up.length ? `<div class="cards">${up.map(evCard).join('')}</div>` : '<p class="lead" style="margin:10px auto 30px">لا توجد فعاليات قادمة حالياً – تابعونا قريباً.</p>';
 }
@@ -661,7 +645,7 @@ function tRq(){
     <td><div class="who"><span class="av">${esc(ini(p.full_name))}</span><div><b>${esc(p.full_name)}</b><small>${esc(p.card_no)}</small></div></div></td>
     <td>${esc(p.specialization)}<small>${esc(p.year || '')}</small></td><td>${esc(cn(p.committee))}</td>
     <td><span class="st2 s-${p.status}">${ST[p.status]}</span></td>
-    <td><div class="ar" style="justify-content:flex-start;gap:8px"><button class="btn line sm" data-a="view" data-id="${p.id}">عرض</button>${p.status !== 'approved' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' && p.role !== 'admin' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></td></tr>`).join('') || '<tr><td colspan="5" class="c mut">لا توجد نتائج</td></tr>'}</tbody></table></div>`; };
+    <td><div class="ar" style="justify-content:flex-start;gap:8px"><button class="btn line sm" data-a="view" data-id="${p.id}">عرض</button>${p.status !== 'approved' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></td></tr>`).join('') || '<tr><td colspan="5" class="c mut">لا توجد نتائج</td></tr>'}</tbody></table></div>`; };
   ['q','fc','fd'].forEach(i => { $('#' + i).oninput = draw; $('#' + i).onchange = draw; }); draw();
 }
 
@@ -674,7 +658,7 @@ function tMb(){
     $('#tb').innerHTML = `<div class="tw"><table><thead><tr><th>العضو</th><th>القسم</th><th>اللجنة</th><th>الجوال</th><th>إجراء</th></tr></thead><tbody>${l.map(p => `<tr>
     <td><div class="who"><span class="av">${esc(ini(p.full_name))}</span><div><b>${esc(p.full_name)}</b><small>${esc(p.card_no)} · انضم ${new Date(p.created_at).toLocaleDateString('ar-u-nu-latn', {dateStyle:'medium'})}</small></div></div></td>
     <td>${esc(p.specialization)}<small>${esc(p.year || '')}</small></td><td>${esc(cn(p.committee))}</td><td>${esc(p.phone || '—')}</td>
-    <td>${p.role === 'admin' ? '<span class="badge">مشرف</span>' : `<button class="btn no sm" data-a="rej" data-id="${p.id}">إيقاف</button>`}</td></tr>`).join('') || '<tr><td colspan="5" class="c mut">لا توجد نتائج</td></tr>'}</tbody></table></div>`; };
+    <td><button class="btn no sm" data-a="rej" data-id="${p.id}">إيقاف</button></td></tr>`).join('') || '<tr><td colspan="5" class="c mut">لا توجد نتائج</td></tr>'}</tbody></table></div>`; };
   ['q','fc','fd'].forEach(i => { $('#' + i).oninput = draw; $('#' + i).onchange = draw; }); draw();
 }
 
@@ -734,7 +718,7 @@ function showP(id){
   <dl class="dl"><dt>الرقم الجامعي</dt><dd>${esc(p.card_no)}</dd><dt>الجوال</dt><dd>${esc(p.phone || '—')}</dd><dt>القسم</dt><dd>${esc(p.specialization)}</dd><dt>السنة</dt><dd>${esc(p.year || '—')}</dd><dt>اللجنة</dt><dd>${esc(cn(p.committee))}</dd><dt>تاريخ الطلب</dt><dd>${new Date(p.created_at).toLocaleDateString('ar-u-nu-latn', {dateStyle:'long'})}</dd></dl>
   <b>لماذا يريد الانضمام؟</b><p class="mut" style="margin-top:6px;line-height:2">${esc(p.motivation || '—')}</p>
   <div class="ar" style="justify-content:flex-start;gap:10px;margin-top:20px"><button class="btn line sm" data-a="cert" data-p="${esc(p.certificate_url)}">${ic('file',16)}الشهادة</button>
-  ${p.status !== 'approved' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' && p.role !== 'admin' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></div>`;
+  ${p.status !== 'approved' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></div>`;
   $('#modal').style.display = 'flex';
 }
 
