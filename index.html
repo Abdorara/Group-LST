@@ -348,6 +348,9 @@ function evCard(a){
 
 // ===== الرئيسية =====
 async function pHome(){
+  const { count: uCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'approved');
+STATS[1][1] = (uCount || 0) + '+';
+STATS[0][1] = acts.length + '+';
   const prim = me ? `<a class="btn gold" href="#inbox">الرسائل والأعضاء${ic('arrow-left',22)}</a>` : `<a class="btn gold" href="#join">انضم إلى النادي${ic('arrow-left',22)}</a>`;
   main.innerHTML = `
   <section class="hero dark"><span class="pill">${ic('flask',18)} ${esc(S.club_name)} – ${esc(S.university)}</span>
