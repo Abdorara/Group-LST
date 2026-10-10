@@ -348,47 +348,47 @@ function evCard(a){
 
 // ===== الرئيسية =====
 async function pHome(){
- await loadActs();
-  await loadMembers(); // تحميل قائمة الأعضاء أولاً لتجنب أي نقص
+  // 1. جلب البيانات والأعضاء أولاً
+  await loadActs();
+  await loadMembers();
 
-  // تحديث الأرقام مباشرة من الذاكرة (عدد الأعضاء وعدد الفعاليات)
-  STATS[1][1] = '+' + (MBL.length > 0 ? MBL.length : 2);
-  STATS[0][1] = '+' + acts.length;
+  // 2. حساب الأرقام الحقيقية أوتوماتيكياً
+  const { count: usersCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'approved');
   
-  const prim = me ? `<a class="btn gold" href="#inbox">الرسائل والأعضاء${ic('arrow-left',22)}</a>` : `<a class="btn gold" href="#join">انضم إلى النادي${ic('arrow-left',22)}</a>`;
+  // تحديث مصفوفة الإحصائيات بالقيم الحقيقية
+  STATS[1][1] = '+' + (usersCount || MBL.length || 2);
+  STATS[0][1] = '+' + acts.length;
+
+  const prim = me ? `<a class="btn gold" href="#inbox">الرسائل والأعضاء ${ic('arrow-left',22)}</a>` : `<a class="btn gold" href="#join">انضم إلى النادي ${ic('arrow-left',22)}</a>`;
+  
+  // 3. رسم الصفحة بالقيم المحدثة
   main.innerHTML = `
   <section class="hero dark"><span class="pill">${ic('flask',18)} ${esc(S.club_name)} – ${esc(S.university)}</span>
    <h1>فضاء علمي يُطلق <em>طاقات الطلاب</em> نحو الابتكار والاكتشاف</h1>
    <p>نحن مجتمع طلابي متعدد التخصصات ننظم ورش العمل والأيام المفتوحة والمسابقات العلمية، ونرافقك من فكرة مشروعك الأولى حتى منصة التتويج.</p>
-   <div class="hbtn">${prim}<a class="btn out" href="#events">${ic('calendar',22)}استعرض الفعاليات</a></div>
-   <div class="stats">${STATS.map(([i,n,l]) => `<div class="st">${ic(i,34)}<b>${n}</b><span>${l}</span></div>`).join('')}</div></section>
-  <section class="sec"><span class="chip">${ic('sparkles',18)}لجاننا</span><h2>اختر اللجنة التي تشبه شغفك</h2>
+   <div class="hbtn">${prim}<a class="btn out" href="#events">${ic('calendar',22)} استعرض الفعاليات</a></div>
+   <div class="stats">${STATS.map(([i,n,l]) => `<div class="st">\${ic(i,34)}<b>${n}</b><span>${l}</span></div>`).join('')}</div></section>
+  
+  <section class="sec"><span class="chip">${ic('sparkles',18)} لجاننا</span><h2>اختر اللجنة التي تشبه شغفك</h2>
    <p class="lead">خمس لجان متخصصة تعمل جنباً إلى جنب – اختر ما يناسب مهاراتك أو جرّب مجالاً جديداً بالكامل.</p>
-   <div class="cards">${COMMS.map(c => `<div class="cd"><div class="ico">${ic(c.i,28)}</div><h3>${c.t}</h3><p>${c.d}</p></div>`).join('')}</div>
-   ${me ? '' : `<div class="call"><h3>لم تجد ما يناسبك؟</h3><p>سارع بالتقديم وسنراجع طلبك ونرشح لك اللجنة الأقرب لميولك.</p><a class="btn gold" href="#join">قدّم طلبك الآن ${ic('arrow-left',20)}</a></div>`}</section>
-  <div class="alt"><section class="sec"><span class="chip">${ic('sparkles',18)}رسالتنا</span><h2>نصنع تجربة علمية متكاملة</h2>
+   <div class="cards">${COMMS.map(c => `<div class="cd"><div class="ico">\${ic(c.i,28)}</div><h3>${c.t}</h3><p>${c.d}</p></div>`).join('')}</div>
+   ${me ? '' : `<div class="call"><h3>لم تجد ما يناسبك؟</h3><p>سارع بالتقديم وسنراجع طلبك ونرشح لك اللجنة الأقرب لميولك.</p><a class="btn gold" href="#join">قدّم طلبك الآن \${ic('arrow-left',20)}</a></div>`}</section>
+  
+  <div class="alt"><section class="sec"><span class="chip">${ic('sparkles',18)} رسالتنا</span><h2>نصنع تجربة علمية متكاملة</h2>
    <p class="lead">ثلاث ركائز تحكم كل ما نفعله داخل النادي، من أول اجتماع إلى آخر فعالية في الموسم.</p>
    <div class="cards">
     <div class="cd"><div class="ico g">${ic('bulb',28)}</div><h3>الفضول أولاً</h3><p>نطرح الأسئلة الجريئة ونبحث عن إجاباتها بمنهجية علمية، ونشجع كل عضو على استكشاف ما يثير فضوله.</p></div>
     <div class="cd"><div class="ico g">${ic('users',28)}</div><h3>التعلم بالممارسة</h3><p>لا نكتفي بالنظريات؛ نبني مشاريع حقيقية وننظم فعاليات ميدانية يديرها الأعضاء بأنفسهم.</p></div>
     <div class="cd"><div class="ico g">${ic('rocket',28)}</div><h3>أثر ممتد</h3><p>مخرجاتنا تتجاوز أسوار الجامعة: مسابقات مفتوحة، أوراق طلابية، ومبادرات تخدم المجتمع.</p></div></div></section></div>
-  <section class="sec"><span class="chip">${ic('sparkles',18)}الأحداث القادمة</span><h2>لا تفوّت القادم في أجندتنا</h2>
+  
+  <section class="sec"><span class="chip">${ic('sparkles',18)} الأحداث القادمة</span><h2>لا تفوّت القادم في أجندتنا</h2>
    <p class="lead">أيام مفتوحة وورش عمل ومحاضرات – الفعاليات مفتوحة للجميع وبعضها يتطلب تسجيلاً مسبقاً.</p>
    <div id="up">${loader}</div><a class="btn line" href="#events" style="margin-top:20px">كل الفعاليات والإعلانات ${ic('arrow-left',20)}</a></section>
-  ${me ? '' : `<section class="cta dark"><h2>مقعدك في ${esc(S.club_name)} <em>محجوز لك</em></h2><p>التقديم مفتوح طوال الفصل الدراسي، وتستقبل اللجان أعضاءها الجدد في بداية كل شهر. املأ النموذج في أقل من دقيقتين.</p><a class="btn gold" href="#join">${ic('users',22)}ابدأ طلب الانضمام</a></section>`}`;
-  await loadActs();
-  const el = $('#up'); if (!el || view !== 'home') return;
-  const up = acts.filter(a => !isPast(a)).slice(0, 3);
-  // حساب عدد الأعضاء المقبولين تلقائياً من Supabase
-const { count: usersCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'approved');
+  
+  ${me ? '' : `<section class="cta dark"><h2>مقعدك في \${esc(S.club_name)} <em>محجوز لك</em></h2><p>التقديم مفتوح طوال الفصل الدراسي، وتستقبل اللجان أعضاءها الجدد في بداية كل شهر. املأ النموذج في أقل من دقيقتين.</p><a class="btn gold" href="#join">\${ic('users',22)} ابدأ طلب الانضمام</a></section>`}`;
 
-// تحديث الإحصائيات أوتوماتيكياً
-const dynamicStats = [
-  ['calendar', acts.length + '+', 'فعالية'],
-  ['users', (usersCount || 0) + '+', 'عضو فعّال'],
-  ['graduation', '8', 'أقسام علمية'],
-  ['trophy', '12', 'جائزة ومرتبة']
-];
+  const el = \$('#up'); if (!el || view !== 'home') return;
+  const up = acts.filter(a => !isPast(a)).slice(0, 3);
   el.innerHTML = up.length ? `<div class="cards">${up.map(evCard).join('')}</div>` : '<p class="lead" style="margin:10px auto 30px">لا توجد فعاليات قادمة حالياً – تابعونا قريباً.</p>';
 }
 
