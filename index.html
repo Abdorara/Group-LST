@@ -646,7 +646,7 @@ function tRq(){
     <td><div class="who"><span class="av">${esc(ini(p.full_name))}</span><div><b>${esc(p.full_name)}</b><small>${esc(p.card_no)}</small></div></div></td>
     <td>${esc(p.specialization)}<small>${esc(p.year || '')}</small></td><td>${esc(cn(p.committee))}</td>
     <td><span class="st2 s-${p.status}">${ST[p.status]}</span></td>
-    <td><div class="ar" style="justify-content:flex-start;gap:8px"><button class="btn line sm" data-a="view" data-id="${p.id}">عرض</button>${p.status !== 'approved' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></td></tr>`).join('') || '<tr><td colspan="5" class="c mut">لا توجد نتائج</td></tr>'}</tbody></table></div>`; };
+    <td><div class="ar" style="justify-content:flex-start;gap:8px"><button class="btn line sm" data-a="view" data-id="${p.id}">عرض</button>${p.status !== 'rejected' && p.role !== 'admin' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></td></tr>`).join('') || '<tr><td colspan="5" class="c mut">لا توجد نتائج</td></tr>'}</tbody></table></div>`; };
   ['q','fc','fd'].forEach(i => { $('#' + i).oninput = draw; $('#' + i).onchange = draw; }); draw();
 }
 
@@ -719,7 +719,7 @@ function showP(id){
   <dl class="dl"><dt>الرقم الجامعي</dt><dd>${esc(p.card_no)}</dd><dt>الجوال</dt><dd>${esc(p.phone || '—')}</dd><dt>القسم</dt><dd>${esc(p.specialization)}</dd><dt>السنة</dt><dd>${esc(p.year || '—')}</dd><dt>اللجنة</dt><dd>${esc(cn(p.committee))}</dd><dt>تاريخ الطلب</dt><dd>${new Date(p.created_at).toLocaleDateString('ar-u-nu-latn', {dateStyle:'long'})}</dd></dl>
   <b>لماذا يريد الانضمام؟</b><p class="mut" style="margin-top:6px;line-height:2">${esc(p.motivation || '—')}</p>
   <div class="ar" style="justify-content:flex-start;gap:10px;margin-top:20px"><button class="btn line sm" data-a="cert" data-p="${esc(p.certificate_url)}">${ic('file',16)}الشهادة</button>
-  ${p.status !== 'approved' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></div>`;
+  ${p.status !== 'approved' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' && p.role !== 'admin' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></div>`;
   $('#modal').style.display = 'flex';
 }
 
