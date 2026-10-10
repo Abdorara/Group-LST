@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LST Club | جامعة عبد الحميد ابن باديس - مستغانم</title>
+<link rel="icon" href="logo.jpg">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -287,7 +288,7 @@ async function loadActs(){
 async function loadP(){ const {data} = await sb.from('profiles').select('*').order('created_at', {ascending:false}); P = data || []; }
 
 // ===== الهيكل =====
-const logo = () => `<span class="lg"><img src="logo.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none">${ic('flask',26)}</span></span>`;
+const logo = () => `<span class="lg"><img src="logo.jpg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none">${ic('flask',26)}</span></span>`;
 function drawMenu(){
   if (!$('#mbtn')) return;
   $('#mbtn').innerHTML = ic('menu', 30) + (unread ? '<i class="dot"></i>' : '');
