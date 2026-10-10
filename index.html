@@ -242,7 +242,7 @@ const DEF = {club_name:'LST Club', university:'جامعة عبد الحميد ا
 let me = null, S = {...DEF}, view = 'home', tab = 'ov', acts = [], counts = {}, mine = new Set(), chan = null, dmChan = null, curDM = null;
 let P = [], rf = 'all', mf = 'all', MB = {}, MBL = [], unread = 0;
 const loader = '<div class="mut c" style="padding:30px">جارٍ التحميل…</div>';
-const AP = () => P.filter(p => p.role !== 'admin');
+const AP = () => P;
 const isPast = a => a.event_date && new Date(a.event_date) < new Date(new Date().setHours(0,0,0,0));
 const fd = d => { if (!d) return 'يحدد لاحقاً'; const x = new Date(d), t = x.getHours() || x.getMinutes();
   return x.toLocaleDateString('ar-u-nu-latn', {dateStyle:'long'}) + (t ? ' • ' + x.toLocaleTimeString('ar-u-nu-latn', {hour:'2-digit', minute:'2-digit'}) : ''); };
