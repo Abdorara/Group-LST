@@ -348,20 +348,16 @@ function evCard(a){
 
 // ===== الرئيسية =====
 async function pHome(){
-  // 1. جلب البيانات والأعضاء أولاً
   await loadActs();
   await loadMembers();
 
-  // 2. حساب الأرقام الحقيقية أوتوماتيكياً
   const { count: usersCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'approved');
   
-  // تحديث مصفوفة الإحصائيات بالقيم الحقيقية
   STATS[1][1] = '+' + (usersCount || MBL.length || 2);
   STATS[0][1] = '+' + acts.length;
 
   const prim = me ? `<a class="btn gold" href="#inbox">الرسائل والأعضاء ${ic('arrow-left',22)}</a>` : `<a class="btn gold" href="#join">انضم إلى النادي ${ic('arrow-left',22)}</a>`;
   
-  // 3. رسم الصفحة بالقيم المحدثة
   main.innerHTML = `
   <section class="hero dark"><span class="pill">${ic('flask',18)} ${esc(S.club_name)} – ${esc(S.university)}</span>
    <h1>فضاء علمي يُطلق <em>طاقات الطلاب</em> نحو الابتكار والاكتشاف</h1>
