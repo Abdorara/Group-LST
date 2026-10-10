@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>رواد العلوم والتكنولوجيا | LST Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--tx:#0f1b2d;--mut:#64748b;--pri:#2563eb;--pri2:#06b6d4;--bd:#e2e8f0;--ok:#16a34a;--no:#dc2626}
+[data-theme=dark]{--bg:#0b1220;--card:#131c2e;--tx:#e8eefc;--mut:#94a3b8;--bd:#1f2b44}
+*{box-sizing:border-box;margin:0}
+body{font-family:Cairo,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+nav{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;gap:8px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:1.1rem;background:linear-gradient(90deg,var(--pri),var(--pri2));-webkit-background-clip:text;color:transparent;cursor:pointer}
+.nav-r{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+main{max-width:980px;margin:0 auto;padding:18px 14px 60px}
+button{font-family:inherit;border:0;border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;background:var(--pri);color:#fff;font-size:.9rem}
+button.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+button.ok{background:var(--ok)}button.no{background:var(--no)}
+button:disabled{opacity:.5}
+input,select,textarea{font-family:inherit;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:.95rem}
+label{display:block;font-size:.85rem;color:var(--mut);margin:10px 0 4px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px}
+.hero{text-align:center;padding:46px 18px;border-radius:22px;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff}
+.hero h1{font-size:1.9rem;margin-bottom:10px}.hero p{opacity:.92;max-width:520px;margin:0 auto 20px;line-height:1.9}
+.hero button{background:#fff;color:var(--pri);margin:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:14px}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.75rem;background:color-mix(in srgb,var(--pri) 15%,transparent);color:var(--pri);font-weight:600}
+.mut{color:var(--mut);font-size:.85rem}
+.form{max-width:440px;margin:30px auto}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tabs{display:flex;gap:6px;margin:14px 0;flex-wrap:wrap}
+.tabs button{background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+.tabs button.on{background:var(--pri);color:#fff}
+.tools{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}.tools>*{flex:1;min-width:140px}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.center{text-align:center;padding:40px 10px}
+.banner{background:color-mix(in srgb,var(--pri) 12%,transparent);border:1px solid var(--pri);border-radius:12px;padding:10px 14px;margin:14px 0;font-size:.9rem}
+.sec{margin:26px 0 4px;font-size:1.2rem}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:12px;display:none;z-index:99;font-size:.9rem}
+/* chat */
+.chat{display:flex;flex-direction:column;height:calc(100dvh - 130px);min-height:360px}
+.msgs{flex:1;overflow-y:auto;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px;margin:10px 0;display:flex;flex-direction:column;gap:8px}
+.msg{display:flex}.msg.me{justify-content:flex-end}
+.mb{max-width:80%;background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:8px 12px;word-break:break-word;line-height:1.7}
+.msg.me .mb{background:var(--pri);color:#fff;border-color:var(--pri)}
+.mn{font-size:.72rem;font-weight:700;opacity:.75}
+.mt{font-size:.68rem;opacity:.7;margin-top:2px}
+.mt a{color:inherit;text-decoration:none}
+.cbar{display:flex;gap:8px}.cbar input{flex:1}
+</style>
+</head>
+<body>
+<nav><div class="logo" data-go="home">🔬 رواد العلوم والتكنولوجيا</div><div class="nav-r" id="navr"></div></nav>
+<main id="main"></main>
+<div id="toast"></div>
+
+<script>
+// ===== ضع بيانات مشروعك هنا (Project Settings > API) =====
+const SUPABASE_URL = 'https://qqmtuimijxcoixwuzmtt.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxbXR1aW1panhjb2l4d3V6bXR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MjQxMDUsImV4cCI6MjEwNzIwMDEwNX0.kfS3GT_GpGdEVtv5QP2_K8BAQfv3xr6xYq0aY5FSAys';
+// =========================================================
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = s => document.querySelector(s);
+const main = $('#main');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const emailOf = c => c.trim().toLowerCase() + '@lst.club';
+const fmt = d => d ? new Date(d).toLocaleString('ar-u-nu-latn', {dateStyle:'medium', timeStyle:'short'}) : 'يحدد لاحقاً';
+const hm = d => new Date(d).toLocaleTimeString('ar-u-nu-latn', {hour:'2-digit', minute:'2-digit'});
+const CATS = ['ورشة','محاضرة','مسابقة','رحلة علمية','مشروع بحثي','أخرى'];
+let me = null, view = 'home', tab = 'req', acts = [], counts = {}, mine = new Set(), chan = null;
+
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3200)}
+function go(v){view=v;render();window.scrollTo(0,0)}
+const loader = '<div class="center mut">جارٍ التحميل…</div>';
+function leaveChat(){if(chan){sb.removeChannel(chan);chan=null}}
+
+const th = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+document.documentElement.dataset.theme = th;
+function toggleTheme(){const n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;localStorage.setItem('theme',n)}
+
+async function loadMe(){
+  const {data:{session}} = await sb.auth.getSession();
+  if(!session){me=null;return}
+  const {data} = await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(!data){await sb.auth.signOut();me=null;return}
+  me = data;
+}
+
+function renderNav(){
+  let h='<button class="ghost" data-a="theme">🌓</button><button class="ghost" data-go="acts">الأنشطة</button>';
+  if(!me) h+='<button class="ghost" data-go="login">دخول</button><button data-go="register">تسجيل</button>';
+  else{
+    if(me.status==='approved'){
+      h+='<button class="ghost" data-go="chat">💬 المحادثة</button>';
+      if(me.role==='admin') h+='<button class="ghost" data-go="admin">الإدارة</button>';
+    }
+    h+='<button class="ghost" data-a="out">خروج</button>';
+  }
+  $('#navr').innerHTML=h;
+}
+
+function render(){
+  leaveChat();
+  renderNav();
+  if(me && me.status!=='approved') return renderPending();
+  if(me && ['login','register'].includes(view)) view='acts';
+  if(me && view==='home') view='acts';
+  if(!me && ['admin','chat'].includes(view)) view='home';
+  if(view==='home') renderHome();
+  else if(view==='login') renderLogin();
+  else if(view==='register') renderRegister();
+  else if(view==='acts') renderActs();
+  else if(view==='chat') renderChat();
+  else if(view==='admin' && me?.role==='admin') renderAdmin();
+  else go('acts');
+}
+
+// ===== الأنشطة (عامة) =====
+async function loadActs(){
+  const [a,c]=await Promise.all([
+    sb.from('activities').select('*').order('event_date',{ascending:true}),
+    sb.rpc('activity_counts')]);
+  acts=a.data||[];counts={};(c.data||[]).forEach(x=>counts[x.activity_id]=Number(x.n));
+  mine=new Set();
+  if(me){const r=await sb.from('registrations').select('activity_id').eq('user_id',me.id);mine=new Set((r.data||[]).map(x=>x.activity_id))}
+}
+function drawActs(){
+  const q=($('#q')?.value||'').trim().toLowerCase(),cat=$('#cat')?.value||'';
+  const list=acts.filter(a=>(!cat||a.category===cat)&&(!q||(a.title+' '+(a.description||'')).toLowerCase().includes(q)));
+  $('#ag').innerHTML=list.length?list.map(a=>{
+    const n=counts[a.id]||0,full=a.capacity&&n>=a.capacity,joined=mine.has(a.id);
+    const btn=!me?'<button class="ghost" data-go="login">سجّل الدخول للمشاركة</button>'
+      :joined?`<button class="ghost" data-a="leave" data-id="${a.id}">إلغاء التسجيل ✓</button>`
+      :full?'<button disabled>اكتمل العدد</button>':`<button data-a="join" data-id="${a.id}">سجّل في النشاط</button>`;
+    return `<div class="card"><span class="chip">${esc(a.category||'نشاط')}</span>
+    <h3 style="margin:8px 0">${esc(a.title)}</h3>
+    <p class="mut" style="line-height:1.8">${esc(a.description)}</p>
+    <p class="mut" style="margin-top:8px">📅 ${fmt(a.event_date)}<br>📍 ${esc(a.location||'—')}<br>👥 ${n}${a.capacity?' / '+a.capacity:''} مسجّل</p>
+    <div class="row">${btn}</div></div>`;
+  }).join(''):'<div class="center mut" style="grid-column:1/-1">لا توجد أنشطة مطابقة.</div>';
+}
+async function renderActs(){
+  main.innerHTML=loader;
+  await loadActs();
+  main.innerHTML=`<h2>الأنشطة</h2>
+  ${me?`<p class="mut">مرحباً ${esc(me.full_name)} 👋</p>`:'<div class="banner">الأنشطة متاحة للجميع. للتسجيل فيها والدخول للمحادثة <a href="#" data-go="register">أنشئ حساباً</a>.</div>'}
+  <div class="tools"><input id="q" placeholder="🔍 ابحث عن نشاط…">
+  <select id="cat"><option value="">كل التصنيفات</option>${CATS.map(x=>`<option>${x}</option>`).join('')}</select></div>
+  <div class="grid" id="ag"></div>`;
+  $('#q').oninput=drawActs;$('#cat').onchange=drawActs;drawActs();
+}
+
+async function renderHome(){
+  main.innerHTML=`<div class="hero"><h1>رواد العلوم والتكنولوجيا</h1>
+  <p>مجتمع طلابي يصنع فضاءً علمياً يُطلق طاقات الطلبة: ورش، فعاليات، مشاريع بحثية ولجان متخصصة.</p>
+  <button data-go="register">انضم الآن</button><button data-go="login">تسجيل الدخول</button></div>
+  <h2 class="sec">📅 أحدث الأنشطة</h2><div class="grid" id="ag">${loader}</div>`;
+  await loadActs();
+  if(view==='home'&&$('#ag')){acts=acts.slice(0,6);drawActs()}
+}
+
+// ===== الدخول والتسجيل =====
+function renderLogin(){
+  main.innerHTML=`<form class="card form" id="lf"><h2>تسجيل الدخول</h2>
+  <label>رقم بطاقة الطالب</label><input name="card" required autocomplete="username">
+  <label>كلمة المرور</label><input name="pw" type="password" required autocomplete="current-password">
+  <div class="row"><button style="flex:1">دخول</button></div>
+  <p class="mut" style="margin-top:12px">ليس لديك حساب؟ <a href="#" data-go="register">سجّل الآن</a></p></form>`;
+  $('#lf').onsubmit=async e=>{
+    e.preventDefault();const f=e.target,b=f.querySelector('button');b.disabled=true;
+    const {error}=await sb.auth.signInWithPassword({email:emailOf(f.card.value),password:f.pw.value});
+    b.disabled=false;
+    if(error) return toast('رقم البطاقة أو كلمة المرور غير صحيحة');
+    await loadMe();view='acts';render();
+  };
+}
+
+function renderRegister(){
+  main.innerHTML=`<form class="card form" id="rf"><h2>طلب انضمام</h2>
+  <p class="mut">بعد التسجيل ينتظر حسابك موافقة الإدارة.</p>
+  <label>الاسم الكامل</label><input name="name" required>
+  <label>التخصص</label><input name="spec" required>
+  <label>رقم بطاقة الطالب</label><input name="card" required placeholder="أحرف وأرقام إنجليزية فقط">
+  <label>كلمة المرور (6 أحرف على الأقل)</label><input name="pw" type="password" required autocomplete="new-password">
+  <label>شهادة الجامعة (صورة أو PDF، حتى 5MB)</label><input name="cert" type="file" accept="image/*,application/pdf" required>
+  <div class="row"><button style="flex:1">إرسال الطلب</button></div>
+  <p class="mut" style="margin-top:12px">لديك حساب؟ <a href="#" data-go="login">دخول</a></p></form>`;
+  $('#rf').onsubmit=async e=>{
+    e.preventDefault();const f=e.target,b=f.querySelector('button');
+    const name=f.name.value.trim(),spec=f.spec.value.trim(),card=f.card.value.trim(),pw=f.pw.value,file=f.cert.files[0];
+    if(!/^[A-Za-z0-9]{4,20}$/.test(card)) return toast('رقم البطاقة: 4 إلى 20 حرفاً/رقماً إنجليزياً');
+    if(pw.length<6) return toast('كلمة المرور قصيرة');
+    if(!file) return toast('ارفع شهادة الجامعة');
+    if(file.size>5*1024*1024) return toast('حجم الملف أكبر من 5MB');
+    b.disabled=true;b.textContent='جارٍ الإرسال…';
+    const reset=()=>{b.disabled=false;b.textContent='إرسال الطلب'};
+    const {data,error}=await sb.auth.signUp({email:emailOf(card),password:pw});
+    if(error){reset();return toast(/registered/i.test(error.message)?'رقم البطاقة مسجّل مسبقاً':error.message)}
+    if(!data.session){reset();return toast('عطّل تأكيد البريد في إعدادات Supabase Auth')}
+    const uid=data.user.id,ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+    const up=await sb.storage.from('certificates').upload(`${uid}/certificate.${ext}`,file);
+    if(up.error){await sb.auth.signOut();reset();return toast('فشل رفع الشهادة، حاول مجدداً')}
+    const ins=await sb.from('profiles').insert({id:uid,full_name:name,specialization:spec,card_no:card,certificate_url:`${uid}/certificate.${ext}`});
+    if(ins.error){await sb.auth.signOut();reset();return toast('تعذّر حفظ البيانات')}
+    await loadMe();render();
+  };
+}
+
+function renderPending(){
+  const rej=me.status==='rejected';
+  main.innerHTML=`<div class="card form center"><div style="font-size:3rem">${rej?'❌':'⏳'}</div>
+  <h2>${rej?'تم رفض طلبك':'طلبك قيد المراجعة'}</h2>
+  <p class="mut" style="margin-top:8px">${rej?'تواصل مع إدارة النادي لمعرفة السبب.':'ستتمكن من المحادثة والتسجيل في الأنشطة فور موافقة الإدارة.'}</p>
+  <div class="row" style="justify-content:center"><button data-a="refresh">تحديث الحالة</button></div></div>`;
+}
+
+// ===== المحادثة =====
+function msgHTML(m){
+  const own=m.user_id===me.id;
+  return `<div class="msg ${own?'me':''}" id="msg${m.id}"><div class="mb"><div class="mn">${esc(own?'أنت':(m.author_name||'عضو'))}</div>${esc(m.content)}
+  <div class="mt">${hm(m.created_at)}${(own||me.role==='admin')?` <a href="#" data-a="dm" data-id="${m.id}">🗑</a>`:''}</div></div></div>`;
+}
+function addMsg(m){
+  const box=$('#mbox');if(!box||$('#msg'+m.id))return;
+  $('#empty')?.remove();
+  const near=box.scrollHeight-box.scrollTop-box.clientHeight<140;
+  box.insertAdjacentHTML('beforeend',msgHTML(m));
+  if(near||m.user_id===me.id)box.scrollTop=box.scrollHeight;
+}
+async function renderChat(){
+  main.innerHTML=`<div class="chat"><h2>💬 محادثة النادي</h2><div id="mbox" class="msgs">${loader}</div>
+  <form id="cf" class="cbar"><input name="t" maxlength="1000" placeholder="اكتب رسالة…" autocomplete="off" required><button>إرسال</button></form></div>`;
+  const {data}=await sb.from('messages').select('*').order('created_at',{ascending:false}).limit(100);
+  const box=$('#mbox');if(!box)return;
+  box.innerHTML=(data||[]).length?(data).reverse().map(msgHTML).join(''):'<div class="center mut" id="empty">ابدأ المحادثة 👋</div>';
+  box.scrollTop=box.scrollHeight;
+  chan=sb.channel('chat-room')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},p=>addMsg(p.new))
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'messages'},p=>$('#msg'+p.old.id)?.remove())
+    .subscribe();
+  $('#cf').onsubmit=async e=>{
+    e.preventDefault();const f=e.target,t=f.t.value.trim();if(!t)return;f.t.value='';
+    const {data,error}=await sb.from('messages').insert({content:t}).select().single();
+    if(error){f.t.value=t;return toast('تعذّر الإرسال')}
+    addMsg(data);
+  };
+}
+
+// ===== الإدارة =====
+async function renderAdmin(){
+  main.innerHTML=`<h2>لوحة الإدارة</h2>
+  <div class="tabs"><button data-tab="req" class="${tab==='req'?'on':''}">طلبات الانضمام</button>
+  <button data-tab="act" class="${tab==='act'?'on':''}">الأنشطة</button>
+  <button data-tab="mem" class="${tab==='mem'?'on':''}">الأعضاء</button></div><div id="ad">${loader}</div>`;
+  if(tab==='req'){
+    const {data}=await sb.from('profiles').select('*').eq('status','pending').order('created_at');
+    $('#ad').innerHTML=(data||[]).length?data.map(p=>`<div class="card item"><div><b>${esc(p.full_name)}</b>
+    <div class="mut">${esc(p.specialization)} • بطاقة: ${esc(p.card_no)}</div></div>
+    <div class="row" style="margin:0"><button class="ghost" data-a="cert" data-p="${esc(p.certificate_url)}">الشهادة</button>
+    <button class="ok" data-a="appr" data-id="${p.id}">قبول</button><button class="no" data-a="rej" data-id="${p.id}">رفض</button></div></div>`).join('')
+    :'<div class="center mut">لا توجد طلبات جديدة 🎉</div>';
+  }else if(tab==='act'){
+    const {data}=await sb.from('activities').select('*').order('created_at',{ascending:false});
+    $('#ad').innerHTML=`<form class="card" id="af"><h3>نشاط جديد</h3>
+    <label>العنوان</label><input name="title" required>
+    <label>الوصف</label><textarea name="desc" rows="3"></textarea>
+    <label>التصنيف</label><select name="cat">${CATS.map(x=>`<option>${x}</option>`).join('')}</select>
+    <label>التاريخ والوقت</label><input name="date" type="datetime-local">
+    <label>المكان</label><input name="loc">
+    <label>عدد المقاعد (اتركه فارغاً لغير محدود)</label><input name="cap" type="number" min="1">
+    <div class="row"><button>نشر النشاط</button></div></form><div style="margin-top:16px">
+    ${(data||[]).map(a=>`<div class="card" style="margin-bottom:10px"><div class="item"><div><b>${esc(a.title)}</b>
+    <div class="mut">${esc(a.category||'')} • ${fmt(a.event_date)}</div></div>
+    <div class="row" style="margin:0"><button class="ghost" data-a="regs" data-id="${a.id}">المسجلون</button>
+    <button class="no" data-a="del" data-id="${a.id}">حذف</button></div></div><div id="rg${a.id}" class="mut"></div></div>`).join('')}</div>`;
+    $('#af').onsubmit=async e=>{
+      e.preventDefault();const f=e.target;
+      const {error}=await sb.from('activities').insert({title:f.title.value.trim(),description:f.desc.value.trim(),category:f.cat.value,
+        event_date:f.date.value?new Date(f.date.value).toISOString():null,location:f.loc.value.trim(),capacity:f.cap.value?+f.cap.value:null});
+      if(error) return toast('تعذّر النشر');toast('تم نشر النشاط ✓');renderAdmin();
+    };
+  }else{
+    const {data}=await sb.from('profiles').select('*').eq('status','approved').order('full_name');
+    $('#ad').innerHTML=`<p class="mut">عدد الأعضاء: ${(data||[]).length}</p><div class="tools"><input id="mq" placeholder="🔍 ابحث بالاسم أو رقم البطاقة"></div><div id="mlist"></div>`;
+    const draw=()=>{const q=$('#mq').value.trim().toLowerCase();
+      $('#mlist').innerHTML=(data||[]).filter(p=>(p.full_name+p.card_no).toLowerCase().includes(q)).map(p=>`<div class="card item"><div><b>${esc(p.full_name)}</b>
+      <div class="mut">${esc(p.specialization)} • ${esc(p.card_no)}</div></div>${p.role==='admin'?'<span class="chip">مشرف</span>':`<button class="no" data-a="rej" data-id="${p.id}">إيقاف</button>`}</div>`).join('')};
+    $('#mq').oninput=draw;draw();
+  }
+}
+
+// ===== الأحداث =====
+document.addEventListener('click',async e=>{
+  const g=e.target.closest('[data-go]');if(g){e.preventDefault();return go(g.dataset.go)}
+  const t=e.target.closest('[data-tab]');if(t){tab=t.dataset.tab;return renderAdmin()}
+  const el=e.target.closest('[data-a]');if(!el)return;
+  e.preventDefault();
+  const a=el.dataset.a,id=el.dataset.id;
+  if(a==='theme') return toggleTheme();
+  if(a==='out'){await sb.auth.signOut();me=null;view='home';return render()}
+  if(a==='refresh'){await loadMe();return render()}
+  if(a==='join'){
+    const {error}=await sb.from('registrations').insert({activity_id:+id,user_id:me.id});
+    toast(error?(/full/.test(error.message)?'اكتمل العدد':'تعذّر التسجيل'):'تم تسجيلك ✓');return renderActs();
+  }
+  if(a==='leave'){await sb.from('registrations').delete().eq('activity_id',+id).eq('user_id',me.id);toast('تم إلغاء التسجيل');return renderActs()}
+  if(a==='dm'){const {error}=await sb.from('messages').delete().eq('id',id);if(error)return toast('تعذّر الحذف');return $('#msg'+id)?.remove()}
+  if(a==='appr'||a==='rej'){
+    if(a==='rej'&&!confirm('تأكيد الرفض/الإيقاف؟'))return;
+    await sb.from('profiles').update({status:a==='appr'?'approved':'rejected'}).eq('id',id);
+    toast('تم');return renderAdmin();
+  }
+  if(a==='cert'){
+    const {data,error}=await sb.storage.from('certificates').createSignedUrl(el.dataset.p,120);
+    return error?toast('تعذّر فتح الملف'):window.open(data.signedUrl,'_blank');
+  }
+  if(a==='del'){if(!confirm('حذف النشاط نهائياً؟'))return;await sb.from('activities').delete().eq('id',id);return renderAdmin()}
+  if(a==='regs'){
+    const box=$('#rg'+id);box.textContent='…';
+    const {data}=await sb.from('registrations').select('profiles(full_name,card_no,specialization)').eq('activity_id',id);
+    box.innerHTML=(data||[]).length?data.map((r,i)=>`${i+1}. ${esc(r.profiles.full_name)} — ${esc(r.profiles.specialization)} (${esc(r.profiles.card_no)})`).join('<br>'):'لا يوجد مسجلون بعد.';
+  }
+});
+
+(async()=>{main.innerHTML=loader;await loadMe();view=me?'acts':'home';render()})();
+</script>
+</body>
+</html>
