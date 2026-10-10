@@ -15,7 +15,6 @@ body.adm{background:var(--bg)}
 a{color:inherit;text-decoration:none}
 svg{flex-shrink:0}
 .mut{color:var(--mut)}.c{text-align:center}
-/* header */
 #hd{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;padding:12px 18px}
 .brand{display:flex;align-items:center;gap:14px}
 .lg{width:52px;height:52px;border-radius:16px;border:1px solid var(--bd);background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--navy)}
@@ -25,7 +24,6 @@ svg{flex-shrink:0}
 .ib{background:none;border:0;color:inherit;padding:8px;cursor:pointer;font-family:inherit}
 #menu{position:fixed;top:78px;left:0;right:0;z-index:29;background:#fff;border-bottom:1px solid var(--bd);box-shadow:0 12px 30px rgba(11,20,48,.12);display:none;padding:6px 18px 14px}
 #menu a,#menu button{display:block;width:100%;text-align:right;padding:13px 6px;font-size:1rem;font-weight:500;border:0;background:none;border-bottom:1px solid var(--bd);font-family:inherit;color:var(--navy);cursor:pointer}
-/* buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;font-weight:700;font-size:1rem;border:1px solid transparent;border-radius:16px;padding:14px 26px;cursor:pointer;transition:.15s}
 .btn.gold{background:var(--gold);color:var(--navy);box-shadow:0 10px 24px rgba(212,167,44,.28)}
 .btn.out{background:rgba(255,255,255,.04);color:#fff;border-color:rgba(255,255,255,.18)}
@@ -35,7 +33,6 @@ svg{flex-shrink:0}
 .btn.sm{padding:7px 14px;font-size:.85rem;border-radius:12px}
 .btn.block{width:100%}
 .btn:disabled{opacity:.55}
-/* dark + hero */
 .dark{color:#fff;background-color:var(--navy);background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:56px 56px}
 .hero{padding:80px 20px 70px;text-align:center;background-image:radial-gradient(ellipse at 50% 0,#1a3472 0,transparent 65%),linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:auto,56px 56px,56px 56px}
 .pill{display:inline-flex;align-items:center;gap:10px;padding:10px 20px;border:1px solid rgba(255,255,255,.18);border-radius:99px;color:var(--gold);font-weight:600;font-size:.9rem;background:rgba(255,255,255,.04)}
@@ -47,7 +44,6 @@ svg{flex-shrink:0}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:760px;margin:56px auto 0}
 .st{background:#141d36;border:1px solid #263154;border-radius:28px;padding:30px 12px;text-align:center}
 .st svg{color:var(--gold)}.st b{display:block;font-size:2.6rem;line-height:1.2;margin:8px 0 2px}.st span{color:#8fa3d8;font-size:.95rem;font-weight:500}
-/* sections */
 .sec{padding:70px 20px;max-width:1040px;margin:0 auto;text-align:center}
 .alt{background:var(--bg)}
 .chip{display:inline-flex;align-items:center;gap:8px;background:var(--cream);color:var(--goldtx);font-weight:700;font-size:.9rem;padding:8px 20px;border-radius:99px}
@@ -65,7 +61,6 @@ svg{flex-shrink:0}
 .cta p{color:#b8c3de;max-width:600px;margin:0 auto 34px;line-height:2;font-size:1.05rem}
 .ev .meta{color:var(--mut);margin:12px 0;display:grid;gap:4px}.ev .meta span{display:flex;gap:10px;align-items:center}
 .ev .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-/* footer */
 footer{background:#070e22;color:#fff;padding:60px 22px 24px}
 .fw{max-width:1040px;margin:auto;display:grid;gap:36px}
 @media(min-width:800px){.fw{grid-template-columns:1.5fr 1fr 1.2fr}}
@@ -76,10 +71,10 @@ footer ul{padding:0}footer li{list-style:none;color:#b8c3de;padding:8px 0;displa
 footer li svg{color:var(--gold)}
 .soc{width:64px;height:64px;border-radius:18px;background:#141d36;display:flex;align-items:center;justify-content:center;margin-top:12px}
 .cr{border-top:1px solid #1b2547;margin:40px auto 0;max-width:1040px;padding-top:20px;color:#6f80ad;font-size:.85rem;text-align:center}
-/* page hero + forms */
 .ph{padding:70px 20px 70px;text-align:center}.ph h1{font-size:clamp(2.2rem,9vw,3.4rem);margin:22px 0 14px;font-weight:700}.ph p{color:#b8c3de;max-width:520px;margin:auto;line-height:2}
 .fcard{background:#fff;border:1px solid var(--bd);border-radius:40px;padding:34px 26px;max-width:640px;margin:-30px 16px 60px;box-shadow:0 20px 50px rgba(11,20,48,.08)}
 @media(min-width:700px){.fcard{margin:-30px auto 60px}}
+.fcard.fc2{margin:20px auto;width:calc(100% - 32px)}
 .fl{display:flex;align-items:center;gap:10px;font-weight:700;margin:22px 0 10px}.fl svg{color:#3b5bb5}
 input,select,textarea{font-family:inherit;width:100%;padding:15px 20px;border:1px solid var(--bd);border-radius:20px;background:#fff;color:var(--navy);font-size:1rem}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);border-color:var(--gold)}
@@ -91,12 +86,11 @@ textarea{min-height:150px;resize:vertical}
 .opt b{display:block}.opt small{color:var(--mut);display:block;line-height:1.8}
 .note{color:var(--mut);font-size:.85rem;margin-top:14px;line-height:1.9}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-/* admin */
 .ah{background:#fff;border-bottom:1px solid var(--bd);padding:14px 18px 0;position:sticky;top:0;z-index:20}
 .ar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .al{display:flex;align-items:center;gap:14px;font-weight:700;font-size:1.3rem}
 .al i{width:52px;height:52px;border-radius:16px;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center}
-.badge{background:var(--blue);color:var(--navy);font-weight:700;font-size:.85rem;padding:10px 20px;border-radius:99px}
+.badge{background:var(--blue);color:var(--navy);font-weight:700;font-size:.85rem;padding:6px 18px;border-radius:99px;display:inline-block}
 .out-b{color:var(--no);font-weight:700;background:none;border:0;display:flex;gap:8px;align-items:center;cursor:pointer;font-family:inherit;font-size:1rem}
 .tabs{display:flex;gap:10px;overflow-x:auto;padding:16px 0 14px}
 .tabs a{display:flex;align-items:center;gap:10px;white-space:nowrap;padding:12px 20px;border-radius:16px;background:var(--bg);font-weight:600;color:var(--navy2)}
@@ -127,16 +121,37 @@ td small{display:block;color:var(--mut)}
 .sr{position:relative;margin-bottom:12px}.sr svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:#9aa8c7}
 .sr input{padding-left:48px;border-radius:99px}
 .cnt{background:#d9f5ea;color:#0b7a5c;border-radius:99px;padding:2px 14px;font-size:1rem;margin-inline-start:10px}
-/* modal / toast */
 #modal{position:fixed;inset:0;background:rgba(7,14,34,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:16px}
 #modal .box{background:#fff;border-radius:30px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:28px;position:relative}
 .dl{display:grid;grid-template-columns:110px 1fr;gap:10px 14px;margin:16px 0}.dl dt{color:var(--mut)}.dl dd{margin:0;font-weight:600;word-break:break-word}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:12px;display:none;z-index:99;font-size:.9rem;max-width:90vw;text-align:center}
-/* chat */
+/* الاجتماعي */
+.ava{border-radius:50%;object-fit:cover;background:#dbe5fb;color:#27418f;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;text-transform:uppercase}
+.nb{background:var(--no);color:#fff;border-radius:99px;font-size:.75rem;font-style:normal;font-weight:700;padding:1px 9px;min-width:22px;text-align:center;display:inline-block}
+.dot{position:absolute;top:4px;left:4px;width:12px;height:12px;border-radius:50%;background:var(--no);border:2px solid #fff}
+.ct{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}
+.ct a{white-space:nowrap;display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:99px;background:var(--bg);font-weight:600}
+.ct a.on{background:var(--navy);color:#fff}
+.ci{display:flex;align-items:center;gap:14px;padding:14px 12px;border-bottom:1px solid var(--bd);border-radius:16px}
+.ci:hover{background:var(--bg)}
+.cm{flex:1;min-width:0}.cm b{display:block}.cm span{display:block;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.9rem}
+.cr2{display:flex;flex-direction:column;align-items:flex-end;gap:6px}.cr2 small{color:var(--mut)}
+.dh{display:flex;align-items:center;gap:12px;padding:6px 0}
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.mc{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;background:#fff;border:1px solid var(--bd);border-radius:24px;padding:20px 10px}
+.mc small{color:var(--mut)}.mc b{line-height:1.5}
+.pf .pb{height:150px;border-radius:0 0 40px 40px}
+.pc{max-width:560px;margin:-56px auto 0;text-align:center;padding:0 20px 20px;position:relative}
+.pa{position:relative;display:inline-block}
+.pa .ava{border:5px solid #fff;box-shadow:0 8px 24px rgba(11,20,48,.15)}
+.pc h1{font-size:1.7rem;margin:12px 0 4px}
+.bio{white-space:pre-wrap;line-height:2;margin:16px 0;color:var(--navy2)}
+.cam{position:absolute;bottom:2px;right:2px;width:40px;height:40px;border-radius:50%;background:var(--gold);color:var(--navy);display:flex;align-items:center;justify-content:center;cursor:pointer;border:3px solid #fff}
+/* محادثة */
 .chw{max-width:760px;margin:0 auto;padding:16px}
-.chat{display:flex;flex-direction:column;height:calc(100dvh - 110px);min-height:380px}
-.msgs{flex:1;overflow-y:auto;background:var(--bg);border:1px solid var(--bd);border-radius:26px;padding:14px;margin:12px 0;display:flex;flex-direction:column;gap:8px}
-.msg{display:flex;justify-content:flex-end}.msg.me{justify-content:flex-start}
+.chat{display:flex;flex-direction:column;height:calc(100dvh - 205px);min-height:360px}
+.msgs{flex:1;overflow-y:auto;background:var(--bg);border:1px solid var(--bd);border-radius:26px;padding:14px;margin:10px 0;display:flex;flex-direction:column;gap:8px}
+.msg{display:flex;justify-content:flex-end;align-items:flex-end;gap:8px}.msg.me{justify-content:flex-start}
 .mb{max-width:80%;background:#fff;border:1px solid var(--bd);border-radius:18px;padding:8px 14px;word-break:break-word;line-height:1.7}
 .msg.me .mb{background:var(--navy);color:#fff;border-color:var(--navy)}
 .mn{font-size:.72rem;font-weight:700;opacity:.7}.mt{font-size:.68rem;opacity:.7;margin-top:2px}.mt a{color:inherit}
@@ -153,8 +168,8 @@ td small{display:block;color:var(--mut)}
 
 <script>
 // ===== ضع بيانات مشروعك هنا (Project Settings > API) =====
-const SUPABASE_URL = 'https://qqmtuimijxcoixwuzmtt.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxbXR1aW1panhjb2l4d3V6bXR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MjQxMDUsImV4cCI6MjEwNzIwMDEwNX0.kfS3GT_GpGdEVtv5QP2_K8BAQfv3xr6xYq0aY5FSAys';
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
 // =========================================================
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = s => document.querySelector(s);
@@ -163,6 +178,9 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const safeUrl = u => /^https?:\/\//i.test(u || '') ? esc(u) : '';
 const emailOf = c => c.trim().toLowerCase() + '@lst.club';
 const ini = n => (n || '?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('');
+const av = (p, s = 44) => { const u = p && safeUrl(p.avatar_url);
+  return u ? `<img class="ava" style="width:${s}px;height:${s}px" src="${u}" alt="" loading="lazy">`
+    : `<span class="ava" style="width:${s}px;height:${s}px;font-size:${Math.round(s * .38)}px">${esc(ini(p?.full_name))}</span>`; };
 
 const I = {
 menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
@@ -202,7 +220,8 @@ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
 xc:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>',
 file:'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/>',
 chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M7 9h10M7 13h6"/>',
-save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/>'
+save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/>',
+camera:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/>'
 };
 const ic = (n, s = 22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n] || ''}</svg>`;
 
@@ -219,24 +238,41 @@ const ST = {pending:'قيد المراجعة', approved:'مقبول', rejected:'
 const cn = k => COMMS.find(c => c.k === k)?.t || '—';
 const DEF = {club_name:'LST Club', university:'جامعة عبد الحميد ابن باديس - مستغانم', about:'', email:'', phone:'', whatsapp:'', address:'', instagram:'', x_link:''};
 
-let me = null, S = {...DEF}, view = 'home', tab = 'ov', acts = [], counts = {}, mine = new Set(), chan = null, P = [], rf = 'all', mf = 'all';
+let me = null, S = {...DEF}, view = 'home', tab = 'ov', acts = [], counts = {}, mine = new Set(), chan = null, dmChan = null, curDM = null;
+let P = [], rf = 'all', mf = 'all', MB = {}, MBL = [], unread = 0;
 const loader = '<div class="mut c" style="padding:30px">جارٍ التحميل…</div>';
 const AP = () => P.filter(p => p.role !== 'admin');
 const isPast = a => a.event_date && new Date(a.event_date) < new Date(new Date().setHours(0,0,0,0));
 const fd = d => { if (!d) return 'يحدد لاحقاً'; const x = new Date(d), t = x.getHours() || x.getMinutes();
   return x.toLocaleDateString('ar-u-nu-latn', {dateStyle:'long'}) + (t ? ' • ' + x.toLocaleTimeString('ar-u-nu-latn', {hour:'2-digit', minute:'2-digit'}) : ''); };
 const hm = d => new Date(d).toLocaleTimeString('ar-u-nu-latn', {hour:'2-digit', minute:'2-digit'});
+const shortT = d => { const x = new Date(d); return x.toDateString() === new Date().toDateString() ? hm(d) : x.toLocaleDateString('ar-u-nu-latn', {day:'numeric', month:'short'}); };
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3400)}
 function nav(h){ if (location.hash === h) render(); else location.hash = h; }
 function leaveChat(){ if (chan) { sb.removeChannel(chan); chan = null; } }
 
 // ===== بيانات =====
+async function loadMembers(){
+  const {data} = await sb.from('public_profiles').select('*').order('full_name');
+  MBL = data || []; MB = {}; MBL.forEach(p => MB[p.id] = p);
+}
+async function refreshUnread(){
+  if (!me || me.status !== 'approved') return;
+  const {count} = await sb.from('dms').select('id', {count:'exact', head:true}).eq('receiver_id', me.id).is('read_at', null);
+  unread = count || 0; drawMenu();
+}
+function startRT(){
+  if (dmChan || !me) return;
+  dmChan = sb.channel('dm-' + me.id).on('postgres_changes', {event:'INSERT', schema:'public', table:'dms', filter:`receiver_id=eq.${me.id}`}, onDM).subscribe();
+}
+function stopRT(){ if (dmChan) { sb.removeChannel(dmChan); dmChan = null; } }
 async function loadMe(){
   const {data:{session}} = await sb.auth.getSession();
   if (!session) { me = null; return; }
   const {data} = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
   if (!data) { await sb.auth.signOut(); me = null; return; }
   me = data;
+  if (me.status === 'approved') { await Promise.all([loadMembers(), refreshUnread()]); startRT(); }
 }
 async function loadSettings(){
   const {data} = await sb.from('settings').select('*').eq('id', 1).maybeSingle();
@@ -252,17 +288,27 @@ async function loadP(){ const {data} = await sb.from('profiles').select('*').ord
 
 // ===== الهيكل =====
 const logo = () => `<span class="lg"><img src="logo.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none">${ic('flask',26)}</span></span>`;
+function drawMenu(){
+  if (!$('#mbtn')) return;
+  $('#mbtn').innerHTML = ic('menu', 30) + (unread ? '<i class="dot"></i>' : '');
+  const l = [['#home','الرئيسية'],['#events','الفعاليات والإعلانات']];
+  if (!me) l.push(['#join','انضم إلينا'],['#login','تسجيل الدخول']);
+  else if (me.status === 'approved') {
+    l.push(['#inbox','💬 الرسائل' + (unread ? ` (${unread})` : '')],['#members','👥 الأعضاء'],['#me','👤 ملفي الشخصي']);
+    if (me.role === 'admin') l.push(['#admin','لوحة الإدارة']);
+  }
+  $('#menu').innerHTML = l.map(([h,t]) => `<a href="${h}">${t}</a>`).join('') + (me ? '<button data-a="out" style="color:var(--no)">تسجيل الخروج</button>' : '');
+}
 function drawShell(){
   const adm = view === 'admin';
   document.body.classList.toggle('adm', adm);
   $('#hd').style.display = adm ? 'none' : 'flex';
   $('#ft').style.display = adm ? 'none' : 'block';
   if (adm) return;
-  $('#hd').innerHTML = `<a class="brand" href="#home">${logo()}<div class="bt"><b>${esc(S.club_name)}</b><span>${esc(S.university)}</span></div></a><button class="ib" data-a="menu" aria-label="القائمة">${ic('menu',30)}</button>`;
-  const l = [['#home','الرئيسية'],['#events','الفعاليات والإعلانات']];
-  if (!me) l.push(['#join','انضم إلينا'],['#login','تسجيل الدخول']);
-  else { if (me.status === 'approved') l.push(['#chat','💬 محادثة النادي']); if (me.role === 'admin') l.push(['#admin','لوحة الإدارة']); }
-  $('#menu').innerHTML = l.map(([h,t]) => `<a href="${h}">${t}</a>`).join('') + (me ? '<button data-a="out" style="color:var(--no)">تسجيل الخروج</button>' : '');
+  const mem = me && me.status === 'approved';
+  $('#hd').innerHTML = `<a class="brand" href="#home">${logo()}<div class="bt"><b>${esc(S.club_name)}</b><span>${esc(S.university)}</span></div></a>
+  <div class="ar" style="gap:4px;flex-wrap:nowrap">${mem ? `<a href="#me" aria-label="ملفي">${av(me,42)}</a>` : ''}<button class="ib" id="mbtn" data-a="menu" aria-label="القائمة" style="position:relative"></button></div>`;
+  drawMenu();
   const wa = (S.whatsapp || '').replace(/\D/g, '');
   $('#ft').innerHTML = `<div class="fw"><div><div class="brand">${logo()}<div class="bt"><b>${esc(S.club_name)}</b><span>${esc(S.university)}</span></div></div><p class="d">${esc(S.about)}</p></div>
   <div><h4>روابط سريعة</h4><ul><li><a href="#home">الرئيسية</a></li><li><a href="#events">الفعاليات والإعلانات</a></li><li><a href="#join">انضم إلينا</a></li><li><a href="#admin">لوحة الإدارة</a></li></ul></div>
@@ -273,13 +319,16 @@ function drawShell(){
 
 async function render(){
   leaveChat(); $('#menu').style.display = 'none';
-  let v = (location.hash || '#home').slice(1);
-  if (!['home','events','join','login','chat','admin','pending'].includes(v)) v = 'home';
-  if (!me) { if (['chat','admin','pending'].includes(v)) v = 'login'; }
+  const [v0, arg] = (location.hash || '#home').slice(1).split('/');
+  const MEM = ['chat','inbox','dm','members','u','me'];
+  let v = v0;
+  if (![...['home','events','join','login','admin','pending'], ...MEM].includes(v)) v = 'home';
+  if (!me) { if (['admin','pending', ...MEM].includes(v)) v = 'login'; }
   else if (me.status !== 'approved') { if (!['home','events'].includes(v)) v = 'pending'; }
   else { if (['join','login','pending'].includes(v)) v = 'home'; if (v === 'admin' && me.role !== 'admin') v = 'home'; }
   view = v; drawShell(); window.scrollTo(0, 0);
-  ({home:pHome, events:pEvents, join:pJoin, login:pLogin, chat:pChat, admin:pAdmin, pending:pPending})[v]();
+  const R = {home:pHome, events:pEvents, join:pJoin, login:pLogin, chat:pChat, admin:pAdmin, pending:pPending, inbox:pInbox, members:pMembers, me:pMe, dm:() => pDM(arg), u:() => pUser(arg)};
+  R[v]();
 }
 window.addEventListener('hashchange', render);
 
@@ -298,7 +347,7 @@ function evCard(a){
 
 // ===== الرئيسية =====
 async function pHome(){
-  const prim = me ? `<a class="btn gold" href="#chat">محادثة النادي${ic('arrow-left',22)}</a>` : `<a class="btn gold" href="#join">انضم إلى النادي${ic('arrow-left',22)}</a>`;
+  const prim = me ? `<a class="btn gold" href="#inbox">الرسائل والأعضاء${ic('arrow-left',22)}</a>` : `<a class="btn gold" href="#join">انضم إلى النادي${ic('arrow-left',22)}</a>`;
   main.innerHTML = `
   <section class="hero dark"><span class="pill">${ic('flask',18)} ${esc(S.club_name)} – ${esc(S.university)}</span>
    <h1>فضاء علمي يُطلق <em>طاقات الطلاب</em> نحو الابتكار والاكتشاف</h1>
@@ -325,7 +374,6 @@ async function pHome(){
   el.innerHTML = up.length ? `<div class="cards">${up.map(evCard).join('')}</div>` : '<p class="lead" style="margin:10px auto 30px">لا توجد فعاليات قادمة حالياً – تابعونا قريباً.</p>';
 }
 
-// ===== الفعاليات =====
 async function pEvents(){
   main.innerHTML = `<section class="dark ph"><span class="pill">${ic('calendar',18)} الفعاليات والإعلانات</span><h1>كل ما يحدث في النادي</h1><p>أيام مفتوحة وورش عمل ومحاضرات – تابع الجديد وسجّل مشاركتك.</p></section>
   <div class="sec" style="padding-top:36px"><div class="sr"><input id="q" placeholder="ابحث عن فعالية…">${ic('search',20)}</div><div class="cards" id="el">${loader}</div></div>`;
@@ -337,7 +385,7 @@ async function pEvents(){
   $('#q').oninput = draw; draw();
 }
 
-// ===== الانضمام =====
+// ===== الانضمام والدخول =====
 function pJoin(){
   main.innerHTML = `<section class="dark ph"><span class="pill">${ic('flask',18)} عضوية ${esc(S.club_name)}</span><h1>انضم إلينا</h1><p>خطوة واحدة تفصلك عن مجتمع علمي حيوي. املأ النموذج وسنعود إليك خلال أسبوع.</p></section>
   <form class="fcard" id="jf">
@@ -402,10 +450,122 @@ function pPending(){
   <button class="btn navy" data-a="refresh">تحديث الحالة</button> <button class="btn line" data-a="out">خروج</button></div>`;
 }
 
-// ===== المحادثة =====
+// ===== الأعضاء والملفات الشخصية =====
+const cts = a => `<div class="ct"><a href="#inbox" class="${a==='inbox'?'on':''}">الرسائل الخاصة${unread ? `<i class="nb">${unread}</i>` : ''}</a><a href="#chat" class="${a==='chat'?'on':''}">المحادثة الجماعية</a><a href="#members" class="${a==='members'?'on':''}">الأعضاء</a></div>`;
+
+function pMembers(){
+  main.innerHTML = `<div class="chw" style="max-width:900px">${cts('members')}<div class="sr"><input id="q" placeholder="ابحث عن عضو بالاسم أو القسم…">${ic('search',20)}</div>
+  <select id="fc" style="margin-bottom:14px"><option value="">كل اللجان</option>${COMMS.map(c => `<option value="${c.k}">${c.t}</option>`).join('')}</select><div class="mg" id="mg"></div></div>`;
+  const draw = () => { const q = $('#q').value.trim().toLowerCase(), c = $('#fc').value;
+    const l = MBL.filter(p => (!c || p.committee === c) && (!q || (p.full_name + ' ' + p.specialization).toLowerCase().includes(q)));
+    $('#mg').innerHTML = l.map(p => `<a class="mc" href="#u/${p.id}">${av(p,64)}<b>${esc(p.full_name)}</b><small>${esc(p.specialization)}${p.year ? ' · ' + esc(p.year) : ''}</small><span class="chip" style="font-size:.75rem;padding:4px 12px">${esc(cn(p.committee))}</span></a>`).join('') || '<p class="mut c" style="grid-column:1/-1;padding:30px">لا توجد نتائج</p>'; };
+  $('#q').oninput = draw; $('#fc').onchange = draw; draw();
+}
+
+function pUser(id){
+  const p = MB[id]; if (!p) return nav('#members');
+  const own = id === me.id;
+  main.innerHTML = `<div class="pf"><div class="pb dark"></div><div class="pc"><div class="pa">${av(p,112)}</div>
+  <h1>${esc(p.full_name)}</h1>${p.role === 'admin' ? '<span class="badge">مشرف</span>' : ''}
+  <p class="mut">${esc(p.specialization)}${p.year ? ' · ' + esc(p.year) : ''}</p><span class="chip" style="margin-top:8px">${esc(cn(p.committee))}</span>
+  <p class="bio">${esc(p.bio) || '<span class="mut">لا توجد نبذة بعد.</span>'}</p>
+  <p class="mut" style="font-size:.85rem;margin-bottom:18px">عضو منذ ${new Date(p.created_at).toLocaleDateString('ar-u-nu-latn', {dateStyle:'long'})}</p>
+  ${own ? `<a class="btn navy" href="#me">${ic('settings',18)} تعديل ملفي</a>` : `<a class="btn gold" href="#dm/${id}">${ic('send',18)} مراسلة</a>`}</div></div>`;
+}
+
+const sq = file => new Promise((res, rej) => {
+  const im = new Image(), u = URL.createObjectURL(file);
+  im.onload = () => { const s = Math.min(im.width, im.height), c = document.createElement('canvas'); c.width = c.height = 320;
+    c.getContext('2d').drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 320, 320);
+    URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(), 'image/jpeg', .85); };
+  im.onerror = rej; im.src = u; });
+
+function pMe(){
+  main.innerHTML = `<div class="pf"><div class="pb dark"></div><div class="pc"><div class="pa"><span id="avp">${av(me,112)}</span><label class="cam">${ic('camera',20)}<input type="file" id="avf" accept="image/*" hidden></label></div>
+  <h1>${esc(me.full_name)}</h1><p class="mut">${esc(me.specialization)}${me.year ? ' · ' + esc(me.year) : ''} · ${esc(cn(me.committee))}</p>
+  <a href="#u/${me.id}" style="color:var(--goldtx);font-weight:700;font-size:.9rem">عرض ملفي كما يراه الأعضاء</a></div></div>
+  <form class="fcard fc2" id="pfm"><div class="fl" style="margin-top:0">${ic('chat',20)}نبذة عنك (300 حرف)</div><textarea name="bio" maxlength="300" style="min-height:110px" placeholder="عرّف بنفسك واهتماماتك…">${esc(me.bio || '')}</textarea>
+  <div class="fl">${ic('phone',20)}رقم الجوال</div><input name="phone" type="tel" value="${esc(me.phone || '')}">
+  <button class="btn navy block" style="margin-top:20px">${ic('save',20)}حفظ</button></form>
+  <form class="fcard fc2" id="pwf"><div class="fl" style="margin-top:0">${ic('key',20)}تغيير كلمة المرور</div><input name="pw" type="password" minlength="6" placeholder="كلمة المرور الجديدة" autocomplete="new-password" required>
+  <button class="btn line block" style="margin-top:16px">تغيير</button></form>
+  <div class="c" style="margin-bottom:50px"><button class="btn line" data-a="out">${ic('logout',18)}تسجيل الخروج</button></div>`;
+  $('#avf').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    if (!f.type.startsWith('image/')) return toast('اختر صورة');
+    toast('جارٍ رفع الصورة…');
+    try {
+      const blob = await sq(f), path = `${me.id}/${Date.now()}.jpg`;
+      const up = await sb.storage.from('avatars').upload(path, blob, {contentType:'image/jpeg'});
+      if (up.error) throw up.error;
+      const url = sb.storage.from('avatars').getPublicUrl(path).data.publicUrl, old = me.avatar_url;
+      const r = await sb.rpc('update_my_profile', {p_bio: me.bio || '', p_avatar: url, p_phone: me.phone || ''});
+      if (r.error) throw r.error;
+      if (old) { const k = old.split('/avatars/')[1]; if (k) sb.storage.from('avatars').remove([k]); }
+      await loadMe(); drawShell(); if ($('#avp')) $('#avp').innerHTML = av(me, 112); toast('تم تحديث الصورة ✓');
+    } catch (err) { toast('تعذّر رفع الصورة'); }
+  };
+  $('#pfm').onsubmit = async e => {
+    e.preventDefault(); const f = e.target;
+    const r = await sb.rpc('update_my_profile', {p_bio: f.bio.value.trim(), p_avatar: me.avatar_url || '', p_phone: f.phone.value.trim()});
+    if (r.error) return toast('تعذّر الحفظ'); await loadMe(); toast('تم الحفظ ✓');
+  };
+  $('#pwf').onsubmit = async e => {
+    e.preventDefault(); const pw = e.target.pw.value; if (pw.length < 6) return toast('كلمة المرور قصيرة');
+    const {error} = await sb.auth.updateUser({password: pw}); toast(error ? 'تعذّر التغيير' : 'تم تغيير كلمة المرور ✓'); if (!error) e.target.reset();
+  };
+}
+
+// ===== الرسائل الخاصة =====
+const dmHTML = m => { const own = m.sender_id === me.id;
+  return `<div class="msg ${own ? 'me' : ''}" id="dm${m.id}"><div class="mb">${esc(m.content)}<div class="mt">${hm(m.created_at)}${own ? ` <a href="#" data-a="ddm" data-id="${m.id}">🗑</a>` : ''}</div></div></div>`; };
+function addDM(m){
+  const box = $('#mbox'); if (!box || $('#dm' + m.id)) return;
+  $('#empty')?.remove();
+  box.insertAdjacentHTML('beforeend', dmHTML(m)); box.scrollTop = box.scrollHeight;
+}
+async function onDM(p){
+  const m = p.new;
+  if (view === 'dm' && curDM === m.sender_id) { addDM(m); await sb.rpc('mark_read', {p_other: m.sender_id}); }
+  else { unread++; drawMenu(); if (view === 'inbox') pInbox(); else toast('💬 رسالة جديدة من ' + (MB[m.sender_id]?.full_name || 'عضو')); }
+}
+
+async function pInbox(){
+  main.innerHTML = `<div class="chw">${cts('inbox')}<div id="il">${loader}</div></div>`;
+  const {data} = await sb.from('dms').select('*').or(`sender_id.eq.${me.id},receiver_id.eq.${me.id}`).order('created_at', {ascending:false}).limit(500);
+  if (view !== 'inbox' || !$('#il')) return;
+  const conv = new Map();
+  (data || []).forEach(m => { const o = m.sender_id === me.id ? m.receiver_id : m.sender_id; let c = conv.get(o);
+    if (!c) { c = {o, last:m, un:0}; conv.set(o, c); } if (m.receiver_id === me.id && !m.read_at) c.un++; });
+  const l = [...conv.values()];
+  $('#il').innerHTML = l.length ? l.map(c => { const p = MB[c.o];
+    return `<a class="ci" href="#dm/${c.o}">${av(p,52)}<div class="cm"><b>${esc(p?.full_name || 'عضو')}</b><span>${c.last.sender_id === me.id ? 'أنت: ' : ''}${esc(c.last.content)}</span></div><div class="cr2"><small>${shortT(c.last.created_at)}</small>${c.un ? `<i class="nb">${c.un}</i>` : ''}</div></a>`; }).join('')
+    : '<div class="c mut" style="padding:40px;line-height:2.2">لا توجد محادثات بعد.<br>ابدأ من صفحة <a href="#members" style="color:var(--goldtx);font-weight:700">الأعضاء</a> وراسل أي عضو.</div>';
+}
+
+async function pDM(id){
+  const p = MB[id]; if (!p || id === me.id) return nav('#inbox');
+  curDM = id;
+  main.innerHTML = `<div class="chw"><div class="chat"><div class="dh"><a href="#inbox" class="ib" style="font-size:1.5rem">→</a><a href="#u/${id}" class="who">${av(p,46)}<div><b>${esc(p.full_name)}</b><small class="mut" style="display:block">${esc(cn(p.committee))}</small></div></a></div>
+  <div id="mbox" class="msgs">${loader}</div><form id="cf" class="cbar"><input name="t" maxlength="2000" placeholder="اكتب رسالة…" autocomplete="off" required><button class="btn gold">إرسال</button></form></div></div>`;
+  const {data} = await sb.from('dms').select('*').or(`and(sender_id.eq.${me.id},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${me.id})`).order('created_at', {ascending:false}).limit(150);
+  const box = $('#mbox'); if (!box || curDM !== id || view !== 'dm') return;
+  box.innerHTML = (data || []).length ? data.reverse().map(dmHTML).join('') : '<div class="c mut" id="empty" style="padding:30px">ابدأ المحادثة 👋</div>';
+  box.scrollTop = box.scrollHeight;
+  await sb.rpc('mark_read', {p_other: id}); refreshUnread();
+  $('#cf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, t = f.t.value.trim(); if (!t) return; f.t.value = '';
+    const {data, error} = await sb.from('dms').insert({receiver_id: id, content: t}).select().single();
+    if (error) { f.t.value = t; return toast('تعذّر الإرسال'); }
+    addDM(data);
+  };
+}
+
+// ===== المحادثة الجماعية =====
 function msgHTML(m){
-  const own = m.user_id === me.id;
-  return `<div class="msg ${own ? 'me' : ''}" id="msg${m.id}"><div class="mb"><div class="mn">${esc(own ? 'أنت' : (m.author_name || 'عضو'))}</div>${esc(m.content)}<div class="mt">${hm(m.created_at)}${(own || me.role === 'admin') ? ` <a href="#" data-a="dm" data-id="${m.id}">🗑</a>` : ''}</div></div></div>`;
+  const own = m.user_id === me.id, p = MB[m.user_id];
+  return `<div class="msg ${own ? 'me' : ''}" id="msg${m.id}">${!own ? `<a href="#u/${m.user_id}">${av(p || {full_name: m.author_name}, 34)}</a>` : ''}<div class="mb"><div class="mn">${own ? 'أنت' : `<a href="#u/${m.user_id}">${esc(m.author_name || 'عضو')}</a>`}</div>${esc(m.content)}
+  <div class="mt">${hm(m.created_at)}${(own || me.role === 'admin') ? ` <a href="#" data-a="dm" data-id="${m.id}">🗑</a>` : ''}</div></div></div>`;
 }
 function addMsg(m){
   const box = $('#mbox'); if (!box || $('#msg' + m.id)) return;
@@ -415,9 +575,9 @@ function addMsg(m){
   if (near || m.user_id === me.id) box.scrollTop = box.scrollHeight;
 }
 async function pChat(){
-  main.innerHTML = `<div class="chw"><div class="chat"><h2>💬 محادثة النادي</h2><div id="mbox" class="msgs">${loader}</div><form id="cf" class="cbar"><input name="t" maxlength="1000" placeholder="اكتب رسالة…" autocomplete="off" required><button class="btn gold">إرسال</button></form></div></div>`;
+  main.innerHTML = `<div class="chw">${cts('chat')}<div class="chat"><div id="mbox" class="msgs">${loader}</div><form id="cf" class="cbar"><input name="t" maxlength="1000" placeholder="اكتب رسالة للجميع…" autocomplete="off" required><button class="btn gold">إرسال</button></form></div></div>`;
   const {data} = await sb.from('messages').select('*').order('created_at', {ascending:false}).limit(100);
-  const box = $('#mbox'); if (!box) return;
+  const box = $('#mbox'); if (!box || view !== 'chat') return;
   box.innerHTML = (data || []).length ? data.reverse().map(msgHTML).join('') : '<div class="c mut" id="empty" style="padding:30px">ابدأ المحادثة 👋</div>';
   box.scrollTop = box.scrollHeight;
   chan = sb.channel('chat-room')
@@ -435,7 +595,7 @@ async function pChat(){
 // ===== لوحة الإدارة =====
 function pAdmin(){
   const tabs = [['ov','نظرة عامة','grid'],['rq','طلبات الانضمام','users'],['mb','أعضاء النادي','usercheck'],['ev','إدارة الفعاليات','calendar'],['st','الإعدادات','settings']];
-  main.innerHTML = `<div class="ah"><div class="ar"><div class="al"><i>${ic('flask',26)}</i>لوحة الإدارة</div><div class="ar" style="gap:14px"><span class="badge">مدير النظام</span><button class="out-b" data-a="out">${ic('logout',20)}خروج</button></div></div>
+  main.innerHTML = `<div class="ah"><div class="ar"><div class="al"><i>${ic('flask',26)}</i>لوحة الإدارة</div><div class="ar" style="gap:14px"><a class="badge" href="#home">الموقع</a><button class="out-b" data-a="out">${ic('logout',20)}خروج</button></div></div>
   <div class="tabs">${tabs.map(([k,t,i]) => `<a href="#admin" data-tab="${k}" class="${tab === k ? 'on' : ''}">${ic(i,20)}${t}</a>`).join('')}</div></div><div class="ac" id="ac">${loader}</div>`;
   adminTab();
 }
@@ -573,7 +733,7 @@ document.addEventListener('click', async e => {
   const a = el.dataset.a, id = el.dataset.id;
   if (a === 'menu') { const m = $('#menu'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; return; }
   if (a === 'mx') { $('#modal').style.display = 'none'; return; }
-  if (a === 'out') { await sb.auth.signOut(); me = null; await loadSettings(); nav('#home'); return; }
+  if (a === 'out') { await sb.auth.signOut(); me = null; stopRT(); unread = 0; MB = {}; MBL = []; await loadSettings(); nav('#home'); return; }
   if (a === 'refresh') { await loadMe(); return render(); }
   if (a === 'csv') return csv(el.dataset.w);
   if (a === 'join') {
@@ -582,6 +742,7 @@ document.addEventListener('click', async e => {
   }
   if (a === 'leave') { await sb.from('registrations').delete().eq('activity_id', +id).eq('user_id', me.id); toast('تم إلغاء التسجيل'); return render(); }
   if (a === 'dm') { const {error} = await sb.from('messages').delete().eq('id', id); if (error) return toast('تعذّر الحذف'); return $('#msg' + id)?.remove(); }
+  if (a === 'ddm') { const {error} = await sb.from('dms').delete().eq('id', id); if (error) return toast('تعذّر الحذف'); return $('#dm' + id)?.remove(); }
   if (a === 'view') return showP(id);
   if (a === 'appr' || a === 'rej') {
     if (a === 'rej' && !confirm('تأكيد الرفض / الإيقاف؟')) return;
