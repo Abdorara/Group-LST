@@ -3,328 +3,604 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>رواد العلوم والتكنولوجيا | LST Club</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<title>LST Club | جامعة عبد الحميد ابن باديس - مستغانم</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#f4f7fb;--card:#fff;--tx:#0f1b2d;--mut:#64748b;--pri:#2563eb;--pri2:#06b6d4;--bd:#e2e8f0;--ok:#16a34a;--no:#dc2626}
-[data-theme=dark]{--bg:#0b1220;--card:#131c2e;--tx:#e8eefc;--mut:#94a3b8;--bd:#1f2b44}
+:root{--navy:#0b1430;--navy2:#0f1a3a;--gold:#d4a72c;--goldtx:#8a6a12;--cream:#f8efd2;--bg:#f2f5fb;--bd:#dbe3f0;--mut:#5f6f8f;--blue:#e9effb;--ok:#0f9d78;--no:#e11d48;--warn:#d97706}
 *{box-sizing:border-box;margin:0}
-body{font-family:Cairo,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
-nav{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:10px 16px;gap:8px;flex-wrap:wrap}
-.logo{font-weight:800;font-size:1.1rem;background:linear-gradient(90deg,var(--pri),var(--pri2));-webkit-background-clip:text;color:transparent;cursor:pointer}
-.nav-r{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-main{max-width:980px;margin:0 auto;padding:18px 14px 60px}
-button{font-family:inherit;border:0;border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;background:var(--pri);color:#fff;font-size:.9rem}
-button.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
-button.ok{background:var(--ok)}button.no{background:var(--no)}
-button:disabled{opacity:.5}
-input,select,textarea{font-family:inherit;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:.95rem}
-label{display:block;font-size:.85rem;color:var(--mut);margin:10px 0 4px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px}
-.hero{text-align:center;padding:46px 18px;border-radius:22px;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff}
-.hero h1{font-size:1.9rem;margin-bottom:10px}.hero p{opacity:.92;max-width:520px;margin:0 auto 20px;line-height:1.9}
-.hero button{background:#fff;color:var(--pri);margin:4px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:14px}
-.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.75rem;background:color-mix(in srgb,var(--pri) 15%,transparent);color:var(--pri);font-weight:600}
-.mut{color:var(--mut);font-size:.85rem}
-.form{max-width:440px;margin:30px auto}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.tabs{display:flex;gap:6px;margin:14px 0;flex-wrap:wrap}
-.tabs button{background:var(--card);color:var(--tx);border:1px solid var(--bd)}
-.tabs button.on{background:var(--pri);color:#fff}
-.tools{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}.tools>*{flex:1;min-width:140px}
-.item{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-.center{text-align:center;padding:40px 10px}
-.banner{background:color-mix(in srgb,var(--pri) 12%,transparent);border:1px solid var(--pri);border-radius:12px;padding:10px 14px;margin:14px 0;font-size:.9rem}
-.sec{margin:26px 0 4px;font-size:1.2rem}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:12px;display:none;z-index:99;font-size:.9rem}
+html{scroll-behavior:smooth}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:#fff;color:var(--navy);line-height:1.7}
+body.adm{background:var(--bg)}
+a{color:inherit;text-decoration:none}
+svg{flex-shrink:0}
+.mut{color:var(--mut)}.c{text-align:center}
+/* header */
+#hd{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;padding:12px 18px}
+.brand{display:flex;align-items:center;gap:14px}
+.lg{width:52px;height:52px;border-radius:16px;border:1px solid var(--bd);background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--navy)}
+.lg img{width:100%;height:100%;object-fit:contain}
+.bt b{display:block;font-size:1.2rem;font-weight:700;line-height:1.3}
+.bt span{display:block;font-size:.85rem;color:var(--mut)}
+.ib{background:none;border:0;color:inherit;padding:8px;cursor:pointer;font-family:inherit}
+#menu{position:fixed;top:78px;left:0;right:0;z-index:29;background:#fff;border-bottom:1px solid var(--bd);box-shadow:0 12px 30px rgba(11,20,48,.12);display:none;padding:6px 18px 14px}
+#menu a,#menu button{display:block;width:100%;text-align:right;padding:13px 6px;font-size:1rem;font-weight:500;border:0;background:none;border-bottom:1px solid var(--bd);font-family:inherit;color:var(--navy);cursor:pointer}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;font-weight:700;font-size:1rem;border:1px solid transparent;border-radius:16px;padding:14px 26px;cursor:pointer;transition:.15s}
+.btn.gold{background:var(--gold);color:var(--navy);box-shadow:0 10px 24px rgba(212,167,44,.28)}
+.btn.out{background:rgba(255,255,255,.04);color:#fff;border-color:rgba(255,255,255,.18)}
+.btn.line{background:#fff;color:var(--navy);border-color:var(--bd)}
+.btn.navy{background:var(--navy);color:#fff}
+.btn.ok{background:var(--ok);color:#fff}.btn.no{background:var(--no);color:#fff}
+.btn.sm{padding:7px 14px;font-size:.85rem;border-radius:12px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.55}
+/* dark + hero */
+.dark{color:#fff;background-color:var(--navy);background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:56px 56px}
+.hero{padding:80px 20px 70px;text-align:center;background-image:radial-gradient(ellipse at 50% 0,#1a3472 0,transparent 65%),linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:auto,56px 56px,56px 56px}
+.pill{display:inline-flex;align-items:center;gap:10px;padding:10px 20px;border:1px solid rgba(255,255,255,.18);border-radius:99px;color:var(--gold);font-weight:600;font-size:.9rem;background:rgba(255,255,255,.04)}
+.hero h1{font-size:clamp(2.2rem,9vw,3.8rem);line-height:1.4;font-weight:700;margin:26px 0 20px}
+.hero h1 em,.cta h2 em{font-style:normal;color:var(--gold)}
+.hero h1 em{display:block}
+.hero p{color:#b8c3de;font-size:1.1rem;max-width:620px;margin:0 auto 34px;line-height:2}
+.hbtn{display:flex;flex-direction:column;gap:14px;max-width:520px;margin:0 auto}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:760px;margin:56px auto 0}
+.st{background:#141d36;border:1px solid #263154;border-radius:28px;padding:30px 12px;text-align:center}
+.st svg{color:var(--gold)}.st b{display:block;font-size:2.6rem;line-height:1.2;margin:8px 0 2px}.st span{color:#8fa3d8;font-size:.95rem;font-weight:500}
+/* sections */
+.sec{padding:70px 20px;max-width:1040px;margin:0 auto;text-align:center}
+.alt{background:var(--bg)}
+.chip{display:inline-flex;align-items:center;gap:8px;background:var(--cream);color:var(--goldtx);font-weight:700;font-size:.9rem;padding:8px 20px;border-radius:99px}
+.sec h2{font-size:clamp(1.9rem,7vw,2.8rem);line-height:1.4;margin:22px 0 14px;font-weight:700}
+.lead{color:var(--mut);font-size:1.1rem;max-width:640px;margin:0 auto 38px;line-height:2}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;text-align:right}
+.cd{background:#fff;border:1px solid var(--bd);border-radius:30px;padding:32px 30px;box-shadow:0 8px 24px rgba(11,20,48,.06)}
+.ico{width:60px;height:60px;border-radius:18px;background:var(--blue);color:var(--navy);display:flex;align-items:center;justify-content:center;margin-bottom:34px}
+.ico.g{background:var(--cream);color:var(--goldtx)}
+.ico.ok{background:#e6f8f2;color:var(--ok)}.ico.warn{background:#fff6e0;color:var(--warn)}.ico.no{background:#fde8ee;color:var(--no)}
+.cd h3{font-size:1.4rem;margin-bottom:10px;font-weight:700}.cd p{color:var(--mut);line-height:2}
+.call{background:var(--navy2);color:#fff;border-radius:30px;padding:36px 30px;margin-top:22px;text-align:right}
+.call h3{font-size:1.5rem;margin-bottom:10px}.call p{color:#b8c3de;margin-bottom:28px;line-height:2}
+.cta{padding:90px 20px;text-align:center}.cta h2{font-size:clamp(2rem,8vw,3.2rem);line-height:1.5;margin-bottom:18px}
+.cta p{color:#b8c3de;max-width:600px;margin:0 auto 34px;line-height:2;font-size:1.05rem}
+.ev .meta{color:var(--mut);margin:12px 0;display:grid;gap:4px}.ev .meta span{display:flex;gap:10px;align-items:center}
+.ev .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+/* footer */
+footer{background:#070e22;color:#fff;padding:60px 22px 24px}
+.fw{max-width:1040px;margin:auto;display:grid;gap:36px}
+@media(min-width:800px){.fw{grid-template-columns:1.5fr 1fr 1.2fr}}
+footer .bt span{color:#7f90bd}
+footer p.d{color:#8fa3d8;line-height:2.1;margin:22px 0}
+footer h4{font-size:1.15rem;margin-bottom:12px}
+footer ul{padding:0}footer li{list-style:none;color:#b8c3de;padding:8px 0;display:flex;align-items:center;gap:12px}
+footer li svg{color:var(--gold)}
+.soc{width:64px;height:64px;border-radius:18px;background:#141d36;display:flex;align-items:center;justify-content:center;margin-top:12px}
+.cr{border-top:1px solid #1b2547;margin:40px auto 0;max-width:1040px;padding-top:20px;color:#6f80ad;font-size:.85rem;text-align:center}
+/* page hero + forms */
+.ph{padding:70px 20px 70px;text-align:center}.ph h1{font-size:clamp(2.2rem,9vw,3.4rem);margin:22px 0 14px;font-weight:700}.ph p{color:#b8c3de;max-width:520px;margin:auto;line-height:2}
+.fcard{background:#fff;border:1px solid var(--bd);border-radius:40px;padding:34px 26px;max-width:640px;margin:-30px 16px 60px;box-shadow:0 20px 50px rgba(11,20,48,.08)}
+@media(min-width:700px){.fcard{margin:-30px auto 60px}}
+.fl{display:flex;align-items:center;gap:10px;font-weight:700;margin:22px 0 10px}.fl svg{color:#3b5bb5}
+input,select,textarea{font-family:inherit;width:100%;padding:15px 20px;border:1px solid var(--bd);border-radius:20px;background:#fff;color:var(--navy);font-size:1rem}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);border-color:var(--gold)}
+textarea{min-height:150px;resize:vertical}
+.opt{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--bd);border-radius:22px;padding:18px 20px;margin-bottom:12px;cursor:pointer}
+.opt input{display:none}.opt .rd{width:24px;height:24px;border:2px solid #9aa8c7;border-radius:50%;flex-shrink:0;margin-top:2px}
+.opt:has(input:checked){border-color:var(--gold);background:#fffaf0}
+.opt:has(input:checked) .rd{border-color:var(--gold);background:radial-gradient(var(--gold) 45%,transparent 50%)}
+.opt b{display:block}.opt small{color:var(--mut);display:block;line-height:1.8}
+.note{color:var(--mut);font-size:.85rem;margin-top:14px;line-height:1.9}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* admin */
+.ah{background:#fff;border-bottom:1px solid var(--bd);padding:14px 18px 0;position:sticky;top:0;z-index:20}
+.ar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.al{display:flex;align-items:center;gap:14px;font-weight:700;font-size:1.3rem}
+.al i{width:52px;height:52px;border-radius:16px;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center}
+.badge{background:var(--blue);color:var(--navy);font-weight:700;font-size:.85rem;padding:10px 20px;border-radius:99px}
+.out-b{color:var(--no);font-weight:700;background:none;border:0;display:flex;gap:8px;align-items:center;cursor:pointer;font-family:inherit;font-size:1rem}
+.tabs{display:flex;gap:10px;overflow-x:auto;padding:16px 0 14px}
+.tabs a{display:flex;align-items:center;gap:10px;white-space:nowrap;padding:12px 20px;border-radius:16px;background:var(--bg);font-weight:600;color:var(--navy2)}
+.tabs a.on{background:var(--navy);color:#fff}
+.ac{max-width:1000px;margin:auto;padding:26px 16px 70px}
+.ac h1{font-size:2rem;font-weight:700;line-height:1.4}.ac .sub{color:var(--mut);margin:4px 0 20px}
+.pan{background:#fff;border:1px solid var(--bd);border-radius:30px;padding:26px 22px;margin-bottom:20px;box-shadow:0 8px 24px rgba(11,20,48,.05);display:block}
+.pan h3{display:flex;align-items:center;gap:14px;font-size:1.3rem;margin-bottom:20px}
+.pan h3 i{width:50px;height:50px;border-radius:15px;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#3b5bb5;font-style:normal}
+.pan h3 i.g{background:var(--cream);color:var(--goldtx)}
+.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:30px;padding:26px 24px;box-shadow:0 8px 24px rgba(11,20,48,.05)}
+.kpi .ico{margin-bottom:22px}.kpi b{display:block;font-size:2.6rem;line-height:1.2}.kpi span{color:var(--mut);font-weight:500}
+.br{margin-bottom:18px}.br .t{display:flex;justify-content:space-between;font-weight:600;margin-bottom:8px}
+.br .tr{height:12px;background:var(--blue);border-radius:99px;overflow:hidden}.br .tr i{display:block;height:100%;background:linear-gradient(90deg,#5a7bd0,var(--navy2));border-radius:99px}
+.tw{overflow-x:auto;background:#fff;border:1px solid var(--bd);border-radius:26px}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th{background:#f7f9fd;color:var(--mut);font-weight:600;text-align:right;padding:16px 20px;font-size:.95rem}
+td{padding:16px 20px;border-top:1px solid var(--bd);text-align:right;vertical-align:middle}
+td small{display:block;color:var(--mut)}
+.who{display:flex;align-items:center;gap:14px}
+.av{width:50px;height:50px;border-radius:50%;background:#dbe5fb;color:#27418f;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-transform:uppercase}
+.st2{display:inline-block;padding:4px 14px;border-radius:99px;font-weight:700;font-size:.8rem;white-space:nowrap}
+.s-pending{background:#fff3d6;color:#92600a}.s-approved{background:#d9f5ea;color:#0b7a5c}.s-rejected{background:#fde2e8;color:#be123c}
+.fc{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.fc button{font-family:inherit;border:1px solid var(--bd);background:#fff;border-radius:99px;padding:10px 20px;font-weight:600;cursor:pointer;color:var(--navy)}
+.fc button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sr{position:relative;margin-bottom:12px}.sr svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:#9aa8c7}
+.sr input{padding-left:48px;border-radius:99px}
+.cnt{background:#d9f5ea;color:#0b7a5c;border-radius:99px;padding:2px 14px;font-size:1rem;margin-inline-start:10px}
+/* modal / toast */
+#modal{position:fixed;inset:0;background:rgba(7,14,34,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:16px}
+#modal .box{background:#fff;border-radius:30px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:28px;position:relative}
+.dl{display:grid;grid-template-columns:110px 1fr;gap:10px 14px;margin:16px 0}.dl dt{color:var(--mut)}.dl dd{margin:0;font-weight:600;word-break:break-word}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:12px;display:none;z-index:99;font-size:.9rem;max-width:90vw;text-align:center}
 /* chat */
-.chat{display:flex;flex-direction:column;height:calc(100dvh - 130px);min-height:360px}
-.msgs{flex:1;overflow-y:auto;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px;margin:10px 0;display:flex;flex-direction:column;gap:8px}
-.msg{display:flex}.msg.me{justify-content:flex-end}
-.mb{max-width:80%;background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:8px 12px;word-break:break-word;line-height:1.7}
-.msg.me .mb{background:var(--pri);color:#fff;border-color:var(--pri)}
-.mn{font-size:.72rem;font-weight:700;opacity:.75}
-.mt{font-size:.68rem;opacity:.7;margin-top:2px}
-.mt a{color:inherit;text-decoration:none}
-.cbar{display:flex;gap:8px}.cbar input{flex:1}
+.chw{max-width:760px;margin:0 auto;padding:16px}
+.chat{display:flex;flex-direction:column;height:calc(100dvh - 110px);min-height:380px}
+.msgs{flex:1;overflow-y:auto;background:var(--bg);border:1px solid var(--bd);border-radius:26px;padding:14px;margin:12px 0;display:flex;flex-direction:column;gap:8px}
+.msg{display:flex;justify-content:flex-end}.msg.me{justify-content:flex-start}
+.mb{max-width:80%;background:#fff;border:1px solid var(--bd);border-radius:18px;padding:8px 14px;word-break:break-word;line-height:1.7}
+.msg.me .mb{background:var(--navy);color:#fff;border-color:var(--navy)}
+.mn{font-size:.72rem;font-weight:700;opacity:.7}.mt{font-size:.68rem;opacity:.7;margin-top:2px}.mt a{color:inherit}
+.cbar{display:flex;gap:8px}.cbar input{flex:1;border-radius:99px}
 </style>
 </head>
 <body>
-<nav><div class="logo" data-go="home">🔬 رواد العلوم والتكنولوجيا</div><div class="nav-r" id="navr"></div></nav>
+<header id="hd"></header>
+<div id="menu"></div>
 <main id="main"></main>
+<footer id="ft"></footer>
+<div id="modal"></div>
 <div id="toast"></div>
 
 <script>
 // ===== ضع بيانات مشروعك هنا (Project Settings > API) =====
-const SUPABASE_URL = 'https://qqmtuimijxcoixwuzmtt.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxbXR1aW1panhjb2l4d3V6bXR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MjQxMDUsImV4cCI6MjEwNzIwMDEwNX0.kfS3GT_GpGdEVtv5QP2_K8BAQfv3xr6xYq0aY5FSAys';
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
 // =========================================================
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = s => document.querySelector(s);
 const main = $('#main');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = u => /^https?:\/\//i.test(u || '') ? esc(u) : '';
 const emailOf = c => c.trim().toLowerCase() + '@lst.club';
-const fmt = d => d ? new Date(d).toLocaleString('ar-u-nu-latn', {dateStyle:'medium', timeStyle:'short'}) : 'يحدد لاحقاً';
+const ini = n => (n || '?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('');
+
+const I = {
+menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+flask:'<path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7M7 16h10"/>',
+calendar:'<path d="M8 2v4M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+graduation:'<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+trophy:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+code:'<path d="m18 16 4-4-4-4M6 8l-4 4 4 4M14.5 4l-5 16"/>',
+palette:'<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+pen:'<path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/><path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18M2.3 2.3l7.286 7.286"/><circle cx="11" cy="11" r="2"/>',
+megaphone:'<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+bulb:'<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/>',
+rocket:'<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+'arrow-left':'<path d="m12 19-7-7 7-7M19 12H5"/>',
+mail:'<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
+msg:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+insta:'<rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/>',
+user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+badge:'<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>',
+send:'<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+sparkles:'<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+grid:'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+usercheck:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/>',
+download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+calplus:'<path d="M8 2v4M16 2v4M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8M3 10h18M16 19h6M19 16v6"/>',
+ext:'<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+building:'<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+key:'<path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+check:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+xc:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>',
+file:'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/>',
+chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M7 9h10M7 13h6"/>',
+save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/>'
+};
+const ic = (n, s = 22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n] || ''}</svg>`;
+
+const STATS = [['calendar','40+','فعالية سنوياً'],['users','350+','عضو فعّال'],['graduation','8','أقسام علمية'],['trophy','12','جائزة ومرتبة']];
+const COMMS = [
+ {k:'tech',t:'التقنية والبرمجة',i:'code',d:'تطوير المواقع والتطبيقات، البرمجة التنافسية، وتطبيقات الذكاء الاصطناعي.'},
+ {k:'media',t:'الإعلام والتصميم',i:'palette',d:'الهوية البصرية، تصميم المنشورات، التصوير، وإدارة منصات النادي.'},
+ {k:'logistics',t:'اللوجستيات والتجهيزات',i:'pen',d:'تجهيز القاعات والمعدات والدعم الميداني لإنجاح الفعاليات.'},
+ {k:'events',t:'تنظيم الفعاليات',i:'megaphone',d:'تخطيط الأيام المفتوحة والورش والمسابقات العلمية وإدارتها.'},
+ {k:'research',t:'البحث العلمي',i:'flask',d:'حلقات النقاش، الورقات البحثية، ودعم مشاريع التخرج المبتكرة.'}];
+const DEPTS = ['علوم الحاسب','هندسة المعلومات','الهندسة الكهربائية','الهندسة المدنية','الطب البشري','الصيدلة','إدارة الأعمال','الرياضيات'];
+const YEARS = ['السنة الأولى','السنة الثانية','السنة الثالثة','السنة الرابعة','السنة الخامسة','دراسات عليا'];
+const ST = {pending:'قيد المراجعة', approved:'مقبول', rejected:'مرفوض'};
+const cn = k => COMMS.find(c => c.k === k)?.t || '—';
+const DEF = {club_name:'LST Club', university:'جامعة عبد الحميد ابن باديس - مستغانم', about:'', email:'', phone:'', whatsapp:'', address:'', instagram:'', x_link:''};
+
+let me = null, S = {...DEF}, view = 'home', tab = 'ov', acts = [], counts = {}, mine = new Set(), chan = null, P = [], rf = 'all', mf = 'all';
+const loader = '<div class="mut c" style="padding:30px">جارٍ التحميل…</div>';
+const AP = () => P.filter(p => p.role !== 'admin');
+const isPast = a => a.event_date && new Date(a.event_date) < new Date(new Date().setHours(0,0,0,0));
+const fd = d => { if (!d) return 'يحدد لاحقاً'; const x = new Date(d), t = x.getHours() || x.getMinutes();
+  return x.toLocaleDateString('ar-u-nu-latn', {dateStyle:'long'}) + (t ? ' • ' + x.toLocaleTimeString('ar-u-nu-latn', {hour:'2-digit', minute:'2-digit'}) : ''); };
 const hm = d => new Date(d).toLocaleTimeString('ar-u-nu-latn', {hour:'2-digit', minute:'2-digit'});
-const CATS = ['ورشة','محاضرة','مسابقة','رحلة علمية','مشروع بحثي','أخرى'];
-let me = null, view = 'home', tab = 'req', acts = [], counts = {}, mine = new Set(), chan = null;
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3400)}
+function nav(h){ if (location.hash === h) render(); else location.hash = h; }
+function leaveChat(){ if (chan) { sb.removeChannel(chan); chan = null; } }
 
-function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3200)}
-function go(v){view=v;render();window.scrollTo(0,0)}
-const loader = '<div class="center mut">جارٍ التحميل…</div>';
-function leaveChat(){if(chan){sb.removeChannel(chan);chan=null}}
-
-const th = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
-document.documentElement.dataset.theme = th;
-function toggleTheme(){const n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;localStorage.setItem('theme',n)}
-
+// ===== بيانات =====
 async function loadMe(){
   const {data:{session}} = await sb.auth.getSession();
-  if(!session){me=null;return}
-  const {data} = await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
-  if(!data){await sb.auth.signOut();me=null;return}
+  if (!session) { me = null; return; }
+  const {data} = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+  if (!data) { await sb.auth.signOut(); me = null; return; }
   me = data;
 }
-
-function renderNav(){
-  let h='<button class="ghost" data-a="theme">🌓</button><button class="ghost" data-go="acts">الأنشطة</button>';
-  if(!me) h+='<button class="ghost" data-go="login">دخول</button><button data-go="register">تسجيل</button>';
-  else{
-    if(me.status==='approved'){
-      h+='<button class="ghost" data-go="chat">💬 المحادثة</button>';
-      if(me.role==='admin') h+='<button class="ghost" data-go="admin">الإدارة</button>';
-    }
-    h+='<button class="ghost" data-a="out">خروج</button>';
-  }
-  $('#navr').innerHTML=h;
+async function loadSettings(){
+  const {data} = await sb.from('settings').select('*').eq('id', 1).maybeSingle();
+  S = {...DEF}; if (data) for (const k in data) if (data[k] != null && data[k] !== '') S[k] = data[k];
 }
-
-function render(){
-  leaveChat();
-  renderNav();
-  if(me && me.status!=='approved') return renderPending();
-  if(me && ['login','register'].includes(view)) view='acts';
-  if(me && view==='home') view='acts';
-  if(!me && ['admin','chat'].includes(view)) view='home';
-  if(view==='home') renderHome();
-  else if(view==='login') renderLogin();
-  else if(view==='register') renderRegister();
-  else if(view==='acts') renderActs();
-  else if(view==='chat') renderChat();
-  else if(view==='admin' && me?.role==='admin') renderAdmin();
-  else go('acts');
-}
-
-// ===== الأنشطة (عامة) =====
 async function loadActs(){
-  const [a,c]=await Promise.all([
-    sb.from('activities').select('*').order('event_date',{ascending:true}),
-    sb.rpc('activity_counts')]);
-  acts=a.data||[];counts={};(c.data||[]).forEach(x=>counts[x.activity_id]=Number(x.n));
-  mine=new Set();
-  if(me){const r=await sb.from('registrations').select('activity_id').eq('user_id',me.id);mine=new Set((r.data||[]).map(x=>x.activity_id))}
+  const [a, c] = await Promise.all([sb.from('activities').select('*').order('event_date', {ascending:true}), sb.rpc('activity_counts')]);
+  acts = a.data || []; counts = {}; (c.data || []).forEach(x => counts[x.activity_id] = Number(x.n));
+  mine = new Set();
+  if (me && me.status === 'approved') { const r = await sb.from('registrations').select('activity_id').eq('user_id', me.id); mine = new Set((r.data || []).map(x => x.activity_id)); }
 }
-function drawActs(){
-  const q=($('#q')?.value||'').trim().toLowerCase(),cat=$('#cat')?.value||'';
-  const list=acts.filter(a=>(!cat||a.category===cat)&&(!q||(a.title+' '+(a.description||'')).toLowerCase().includes(q)));
-  $('#ag').innerHTML=list.length?list.map(a=>{
-    const n=counts[a.id]||0,full=a.capacity&&n>=a.capacity,joined=mine.has(a.id);
-    const btn=!me?'<button class="ghost" data-go="login">سجّل الدخول للمشاركة</button>'
-      :joined?`<button class="ghost" data-a="leave" data-id="${a.id}">إلغاء التسجيل ✓</button>`
-      :full?'<button disabled>اكتمل العدد</button>':`<button data-a="join" data-id="${a.id}">سجّل في النشاط</button>`;
-    return `<div class="card"><span class="chip">${esc(a.category||'نشاط')}</span>
-    <h3 style="margin:8px 0">${esc(a.title)}</h3>
-    <p class="mut" style="line-height:1.8">${esc(a.description)}</p>
-    <p class="mut" style="margin-top:8px">📅 ${fmt(a.event_date)}<br>📍 ${esc(a.location||'—')}<br>👥 ${n}${a.capacity?' / '+a.capacity:''} مسجّل</p>
-    <div class="row">${btn}</div></div>`;
-  }).join(''):'<div class="center mut" style="grid-column:1/-1">لا توجد أنشطة مطابقة.</div>';
-}
-async function renderActs(){
-  main.innerHTML=loader;
-  await loadActs();
-  main.innerHTML=`<h2>الأنشطة</h2>
-  ${me?`<p class="mut">مرحباً ${esc(me.full_name)} 👋</p>`:'<div class="banner">الأنشطة متاحة للجميع. للتسجيل فيها والدخول للمحادثة <a href="#" data-go="register">أنشئ حساباً</a>.</div>'}
-  <div class="tools"><input id="q" placeholder="🔍 ابحث عن نشاط…">
-  <select id="cat"><option value="">كل التصنيفات</option>${CATS.map(x=>`<option>${x}</option>`).join('')}</select></div>
-  <div class="grid" id="ag"></div>`;
-  $('#q').oninput=drawActs;$('#cat').onchange=drawActs;drawActs();
+async function loadP(){ const {data} = await sb.from('profiles').select('*').order('created_at', {ascending:false}); P = data || []; }
+
+// ===== الهيكل =====
+const logo = () => `<span class="lg"><img src="logo.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none">${ic('flask',26)}</span></span>`;
+function drawShell(){
+  const adm = view === 'admin';
+  document.body.classList.toggle('adm', adm);
+  $('#hd').style.display = adm ? 'none' : 'flex';
+  $('#ft').style.display = adm ? 'none' : 'block';
+  if (adm) return;
+  $('#hd').innerHTML = `<a class="brand" href="#home">${logo()}<div class="bt"><b>${esc(S.club_name)}</b><span>${esc(S.university)}</span></div></a><button class="ib" data-a="menu" aria-label="القائمة">${ic('menu',30)}</button>`;
+  const l = [['#home','الرئيسية'],['#events','الفعاليات والإعلانات']];
+  if (!me) l.push(['#join','انضم إلينا'],['#login','تسجيل الدخول']);
+  else { if (me.status === 'approved') l.push(['#chat','💬 محادثة النادي']); if (me.role === 'admin') l.push(['#admin','لوحة الإدارة']); }
+  $('#menu').innerHTML = l.map(([h,t]) => `<a href="${h}">${t}</a>`).join('') + (me ? '<button data-a="out" style="color:var(--no)">تسجيل الخروج</button>' : '');
+  const wa = (S.whatsapp || '').replace(/\D/g, '');
+  $('#ft').innerHTML = `<div class="fw"><div><div class="brand">${logo()}<div class="bt"><b>${esc(S.club_name)}</b><span>${esc(S.university)}</span></div></div><p class="d">${esc(S.about)}</p></div>
+  <div><h4>روابط سريعة</h4><ul><li><a href="#home">الرئيسية</a></li><li><a href="#events">الفعاليات والإعلانات</a></li><li><a href="#join">انضم إلينا</a></li><li><a href="#admin">لوحة الإدارة</a></li></ul></div>
+  <div><h4>تواصل معنا</h4><ul>${S.email?`<li>${ic('mail',22)}${esc(S.email)}</li>`:''}${S.phone?`<li>${ic('phone',22)}${esc(S.phone)}</li>`:''}${wa?`<li>${ic('msg',22)}<a href="https://wa.me/${wa}" target="_blank" rel="noopener">مراسلة واتساب</a></li>`:''}${S.address?`<li>${ic('pin',22)}${esc(S.address)}</li>`:''}</ul>
+  ${safeUrl(S.instagram)?`<a class="soc" href="${safeUrl(S.instagram)}" target="_blank" rel="noopener" aria-label="انستغرام">${ic('insta',26)}</a>`:''}</div></div>
+  <div class="cr">© ${new Date().getFullYear()} ${esc(S.university)}. جميع الحقوق محفوظة.</div>`;
 }
 
-async function renderHome(){
-  main.innerHTML=`<div class="hero"><h1>رواد العلوم والتكنولوجيا</h1>
-  <p>مجتمع طلابي يصنع فضاءً علمياً يُطلق طاقات الطلبة: ورش، فعاليات، مشاريع بحثية ولجان متخصصة.</p>
-  <button data-go="register">انضم الآن</button><button data-go="login">تسجيل الدخول</button></div>
-  <h2 class="sec">📅 أحدث الأنشطة</h2><div class="grid" id="ag">${loader}</div>`;
-  await loadActs();
-  if(view==='home'&&$('#ag')){acts=acts.slice(0,6);drawActs()}
+async function render(){
+  leaveChat(); $('#menu').style.display = 'none';
+  let v = (location.hash || '#home').slice(1);
+  if (!['home','events','join','login','chat','admin','pending'].includes(v)) v = 'home';
+  if (!me) { if (['chat','admin','pending'].includes(v)) v = 'login'; }
+  else if (me.status !== 'approved') { if (!['home','events'].includes(v)) v = 'pending'; }
+  else { if (['join','login','pending'].includes(v)) v = 'home'; if (v === 'admin' && me.role !== 'admin') v = 'home'; }
+  view = v; drawShell(); window.scrollTo(0, 0);
+  ({home:pHome, events:pEvents, join:pJoin, login:pLogin, chat:pChat, admin:pAdmin, pending:pPending})[v]();
+}
+window.addEventListener('hashchange', render);
+
+// ===== بطاقة الفعالية =====
+function evCard(a){
+  const n = counts[a.id] || 0, past = isPast(a), full = a.capacity && n >= a.capacity, joined = mine.has(a.id);
+  let b = '';
+  if (safeUrl(a.reg_link)) b += `<a class="btn gold sm" target="_blank" rel="noopener" href="${safeUrl(a.reg_link)}">رابط التسجيل ${ic('ext',16)}</a>`;
+  if (!past) {
+    if (!me) b += `<a class="btn line sm" href="#login">سجّل الدخول للمشاركة</a>`;
+    else if (me.status === 'approved') b += joined ? `<button class="btn line sm" data-a="leave" data-id="${a.id}">إلغاء التسجيل ✓</button>` : full ? '<button class="btn line sm" disabled>اكتمل العدد</button>' : `<button class="btn navy sm" data-a="join" data-id="${a.id}">سجّل في الفعالية</button>`;
+  }
+  return `<div class="cd ev"><span class="chip">${past ? 'انتهت' : 'قادمة'}</span><h3 style="margin-top:14px">${esc(a.title)}</h3><p>${esc(a.description)}</p>
+  <div class="meta"><span>${ic('calendar',18)}${fd(a.event_date)}</span>${a.location ? `<span>${ic('pin',18)}${esc(a.location)}</span>` : ''}<span>${ic('users',18)}${n}${a.capacity ? ' / ' + a.capacity : ''} مسجّل</span></div><div class="row">${b}</div></div>`;
 }
 
-// ===== الدخول والتسجيل =====
-function renderLogin(){
-  main.innerHTML=`<form class="card form" id="lf"><h2>تسجيل الدخول</h2>
-  <label>رقم بطاقة الطالب</label><input name="card" required autocomplete="username">
-  <label>كلمة المرور</label><input name="pw" type="password" required autocomplete="current-password">
-  <div class="row"><button style="flex:1">دخول</button></div>
-  <p class="mut" style="margin-top:12px">ليس لديك حساب؟ <a href="#" data-go="register">سجّل الآن</a></p></form>`;
-  $('#lf').onsubmit=async e=>{
-    e.preventDefault();const f=e.target,b=f.querySelector('button');b.disabled=true;
-    const {error}=await sb.auth.signInWithPassword({email:emailOf(f.card.value),password:f.pw.value});
-    b.disabled=false;
-    if(error) return toast('رقم البطاقة أو كلمة المرور غير صحيحة');
-    await loadMe();view='acts';render();
+// ===== الرئيسية =====
+async function pHome(){
+  const prim = me ? `<a class="btn gold" href="#chat">محادثة النادي${ic('arrow-left',22)}</a>` : `<a class="btn gold" href="#join">انضم إلى النادي${ic('arrow-left',22)}</a>`;
+  main.innerHTML = `
+  <section class="hero dark"><span class="pill">${ic('flask',18)} ${esc(S.club_name)} – ${esc(S.university)}</span>
+   <h1>فضاء علمي يُطلق <em>طاقات الطلاب</em> نحو الابتكار والاكتشاف</h1>
+   <p>نحن مجتمع طلابي متعدد التخصصات ننظم ورش العمل والأيام المفتوحة والمسابقات العلمية، ونرافقك من فكرة مشروعك الأولى حتى منصة التتويج.</p>
+   <div class="hbtn">${prim}<a class="btn out" href="#events">${ic('calendar',22)}استعرض الفعاليات</a></div>
+   <div class="stats">${STATS.map(([i,n,l]) => `<div class="st">${ic(i,34)}<b>${n}</b><span>${l}</span></div>`).join('')}</div></section>
+  <section class="sec"><span class="chip">${ic('sparkles',18)}لجاننا</span><h2>اختر اللجنة التي تشبه شغفك</h2>
+   <p class="lead">خمس لجان متخصصة تعمل جنباً إلى جنب – اختر ما يناسب مهاراتك أو جرّب مجالاً جديداً بالكامل.</p>
+   <div class="cards">${COMMS.map(c => `<div class="cd"><div class="ico">${ic(c.i,28)}</div><h3>${c.t}</h3><p>${c.d}</p></div>`).join('')}</div>
+   ${me ? '' : `<div class="call"><h3>لم تجد ما يناسبك؟</h3><p>سارع بالتقديم وسنراجع طلبك ونرشح لك اللجنة الأقرب لميولك.</p><a class="btn gold" href="#join">قدّم طلبك الآن ${ic('arrow-left',20)}</a></div>`}</section>
+  <div class="alt"><section class="sec"><span class="chip">${ic('sparkles',18)}رسالتنا</span><h2>نصنع تجربة علمية متكاملة</h2>
+   <p class="lead">ثلاث ركائز تحكم كل ما نفعله داخل النادي، من أول اجتماع إلى آخر فعالية في الموسم.</p>
+   <div class="cards">
+    <div class="cd"><div class="ico g">${ic('bulb',28)}</div><h3>الفضول أولاً</h3><p>نطرح الأسئلة الجريئة ونبحث عن إجاباتها بمنهجية علمية، ونشجع كل عضو على استكشاف ما يثير فضوله.</p></div>
+    <div class="cd"><div class="ico g">${ic('users',28)}</div><h3>التعلم بالممارسة</h3><p>لا نكتفي بالنظريات؛ نبني مشاريع حقيقية وننظم فعاليات ميدانية يديرها الأعضاء بأنفسهم.</p></div>
+    <div class="cd"><div class="ico g">${ic('rocket',28)}</div><h3>أثر ممتد</h3><p>مخرجاتنا تتجاوز أسوار الجامعة: مسابقات مفتوحة، أوراق طلابية، ومبادرات تخدم المجتمع.</p></div></div></section></div>
+  <section class="sec"><span class="chip">${ic('sparkles',18)}الأحداث القادمة</span><h2>لا تفوّت القادم في أجندتنا</h2>
+   <p class="lead">أيام مفتوحة وورش عمل ومحاضرات – الفعاليات مفتوحة للجميع وبعضها يتطلب تسجيلاً مسبقاً.</p>
+   <div id="up">${loader}</div><a class="btn line" href="#events" style="margin-top:20px">كل الفعاليات والإعلانات ${ic('arrow-left',20)}</a></section>
+  ${me ? '' : `<section class="cta dark"><h2>مقعدك في ${esc(S.club_name)} <em>محجوز لك</em></h2><p>التقديم مفتوح طوال الفصل الدراسي، وتستقبل اللجان أعضاءها الجدد في بداية كل شهر. املأ النموذج في أقل من دقيقتين.</p><a class="btn gold" href="#join">${ic('users',22)}ابدأ طلب الانضمام</a></section>`}`;
+  await loadActs();
+  const el = $('#up'); if (!el || view !== 'home') return;
+  const up = acts.filter(a => !isPast(a)).slice(0, 3);
+  el.innerHTML = up.length ? `<div class="cards">${up.map(evCard).join('')}</div>` : '<p class="lead" style="margin:10px auto 30px">لا توجد فعاليات قادمة حالياً – تابعونا قريباً.</p>';
+}
+
+// ===== الفعاليات =====
+async function pEvents(){
+  main.innerHTML = `<section class="dark ph"><span class="pill">${ic('calendar',18)} الفعاليات والإعلانات</span><h1>كل ما يحدث في النادي</h1><p>أيام مفتوحة وورش عمل ومحاضرات – تابع الجديد وسجّل مشاركتك.</p></section>
+  <div class="sec" style="padding-top:36px"><div class="sr"><input id="q" placeholder="ابحث عن فعالية…">${ic('search',20)}</div><div class="cards" id="el">${loader}</div></div>`;
+  await loadActs();
+  const draw = () => { const q = $('#q').value.trim().toLowerCase();
+    const l = acts.filter(a => !q || (a.title + ' ' + (a.description || '')).toLowerCase().includes(q));
+    const up = l.filter(a => !isPast(a)), pa = l.filter(isPast).reverse();
+    $('#el').innerHTML = [...up, ...pa].map(evCard).join('') || '<p class="lead" style="grid-column:1/-1">لا توجد فعاليات حالياً – تابعونا قريباً.</p>'; };
+  $('#q').oninput = draw; draw();
+}
+
+// ===== الانضمام =====
+function pJoin(){
+  main.innerHTML = `<section class="dark ph"><span class="pill">${ic('flask',18)} عضوية ${esc(S.club_name)}</span><h1>انضم إلينا</h1><p>خطوة واحدة تفصلك عن مجتمع علمي حيوي. املأ النموذج وسنعود إليك خلال أسبوع.</p></section>
+  <form class="fcard" id="jf">
+   <div class="fl" style="margin-top:0">${ic('user',20)}الاسم الكامل</div><input name="fullname" required placeholder="مثال: عبدالله محمد السالم">
+   <div class="fl">${ic('badge',20)}الرقم الجامعي</div><input name="card" required placeholder="مثال: 202304567" autocomplete="username">
+   <div class="fl">${ic('phone',20)}رقم الجوال / واتساب</div><input name="phone" type="tel" required placeholder="05xxxxxxxx">
+   <div class="fl">${ic('graduation',20)}القسم / التخصص</div><select name="dept" required><option value="">اختر القسم</option>${DEPTS.map(d => `<option>${d}</option>`).join('')}</select>
+   <div class="fl">${ic('graduation',20)}السنة الدراسية</div><select name="year" required><option value="">اختر السنة</option>${YEARS.map(d => `<option>${d}</option>`).join('')}</select>
+   <div class="fl">${ic('key',20)}كلمة المرور (6 أحرف على الأقل)</div><input name="pw" type="password" required autocomplete="new-password">
+   <div class="fl">${ic('file',20)}شهادة الجامعة (صورة أو PDF، حتى 5MB)</div><input name="cert" type="file" accept="image/*,application/pdf" required>
+   <div class="fl">${ic('users',20)}اللجنة المفضلة</div>
+   ${COMMS.map(c => `<label class="opt"><span class="rd"></span><div><b>${c.t}</b><small>${c.d}</small></div><input type="radio" name="comm" value="${c.k}" required></label>`).join('')}
+   <div class="fl">${ic('chat',20)}لماذا تريد الانضمام إلى النادي؟</div><textarea name="why" required placeholder="حدثنا عن شغفك، مهاراتك، وما تتطلع لإضافته أو تعلمه في النادي…"></textarea>
+   <div class="note" id="cnt">0 / 20 حرفاً كحد أدنى</div>
+   <button class="btn gold block" style="margin-top:22px">إرسال طلب الانضمام ${ic('send',20)}</button>
+   <p class="note">بإرسالك الطلب فأنت توافق على أن يتواصل معك فريق النادي بشأن طلب عضويتك. بياناتك محفوظة ولن تُستخدم لأي غرض آخر.</p></form>`;
+  const f = $('#jf');
+  f.why.oninput = () => $('#cnt').textContent = `${f.why.value.trim().length} / 20 حرفاً كحد أدنى`;
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const v = n => f[n].value.trim(), card = v('card'), phone = v('phone').replace(/\s/g, ''), pw = f.pw.value, file = f.cert.files[0], why = v('why');
+    if (!/^[A-Za-z0-9]{4,20}$/.test(card)) return toast('الرقم الجامعي: 4 إلى 20 حرفاً/رقماً إنجليزياً');
+    if (!/^\+?\d{9,15}$/.test(phone)) return toast('رقم الجوال غير صالح');
+    if (pw.length < 6) return toast('كلمة المرور قصيرة');
+    if (!f.comm.value) return toast('اختر لجنة');
+    if (why.length < 20) return toast('اكتب 20 حرفاً على الأقل في سبب الانضمام');
+    if (!file) return toast('ارفع شهادة الجامعة');
+    if (file.size > 5 * 1024 * 1024) return toast('حجم الملف أكبر من 5MB');
+    const b = f.querySelector('button.gold'); b.disabled = true;
+    const reset = () => b.disabled = false;
+    const {data, error} = await sb.auth.signUp({email: emailOf(card), password: pw});
+    if (error) { reset(); return toast(/registered/i.test(error.message) ? 'الرقم الجامعي مسجّل مسبقاً' : error.message); }
+    if (!data.session) { reset(); return toast('عطّل تأكيد البريد في إعدادات Supabase Auth'); }
+    const uid = data.user.id, ext = (file.name.split('.').pop() || 'jpg').toLowerCase(), path = `${uid}/certificate.${ext}`;
+    const up = await sb.storage.from('certificates').upload(path, file);
+    if (up.error) { await sb.auth.signOut(); reset(); return toast('فشل رفع الشهادة، حاول مجدداً'); }
+    const ins = await sb.from('profiles').insert({id: uid, full_name: v('fullname'), specialization: f.dept.value, year: f.year.value, card_no: card, phone, committee: f.comm.value, motivation: why, certificate_url: path});
+    if (ins.error) { await sb.auth.signOut(); reset(); return toast('تعذّر حفظ البيانات'); }
+    await loadMe(); nav('#pending');
   };
 }
 
-function renderRegister(){
-  main.innerHTML=`<form class="card form" id="rf"><h2>طلب انضمام</h2>
-  <p class="mut">بعد التسجيل ينتظر حسابك موافقة الإدارة.</p>
-  <label>الاسم الكامل</label><input name="name" required>
-  <label>التخصص</label><input name="spec" required>
-  <label>رقم بطاقة الطالب</label><input name="card" required placeholder="أحرف وأرقام إنجليزية فقط">
-  <label>كلمة المرور (6 أحرف على الأقل)</label><input name="pw" type="password" required autocomplete="new-password">
-  <label>شهادة الجامعة (صورة أو PDF، حتى 5MB)</label><input name="cert" type="file" accept="image/*,application/pdf" required>
-  <div class="row"><button style="flex:1">إرسال الطلب</button></div>
-  <p class="mut" style="margin-top:12px">لديك حساب؟ <a href="#" data-go="login">دخول</a></p></form>`;
-  $('#rf').onsubmit=async e=>{
-    e.preventDefault();const f=e.target,b=f.querySelector('button');
-    const name=f.name.value.trim(),spec=f.spec.value.trim(),card=f.card.value.trim(),pw=f.pw.value,file=f.cert.files[0];
-    if(!/^[A-Za-z0-9]{4,20}$/.test(card)) return toast('رقم البطاقة: 4 إلى 20 حرفاً/رقماً إنجليزياً');
-    if(pw.length<6) return toast('كلمة المرور قصيرة');
-    if(!file) return toast('ارفع شهادة الجامعة');
-    if(file.size>5*1024*1024) return toast('حجم الملف أكبر من 5MB');
-    b.disabled=true;b.textContent='جارٍ الإرسال…';
-    const reset=()=>{b.disabled=false;b.textContent='إرسال الطلب'};
-    const {data,error}=await sb.auth.signUp({email:emailOf(card),password:pw});
-    if(error){reset();return toast(/registered/i.test(error.message)?'رقم البطاقة مسجّل مسبقاً':error.message)}
-    if(!data.session){reset();return toast('عطّل تأكيد البريد في إعدادات Supabase Auth')}
-    const uid=data.user.id,ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-    const up=await sb.storage.from('certificates').upload(`${uid}/certificate.${ext}`,file);
-    if(up.error){await sb.auth.signOut();reset();return toast('فشل رفع الشهادة، حاول مجدداً')}
-    const ins=await sb.from('profiles').insert({id:uid,full_name:name,specialization:spec,card_no:card,certificate_url:`${uid}/certificate.${ext}`});
-    if(ins.error){await sb.auth.signOut();reset();return toast('تعذّر حفظ البيانات')}
-    await loadMe();render();
+function pLogin(){
+  main.innerHTML = `<section class="dark ph"><span class="pill">${ic('key',18)} دخول الأعضاء</span><h1>تسجيل الدخول</h1><p>ادخل برقمك الجامعي وكلمة المرور.</p></section>
+  <form class="fcard" id="lf"><div class="fl" style="margin-top:0">${ic('badge',20)}الرقم الجامعي</div><input name="card" required autocomplete="username">
+  <div class="fl">${ic('key',20)}كلمة المرور</div><input name="pw" type="password" required autocomplete="current-password">
+  <button class="btn gold block" style="margin-top:26px">دخول</button>
+  <p class="note">ليس لديك حساب؟ <a href="#join" style="color:var(--goldtx);font-weight:700">انضم إلينا</a></p></form>`;
+  $('#lf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, b = f.querySelector('button'); b.disabled = true;
+    const {error} = await sb.auth.signInWithPassword({email: emailOf(f.card.value), password: f.pw.value});
+    b.disabled = false;
+    if (error) return toast('الرقم الجامعي أو كلمة المرور غير صحيحة');
+    await loadMe(); nav(me?.role === 'admin' ? '#admin' : '#home');
   };
 }
 
-function renderPending(){
-  const rej=me.status==='rejected';
-  main.innerHTML=`<div class="card form center"><div style="font-size:3rem">${rej?'❌':'⏳'}</div>
-  <h2>${rej?'تم رفض طلبك':'طلبك قيد المراجعة'}</h2>
-  <p class="mut" style="margin-top:8px">${rej?'تواصل مع إدارة النادي لمعرفة السبب.':'ستتمكن من المحادثة والتسجيل في الأنشطة فور موافقة الإدارة.'}</p>
-  <div class="row" style="justify-content:center"><button data-a="refresh">تحديث الحالة</button></div></div>`;
+function pPending(){
+  const rej = me.status === 'rejected';
+  main.innerHTML = `<section class="dark ph" style="padding-bottom:90px"><span class="pill">${ic('flask',18)} ${esc(S.club_name)}</span><h1>${rej ? 'تم رفض طلبك' : 'طلبك قيد المراجعة'}</h1></section>
+  <div class="fcard c"><div style="font-size:3rem">${rej ? '❌' : '⏳'}</div><p class="mut" style="margin:10px 0 22px;line-height:2">${rej ? 'تواصل مع إدارة النادي لمعرفة السبب.' : 'ستتمكن من المحادثة والتسجيل في الفعاليات فور موافقة الإدارة.'}</p>
+  <button class="btn navy" data-a="refresh">تحديث الحالة</button> <button class="btn line" data-a="out">خروج</button></div>`;
 }
 
 // ===== المحادثة =====
 function msgHTML(m){
-  const own=m.user_id===me.id;
-  return `<div class="msg ${own?'me':''}" id="msg${m.id}"><div class="mb"><div class="mn">${esc(own?'أنت':(m.author_name||'عضو'))}</div>${esc(m.content)}
-  <div class="mt">${hm(m.created_at)}${(own||me.role==='admin')?` <a href="#" data-a="dm" data-id="${m.id}">🗑</a>`:''}</div></div></div>`;
+  const own = m.user_id === me.id;
+  return `<div class="msg ${own ? 'me' : ''}" id="msg${m.id}"><div class="mb"><div class="mn">${esc(own ? 'أنت' : (m.author_name || 'عضو'))}</div>${esc(m.content)}<div class="mt">${hm(m.created_at)}${(own || me.role === 'admin') ? ` <a href="#" data-a="dm" data-id="${m.id}">🗑</a>` : ''}</div></div></div>`;
 }
 function addMsg(m){
-  const box=$('#mbox');if(!box||$('#msg'+m.id))return;
+  const box = $('#mbox'); if (!box || $('#msg' + m.id)) return;
   $('#empty')?.remove();
-  const near=box.scrollHeight-box.scrollTop-box.clientHeight<140;
-  box.insertAdjacentHTML('beforeend',msgHTML(m));
-  if(near||m.user_id===me.id)box.scrollTop=box.scrollHeight;
+  const near = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+  box.insertAdjacentHTML('beforeend', msgHTML(m));
+  if (near || m.user_id === me.id) box.scrollTop = box.scrollHeight;
 }
-async function renderChat(){
-  main.innerHTML=`<div class="chat"><h2>💬 محادثة النادي</h2><div id="mbox" class="msgs">${loader}</div>
-  <form id="cf" class="cbar"><input name="t" maxlength="1000" placeholder="اكتب رسالة…" autocomplete="off" required><button>إرسال</button></form></div>`;
-  const {data}=await sb.from('messages').select('*').order('created_at',{ascending:false}).limit(100);
-  const box=$('#mbox');if(!box)return;
-  box.innerHTML=(data||[]).length?(data).reverse().map(msgHTML).join(''):'<div class="center mut" id="empty">ابدأ المحادثة 👋</div>';
-  box.scrollTop=box.scrollHeight;
-  chan=sb.channel('chat-room')
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},p=>addMsg(p.new))
-    .on('postgres_changes',{event:'DELETE',schema:'public',table:'messages'},p=>$('#msg'+p.old.id)?.remove())
+async function pChat(){
+  main.innerHTML = `<div class="chw"><div class="chat"><h2>💬 محادثة النادي</h2><div id="mbox" class="msgs">${loader}</div><form id="cf" class="cbar"><input name="t" maxlength="1000" placeholder="اكتب رسالة…" autocomplete="off" required><button class="btn gold">إرسال</button></form></div></div>`;
+  const {data} = await sb.from('messages').select('*').order('created_at', {ascending:false}).limit(100);
+  const box = $('#mbox'); if (!box) return;
+  box.innerHTML = (data || []).length ? data.reverse().map(msgHTML).join('') : '<div class="c mut" id="empty" style="padding:30px">ابدأ المحادثة 👋</div>';
+  box.scrollTop = box.scrollHeight;
+  chan = sb.channel('chat-room')
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'messages'}, p => addMsg(p.new))
+    .on('postgres_changes', {event:'DELETE', schema:'public', table:'messages'}, p => $('#msg' + p.old.id)?.remove())
     .subscribe();
-  $('#cf').onsubmit=async e=>{
-    e.preventDefault();const f=e.target,t=f.t.value.trim();if(!t)return;f.t.value='';
-    const {data,error}=await sb.from('messages').insert({content:t}).select().single();
-    if(error){f.t.value=t;return toast('تعذّر الإرسال')}
+  $('#cf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, t = f.t.value.trim(); if (!t) return; f.t.value = '';
+    const {data, error} = await sb.from('messages').insert({content: t}).select().single();
+    if (error) { f.t.value = t; return toast('تعذّر الإرسال'); }
     addMsg(data);
   };
 }
 
-// ===== الإدارة =====
-async function renderAdmin(){
-  main.innerHTML=`<h2>لوحة الإدارة</h2>
-  <div class="tabs"><button data-tab="req" class="${tab==='req'?'on':''}">طلبات الانضمام</button>
-  <button data-tab="act" class="${tab==='act'?'on':''}">الأنشطة</button>
-  <button data-tab="mem" class="${tab==='mem'?'on':''}">الأعضاء</button></div><div id="ad">${loader}</div>`;
-  if(tab==='req'){
-    const {data}=await sb.from('profiles').select('*').eq('status','pending').order('created_at');
-    $('#ad').innerHTML=(data||[]).length?data.map(p=>`<div class="card item"><div><b>${esc(p.full_name)}</b>
-    <div class="mut">${esc(p.specialization)} • بطاقة: ${esc(p.card_no)}</div></div>
-    <div class="row" style="margin:0"><button class="ghost" data-a="cert" data-p="${esc(p.certificate_url)}">الشهادة</button>
-    <button class="ok" data-a="appr" data-id="${p.id}">قبول</button><button class="no" data-a="rej" data-id="${p.id}">رفض</button></div></div>`).join('')
-    :'<div class="center mut">لا توجد طلبات جديدة 🎉</div>';
-  }else if(tab==='act'){
-    const {data}=await sb.from('activities').select('*').order('created_at',{ascending:false});
-    $('#ad').innerHTML=`<form class="card" id="af"><h3>نشاط جديد</h3>
-    <label>العنوان</label><input name="title" required>
-    <label>الوصف</label><textarea name="desc" rows="3"></textarea>
-    <label>التصنيف</label><select name="cat">${CATS.map(x=>`<option>${x}</option>`).join('')}</select>
-    <label>التاريخ والوقت</label><input name="date" type="datetime-local">
-    <label>المكان</label><input name="loc">
-    <label>عدد المقاعد (اتركه فارغاً لغير محدود)</label><input name="cap" type="number" min="1">
-    <div class="row"><button>نشر النشاط</button></div></form><div style="margin-top:16px">
-    ${(data||[]).map(a=>`<div class="card" style="margin-bottom:10px"><div class="item"><div><b>${esc(a.title)}</b>
-    <div class="mut">${esc(a.category||'')} • ${fmt(a.event_date)}</div></div>
-    <div class="row" style="margin:0"><button class="ghost" data-a="regs" data-id="${a.id}">المسجلون</button>
-    <button class="no" data-a="del" data-id="${a.id}">حذف</button></div></div><div id="rg${a.id}" class="mut"></div></div>`).join('')}</div>`;
-    $('#af').onsubmit=async e=>{
-      e.preventDefault();const f=e.target;
-      const {error}=await sb.from('activities').insert({title:f.title.value.trim(),description:f.desc.value.trim(),category:f.cat.value,
-        event_date:f.date.value?new Date(f.date.value).toISOString():null,location:f.loc.value.trim(),capacity:f.cap.value?+f.cap.value:null});
-      if(error) return toast('تعذّر النشر');toast('تم نشر النشاط ✓');renderAdmin();
-    };
-  }else{
-    const {data}=await sb.from('profiles').select('*').eq('status','approved').order('full_name');
-    $('#ad').innerHTML=`<p class="mut">عدد الأعضاء: ${(data||[]).length}</p><div class="tools"><input id="mq" placeholder="🔍 ابحث بالاسم أو رقم البطاقة"></div><div id="mlist"></div>`;
-    const draw=()=>{const q=$('#mq').value.trim().toLowerCase();
-      $('#mlist').innerHTML=(data||[]).filter(p=>(p.full_name+p.card_no).toLowerCase().includes(q)).map(p=>`<div class="card item"><div><b>${esc(p.full_name)}</b>
-      <div class="mut">${esc(p.specialization)} • ${esc(p.card_no)}</div></div>${p.role==='admin'?'<span class="chip">مشرف</span>':`<button class="no" data-a="rej" data-id="${p.id}">إيقاف</button>`}</div>`).join('')};
-    $('#mq').oninput=draw;draw();
-  }
+// ===== لوحة الإدارة =====
+function pAdmin(){
+  const tabs = [['ov','نظرة عامة','grid'],['rq','طلبات الانضمام','users'],['mb','أعضاء النادي','usercheck'],['ev','إدارة الفعاليات','calendar'],['st','الإعدادات','settings']];
+  main.innerHTML = `<div class="ah"><div class="ar"><div class="al"><i>${ic('flask',26)}</i>لوحة الإدارة</div><div class="ar" style="gap:14px"><span class="badge">مدير النظام</span><button class="out-b" data-a="out">${ic('logout',20)}خروج</button></div></div>
+  <div class="tabs">${tabs.map(([k,t,i]) => `<a href="#admin" data-tab="${k}" class="${tab === k ? 'on' : ''}">${ic(i,20)}${t}</a>`).join('')}</div></div><div class="ac" id="ac">${loader}</div>`;
+  adminTab();
+}
+async function adminTab(){
+  document.querySelectorAll('.tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
+  const ac = $('#ac'); if (!ac) return; ac.innerHTML = loader;
+  if (['ov','rq','mb'].includes(tab)) await loadP();
+  if (!$('#ac')) return;
+  ({ov:tOv, rq:tRq, mb:tMb, ev:tEv, st:tSt})[tab]();
+}
+const kpi = (i, c, n, l) => `<div class="kpi"><div class="ico ${c}">${ic(i,28)}</div><b>${n}</b><span>${l}</span></div>`;
+
+async function tOv(){
+  await loadActs();
+  const a = AP(), c = s => a.filter(p => p.status === s).length, dep = {};
+  a.forEach(p => dep[p.specialization] = (dep[p.specialization] || 0) + 1);
+  const mx = Math.max(1, ...Object.values(dep));
+  $('#ac').innerHTML = `<h1>نظرة عامة</h1><p class="sub">ملخص حالة الانضمام والفعاليات – بيانات محدّثة لحظياً</p>
+  <a class="btn navy" href="#admin" data-tab="rq" style="margin-bottom:20px">${ic('users',20)}إدارة الطلبات</a>
+  <div class="kg">${kpi('users','',a.length,'إجمالي المتقدمين')}${kpi('check','ok',c('approved'),'أعضاء مقبولون')}${kpi('clock','warn',c('pending'),'طلبات قيد المراجعة')}${kpi('xc','no',c('rejected'),'طلبات مرفوضة')}</div>
+  <div class="pan"><h3><i>${ic('graduation',24)}</i>المتقدمون حسب القسم</h3>${Object.keys(dep).length ? Object.entries(dep).map(([k,n]) => `<div class="br"><div class="t"><span>${esc(k)}</span><span>${n}</span></div><div class="tr"><i style="width:${n / mx * 100}%"></i></div></div>`).join('') : '<p class="mut">لا توجد بيانات بعد.</p>'}</div>
+  <div class="pan"><h3><i class="g">${ic('calendar',24)}</i>لمحة سريعة</h3><div class="ar" style="background:var(--blue);border-radius:18px;padding:16px 20px;margin-bottom:14px"><b style="color:#27418f">فعاليات قادمة</b><b style="font-size:1.6rem">${acts.filter(x => !isPast(x)).length}</b></div>
+  ${COMMS.map(x => `<div class="ar" style="padding:8px 4px"><span>${x.t}</span><span class="mut">${a.filter(p => p.committee === x.k).length} متقدم</span></div>`).join('')}
+  <a href="#admin" data-tab="ev" style="font-weight:700;display:inline-flex;gap:8px;margin-top:10px">${ic('ext',18)}إدارة الفعاليات</a></div>
+  <div class="pan"><div class="ar" style="margin-bottom:10px"><h3 style="margin:0">أحدث الطلبات</h3><a href="#admin" data-tab="rq" style="font-weight:700">← عرض الكل</a></div>
+  ${a.slice(0,5).map(p => `<div class="who" style="padding:14px 0;border-top:1px solid var(--bd)"><span class="av" style="background:var(--navy);color:#fff">${esc(ini(p.full_name))}</span><div><b>${esc(p.full_name)}</b><small class="mut" style="display:block">${esc(p.specialization)} · ${esc(cn(p.committee))}</small></div></div>`).join('') || '<p class="mut">لا توجد طلبات بعد.</p>'}</div>`;
+}
+
+function filt(kind){
+  const q = ($('#q')?.value || '').trim().toLowerCase(), c = $('#fc')?.value || '', d = $('#fd')?.value || '';
+  return AP().filter(p => (kind === 'mb' ? p.status === 'approved' && (mf === 'all' || p.committee === mf) : (rf === 'all' || p.status === rf))
+    && (!c || p.committee === c) && (!d || p.specialization === d)
+    && (!q || [p.full_name, p.card_no, p.phone, p.specialization].join(' ').toLowerCase().includes(q)));
+}
+const filterBox = () => `<div class="pan"><div class="sr"><input id="q" placeholder="ابحث بالاسم، الرقم الجامعي، الجوال…">${ic('search',20)}</div>
+  <select id="fc"><option value="">كل اللجان</option>${COMMS.map(c => `<option value="${c.k}">${c.t}</option>`).join('')}</select>
+  <select id="fd" style="margin-top:12px"><option value="">كل الأقسام</option>${DEPTS.map(d => `<option>${d}</option>`).join('')}</select></div>`;
+const chips = (arr, cur, attr) => `<div class="fc">${arr.map(([k,t,n]) => `<button ${attr}="${k}" class="${cur === k ? 'on' : ''}">${t} (${n})</button>`).join('')}</div>`;
+
+function tRq(){
+  const a = AP(), n = s => s === 'all' ? a.length : a.filter(p => p.status === s).length;
+  $('#ac').innerHTML = `<div class="ar"><div><h1>طلبات الانضمام</h1><p class="sub" id="rs"></p></div><button class="btn navy" data-a="csv" data-w="rq">${ic('download',20)}تصدير CSV</button></div>
+  ${chips([['all','الكل',n('all')],['pending','قيد المراجعة',n('pending')],['approved','مقبول',n('approved')],['rejected','مرفوض',n('rejected')]], rf, 'data-rf')}
+  ${filterBox()}<div id="tb"></div>`;
+  const draw = () => { const l = filt('rq'); $('#rs').textContent = `${l.length} من ${a.length} طلب معروض`;
+    $('#tb').innerHTML = `<div class="tw"><table><thead><tr><th>المتقدم</th><th>القسم</th><th>اللجنة</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${l.map(p => `<tr>
+    <td><div class="who"><span class="av">${esc(ini(p.full_name))}</span><div><b>${esc(p.full_name)}</b><small>${esc(p.card_no)}</small></div></div></td>
+    <td>${esc(p.specialization)}<small>${esc(p.year || '')}</small></td><td>${esc(cn(p.committee))}</td>
+    <td><span class="st2 s-${p.status}">${ST[p.status]}</span></td>
+    <td><div class="ar" style="justify-content:flex-start;gap:8px"><button class="btn line sm" data-a="view" data-id="${p.id}">عرض</button>${p.status !== 'approved' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></td></tr>`).join('') || '<tr><td colspan="5" class="c mut">لا توجد نتائج</td></tr>'}</tbody></table></div>`; };
+  ['q','fc','fd'].forEach(i => { $('#' + i).oninput = draw; $('#' + i).onchange = draw; }); draw();
+}
+
+function tMb(){
+  const a = AP().filter(p => p.status === 'approved');
+  $('#ac').innerHTML = `<div class="ar"><div><h1>أعضاء النادي</h1><p class="sub" id="rs"></p></div><button class="btn navy" data-a="csv" data-w="mb">${ic('download',20)}تصدير CSV</button></div>
+  ${chips([['all','الكل',a.length], ...COMMS.map(c => [c.k, c.t, a.filter(p => p.committee === c.k).length])], mf, 'data-mf')}
+  ${filterBox()}<div id="tb"></div>`;
+  const draw = () => { const l = filt('mb'); $('#rs').textContent = `${a.length} عضو – ${l.length} معروض`;
+    $('#tb').innerHTML = `<div class="tw"><table><thead><tr><th>العضو</th><th>القسم</th><th>اللجنة</th><th>الجوال</th><th>إجراء</th></tr></thead><tbody>${l.map(p => `<tr>
+    <td><div class="who"><span class="av">${esc(ini(p.full_name))}</span><div><b>${esc(p.full_name)}</b><small>${esc(p.card_no)} · انضم ${new Date(p.created_at).toLocaleDateString('ar-u-nu-latn', {dateStyle:'medium'})}</small></div></div></td>
+    <td>${esc(p.specialization)}<small>${esc(p.year || '')}</small></td><td>${esc(cn(p.committee))}</td><td>${esc(p.phone || '—')}</td>
+    <td><button class="btn no sm" data-a="rej" data-id="${p.id}">إيقاف</button></td></tr>`).join('') || '<tr><td colspan="5" class="c mut">لا توجد نتائج</td></tr>'}</tbody></table></div>`; };
+  ['q','fc','fd'].forEach(i => { $('#' + i).oninput = draw; $('#' + i).onchange = draw; }); draw();
+}
+
+async function tEv(){
+  await loadActs();
+  const up = acts.filter(a => !isPast(a)).length;
+  $('#ac').innerHTML = `<h1>إدارة الفعاليات والإعلانات</h1><p class="sub">انشر فعاليات جديدة لتظهر مباشرة في صفحة الفعاليات العامة</p>
+  <form class="pan" id="af"><h3><i class="g">${ic('calplus',24)}</i>فعالية جديدة</h3>
+   <div class="fl" style="margin-top:0">عنوان الفعالية</div><input name="ttl" required placeholder="مثال: ورشة عمل: مدخل إلى علم البيانات">
+   <div class="g2"><div><div class="fl">التاريخ</div><input type="date" name="dt" required></div><div><div class="fl">الوقت (اختياري)</div><input type="time" name="tm"></div></div>
+   <div class="fl">الموقع</div><input name="loc" placeholder="مثال: قاعة المؤتمرات – المبنى الرئيسي">
+   <div class="fl">رابط التسجيل (اختياري)</div><input name="lnk" type="url" placeholder="https://forms.gle/…">
+   <div class="fl">عدد المقاعد (اختياري)</div><input name="cap" type="number" min="1">
+   <div class="fl">الوصف</div><textarea name="dsc" placeholder="وصف موجز للفعالية وما ينتظر الحضور…"></textarea>
+   <button class="btn navy block" style="margin-top:22px">نشر الفعالية ${ic('ext',20)}</button></form>
+  <h2 style="margin:26px 0 14px;font-size:1.5rem">الفعاليات القادمة <span class="cnt">${up}</span></h2>
+  ${acts.slice().reverse().map(a => `<div class="pan"><div class="ar"><div><b>${esc(a.title)}</b> ${isPast(a) ? '<span class="st2 s-rejected">منتهية</span>' : ''}<div class="mut">${fd(a.event_date)}${a.location ? ' · ' + esc(a.location) : ''}</div></div>
+   <div class="ar" style="gap:8px"><button class="btn line sm" data-a="regs" data-id="${a.id}">المسجلون</button><button class="btn no sm" data-a="del" data-id="${a.id}">حذف</button></div></div><div id="rg${a.id}" class="mut" style="margin-top:8px;line-height:2"></div></div>`).join('') || '<div class="pan c mut">لا توجد فعاليات بعد – أضف أول فعالية من النموذج أعلاه.</div>'}`;
+  $('#af').onsubmit = async e => {
+    e.preventDefault(); const f = e.target;
+    const {error} = await sb.from('activities').insert({title: f.ttl.value.trim(), description: f.dsc.value.trim(), location: f.loc.value.trim(),
+      event_date: f.dt.value ? new Date(f.dt.value + 'T' + (f.tm.value || '00:00')).toISOString() : null,
+      reg_link: f.lnk.value.trim() || null, capacity: f.cap.value ? +f.cap.value : null});
+    if (error) return toast('تعذّر النشر'); toast('تم نشر الفعالية ✓'); tEv();
+  };
+}
+
+function tSt(){
+  const fld = (l, k, type = 'text') => `<div class="fl" style="margin-top:14px">${l}</div><input name="${k}" type="${type}" value="${esc(S[k] || '')}">`;
+  $('#ac').innerHTML = `<h1>الإعدادات</h1><p class="sub">معلومات النادي وقنوات التواصل – تظهر مباشرة في الموقع العام بعد الحفظ.</p>
+  <form id="sf"><div class="pan"><h3><i>${ic('building',24)}</i>معلومات النادي</h3>${fld('اسم النادي','club_name')}${fld('الجامعة','university')}
+   <div class="fl" style="margin-top:14px">نبذة عن النادي (تظهر في تذييل الموقع)</div><textarea name="about">${esc(S.about || '')}</textarea></div>
+  <div class="pan"><h3><i class="g">${ic('sparkles',24)}</i>معلومات التواصل</h3>${fld('البريد الإلكتروني','email','email')}${fld('رقم الهاتف','phone')}${fld('رقم الواتساب (بالصيغة الدولية)','whatsapp')}${fld('المقر / العنوان','address')}${fld('رابط انستغرام (اختياري)','instagram','url')}${fld('رابط إكس / تويتر (اختياري)','x_link','url')}</div>
+  <button class="btn navy">${ic('save',20)}حفظ الإعدادات</button></form>
+  <div class="pan" style="margin-top:20px"><h3><i>${ic('key',24)}</i>حسابي</h3><div class="ar"><div><b>${esc(me.full_name)}</b><div class="mut">${esc(me.card_no)}</div></div><span class="badge">مدير</span></div></div>`;
+  $('#sf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, o = {};
+    ['club_name','university','about','email','phone','whatsapp','address','instagram','x_link'].forEach(k => o[k] = f[k].value.trim());
+    const {error} = await sb.from('settings').update(o).eq('id', 1);
+    if (error) return toast('تعذّر الحفظ'); await loadSettings(); toast('تم حفظ الإعدادات ✓');
+  };
+}
+
+function csv(kind){
+  const l = filt(kind), h = ['الاسم','الرقم الجامعي','الجوال','القسم','السنة','اللجنة','الحالة','سبب الانضمام','التاريخ'];
+  const q = x => { let s = String(x ?? ''); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  const r = [h, ...l.map(p => [p.full_name, p.card_no, p.phone, p.specialization, p.year, cn(p.committee), ST[p.status], p.motivation, new Date(p.created_at).toLocaleDateString('en-GB')])];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + r.map(x => x.map(q).join(',')).join('\n')], {type:'text/csv;charset=utf-8'}));
+  a.download = (kind === 'mb' ? 'members' : 'requests') + '.csv'; a.click();
+}
+
+function showP(id){
+  const p = P.find(x => x.id === id); if (!p) return;
+  $('#modal').innerHTML = `<div class="box"><button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>
+  <h3 style="font-size:1.4rem;margin-bottom:6px">${esc(p.full_name)}</h3><span class="st2 s-${p.status}">${ST[p.status]}</span>
+  <dl class="dl"><dt>الرقم الجامعي</dt><dd>${esc(p.card_no)}</dd><dt>الجوال</dt><dd>${esc(p.phone || '—')}</dd><dt>القسم</dt><dd>${esc(p.specialization)}</dd><dt>السنة</dt><dd>${esc(p.year || '—')}</dd><dt>اللجنة</dt><dd>${esc(cn(p.committee))}</dd><dt>تاريخ الطلب</dt><dd>${new Date(p.created_at).toLocaleDateString('ar-u-nu-latn', {dateStyle:'long'})}</dd></dl>
+  <b>لماذا يريد الانضمام؟</b><p class="mut" style="margin-top:6px;line-height:2">${esc(p.motivation || '—')}</p>
+  <div class="ar" style="justify-content:flex-start;gap:10px;margin-top:20px"><button class="btn line sm" data-a="cert" data-p="${esc(p.certificate_url)}">${ic('file',16)}الشهادة</button>
+  ${p.status !== 'approved' ? `<button class="btn ok sm" data-a="appr" data-id="${p.id}">قبول</button>` : ''}${p.status !== 'rejected' ? `<button class="btn no sm" data-a="rej" data-id="${p.id}">رفض</button>` : ''}</div></div>`;
+  $('#modal').style.display = 'flex';
 }
 
 // ===== الأحداث =====
-document.addEventListener('click',async e=>{
-  const g=e.target.closest('[data-go]');if(g){e.preventDefault();return go(g.dataset.go)}
-  const t=e.target.closest('[data-tab]');if(t){tab=t.dataset.tab;return renderAdmin()}
-  const el=e.target.closest('[data-a]');if(!el)return;
+document.addEventListener('click', async e => {
+  if (e.target.id === 'modal') { $('#modal').style.display = 'none'; return; }
+  const t = e.target.closest('[data-tab]'); if (t) { e.preventDefault(); tab = t.dataset.tab; if (view === 'admin') adminTab(); return; }
+  const rfb = e.target.closest('[data-rf]'); if (rfb) { rf = rfb.dataset.rf; return tRq(); }
+  const mfb = e.target.closest('[data-mf]'); if (mfb) { mf = mfb.dataset.mf; return tMb(); }
+  const el = e.target.closest('[data-a]'); if (!el) return;
   e.preventDefault();
-  const a=el.dataset.a,id=el.dataset.id;
-  if(a==='theme') return toggleTheme();
-  if(a==='out'){await sb.auth.signOut();me=null;view='home';return render()}
-  if(a==='refresh'){await loadMe();return render()}
-  if(a==='join'){
-    const {error}=await sb.from('registrations').insert({activity_id:+id,user_id:me.id});
-    toast(error?(/full/.test(error.message)?'اكتمل العدد':'تعذّر التسجيل'):'تم تسجيلك ✓');return renderActs();
+  const a = el.dataset.a, id = el.dataset.id;
+  if (a === 'menu') { const m = $('#menu'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; return; }
+  if (a === 'mx') { $('#modal').style.display = 'none'; return; }
+  if (a === 'out') { await sb.auth.signOut(); me = null; await loadSettings(); nav('#home'); return; }
+  if (a === 'refresh') { await loadMe(); return render(); }
+  if (a === 'csv') return csv(el.dataset.w);
+  if (a === 'join') {
+    const {error} = await sb.from('registrations').insert({activity_id: +id, user_id: me.id});
+    toast(error ? (/full/.test(error.message) ? 'اكتمل العدد' : 'تعذّر التسجيل') : 'تم تسجيلك ✓'); return render();
   }
-  if(a==='leave'){await sb.from('registrations').delete().eq('activity_id',+id).eq('user_id',me.id);toast('تم إلغاء التسجيل');return renderActs()}
-  if(a==='dm'){const {error}=await sb.from('messages').delete().eq('id',id);if(error)return toast('تعذّر الحذف');return $('#msg'+id)?.remove()}
-  if(a==='appr'||a==='rej'){
-    if(a==='rej'&&!confirm('تأكيد الرفض/الإيقاف؟'))return;
-    await sb.from('profiles').update({status:a==='appr'?'approved':'rejected'}).eq('id',id);
-    toast('تم');return renderAdmin();
+  if (a === 'leave') { await sb.from('registrations').delete().eq('activity_id', +id).eq('user_id', me.id); toast('تم إلغاء التسجيل'); return render(); }
+  if (a === 'dm') { const {error} = await sb.from('messages').delete().eq('id', id); if (error) return toast('تعذّر الحذف'); return $('#msg' + id)?.remove(); }
+  if (a === 'view') return showP(id);
+  if (a === 'appr' || a === 'rej') {
+    if (a === 'rej' && !confirm('تأكيد الرفض / الإيقاف؟')) return;
+    const {error} = await sb.from('profiles').update({status: a === 'appr' ? 'approved' : 'rejected'}).eq('id', id);
+    if (error) return toast('تعذّر التنفيذ'); $('#modal').style.display = 'none'; toast('تم'); return adminTab();
   }
-  if(a==='cert'){
-    const {data,error}=await sb.storage.from('certificates').createSignedUrl(el.dataset.p,120);
-    return error?toast('تعذّر فتح الملف'):window.open(data.signedUrl,'_blank');
+  if (a === 'cert') {
+    const {data, error} = await sb.storage.from('certificates').createSignedUrl(el.dataset.p, 120);
+    return error ? toast('تعذّر فتح الملف') : window.open(data.signedUrl, '_blank');
   }
-  if(a==='del'){if(!confirm('حذف النشاط نهائياً؟'))return;await sb.from('activities').delete().eq('id',id);return renderAdmin()}
-  if(a==='regs'){
-    const box=$('#rg'+id);box.textContent='…';
-    const {data}=await sb.from('registrations').select('profiles(full_name,card_no,specialization)').eq('activity_id',id);
-    box.innerHTML=(data||[]).length?data.map((r,i)=>`${i+1}. ${esc(r.profiles.full_name)} — ${esc(r.profiles.specialization)} (${esc(r.profiles.card_no)})`).join('<br>'):'لا يوجد مسجلون بعد.';
+  if (a === 'del') { if (!confirm('حذف الفعالية نهائياً؟')) return; await sb.from('activities').delete().eq('id', id); return tEv(); }
+  if (a === 'regs') {
+    const box = $('#rg' + id); box.textContent = '…';
+    const {data} = await sb.from('registrations').select('profiles(full_name,card_no,specialization)').eq('activity_id', id);
+    box.innerHTML = (data || []).length ? data.map((r, i) => `${i + 1}. ${esc(r.profiles.full_name)} — ${esc(r.profiles.specialization)} (${esc(r.profiles.card_no)})`).join('<br>') : 'لا يوجد مسجلون بعد.';
   }
 });
 
-(async()=>{main.innerHTML=loader;await loadMe();view=me?'acts':'home';render()})();
+(async () => { main.innerHTML = loader; await Promise.all([loadMe(), loadSettings()]); render(); })();
 </script>
 </body>
 </html>
