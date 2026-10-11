@@ -545,6 +545,7 @@ function pMe(){
   <form class="fcard fc2" id="pwf"><div class="fl" style="margin-top:0">${ic('key',20)}تغيير كلمة المرور</div><input name="pw" type="password" minlength="6" placeholder="كلمة المرور الجديدة" autocomplete="new-password" required>
   <button class="btn line block" style="margin-top:16px">تغيير</button></form>
   <div class="c" style="margin-bottom:50px"><button class="btn line" data-a="out">${ic('logout',18)}تسجيل الخروج</button></div>`;
+  drawCard();
   $('#avf').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
     if (!f.type.startsWith('image/')) return toast('اختر صورة');
