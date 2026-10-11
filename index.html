@@ -464,6 +464,12 @@ function pMembers(){
 }
 
 function pUser(id){
+  setTimeout(() => {
+    const p = MB[id];
+    if (!p || view !== 'u' || !$('.pf')) return;
+    $('.pf').insertAdjacentHTML('afterend', `<div class="fcard fc2 c" style="padding:22px 16px"><div class="fl" style="margin:0 0 14px;justify-content:center">${ic('badge',20)}بطاقة العضوية</div><canvas id="idc2" class="idc" width="1012" height="638"></canvas></div>`);
+    drawCard(p, 'idc2');
+  }, 0);
   const p = MB[id]; if (!p) return nav('#members');
   const own = id === me.id;
   main.innerHTML = `<div class="pf"><div class="pb dark"></div><div class="pc"><div class="pa">${av(p,112)}</div>
