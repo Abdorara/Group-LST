@@ -480,7 +480,8 @@ const sq = file => new Promise((res, rej) => {
     c.getContext('2d').drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 320, 320);
     URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(), 'image/jpeg', .85); };
   im.onerror = rej; im.src = u; });
-async function drawCard(){
+const getMe = () => me;
+async function drawCard(me = getMe(), cid = 'idc'){
   const cv = $('#idc'); if (!cv) return;
   const W = 1012, H = 638, x = cv.getContext('2d'), F = '"IBM Plex Sans Arabic", sans-serif';
   try { await Promise.all([document.fonts.load('700 40px "IBM Plex Sans Arabic"', 'عربي LST'), document.fonts.load('500 30px "IBM Plex Sans Arabic"', 'عربي 123')]); } catch (e) {}
