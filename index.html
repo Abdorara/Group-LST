@@ -518,7 +518,7 @@ async function drawCard(me = getMe(), cid = 'idc'){
   t(me.full_name, 50, 700, 285, '#fff', W - 60, 650);
   t('اللجنة: ' + cn(me.committee), 30, 600, 337, '#d4a72c', W - 60, 650);
   t(me.specialization + (me.year ? ' · ' + me.year : ''), 28, 500, 383, '#c9d3ee', W - 60, 650);
-  t('الرقم الجامعي: ' + me.card_no, 26, 500, 426, '#8fa3d8', W - 60, 650);
+   t(me.card_no ? 'الرقم الجامعي: ' + me.card_no : 'عضو في ' + S.club_name, 26, 500, 426, '#8fa3d8', W - 60, 650);
   t('رقم العضوية', 22, 500, 488, '#8fa3d8', W - 60, 650);
   t(mno, 42, 700, 538, '#fff', W - 60, 600);
   t(`السنة الجامعية ${ay}/${ay + 1}  •  عضو منذ ${cd.toLocaleDateString('ar-u-nu-latn', {month:'long', year:'numeric'})}`, 24, 500, 590, '#8fa3d8', W - 60, 640);
