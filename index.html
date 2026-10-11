@@ -482,7 +482,7 @@ const sq = file => new Promise((res, rej) => {
   im.onerror = rej; im.src = u; });
 const getMe = () => me;
 async function drawCard(me = getMe(), cid = 'idc'){
-  const cv = $('#idc'); if (!cv) return;
+    const cv = document.getElementById(cid); if (!cv) return;
   const W = 1012, H = 638, x = cv.getContext('2d'), F = '"IBM Plex Sans Arabic", sans-serif';
   try { await Promise.all([document.fonts.load('700 40px "IBM Plex Sans Arabic"', 'عربي LST'), document.fonts.load('500 30px "IBM Plex Sans Arabic"', 'عربي 123')]); } catch (e) {}
   const li = (src, cors) => new Promise(r => { if (!src) return r(null); const i = new Image(); if (cors) i.crossOrigin = 'anonymous'; i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
