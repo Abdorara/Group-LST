@@ -488,7 +488,7 @@ async function drawCard(me = getMe(), cid = 'idc'){
   const li = (src, cors) => new Promise(r => { if (!src) return r(null); const i = new Image(); if (cors) i.crossOrigin = 'anonymous'; i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
   const lg = (await li('logo.jpg')) || (await li('logo.jpeg')) || (await li('logo.png'));
   const ph = await li(me.avatar_url, true);
-  if (!$('#idc')) return;
+   if (!document.getElementById(cid)) return;
   const rr = (a, b, w, h, r) => { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); };
   const t = (s, px, wt, y, col, ax, mw) => { x.font = `${wt} ${px}px ${F}`; x.fillStyle = col; x.textAlign = 'right'; x.fillText(String(s), ax, y, mw); };
   x.clearRect(0, 0, W, H); x.direction = 'rtl'; x.textBaseline = 'alphabetic';
