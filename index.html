@@ -480,7 +480,58 @@ const sq = file => new Promise((res, rej) => {
     c.getContext('2d').drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 320, 320);
     URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(), 'image/jpeg', .85); };
   im.onerror = rej; im.src = u; });
-
+async function drawCard(){
+  const cv = $('#idc'); if (!cv) return;
+  const W = 1012, H = 638, x = cv.getContext('2d'), F = '"IBM Plex Sans Arabic", sans-serif';
+  try { await Promise.all([document.fonts.load('700 40px "IBM Plex Sans Arabic"', 'عربي LST'), document.fonts.load('500 30px "IBM Plex Sans Arabic"', 'عربي 123')]); } catch (e) {}
+  const li = (src, cors) => new Promise(r => { if (!src) return r(null); const i = new Image(); if (cors) i.crossOrigin = 'anonymous'; i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+  const lg = (await li('logo.jpg')) || (await li('logo.jpeg')) || (await li('logo.png'));
+  const ph = await li(me.avatar_url, true);
+  if (!$('#idc')) return;
+  const rr = (a, b, w, h, r) => { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); };
+  const t = (s, px, wt, y, col, ax, mw) => { x.font = `${wt} ${px}px ${F}`; x.fillStyle = col; x.textAlign = 'right'; x.fillText(String(s), ax, y, mw); };
+  x.clearRect(0, 0, W, H); x.direction = 'rtl'; x.textBaseline = 'alphabetic';
+  x.save(); rr(0, 0, W, H, 40); x.clip();
+  const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#0b1430'); g.addColorStop(1, '#1b3a7a'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.strokeStyle = 'rgba(255,255,255,.05)'; x.lineWidth = 2;
+  for (let i = 0; i < W; i += 46) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, H); x.stroke(); }
+  for (let i = 0; i < H; i += 46) { x.beginPath(); x.moveTo(0, i); x.lineTo(W, i); x.stroke(); }
+  x.fillStyle = '#d4a72c'; x.fillRect(0, H - 16, W, 16);
+  // الشعار
+  rr(W - 180, 44, 120, 120, 28); x.fillStyle = '#fff'; x.fill();
+  if (lg) { const k = Math.min(96 / lg.width, 96 / lg.height), w = lg.width * k, h = lg.height * k; x.drawImage(lg, W - 180 + (120 - w) / 2, 44 + (120 - h) / 2, w, h); }
+  else { x.font = `700 44px ${F}`; x.fillStyle = '#0b1430'; x.textAlign = 'center'; x.fillText('LST', W - 120, 118); }
+  t(S.club_name, 56, 700, 104, '#fff', 804, 540);
+  t('بطاقة عضوية', 30, 600, 152, '#d4a72c', 804, 540);
+  if (me.role === 'admin') { rr(60, 62, 120, 46, 23); x.fillStyle = '#d4a72c'; x.fill(); x.font = `700 26px ${F}`; x.fillStyle = '#0b1430'; x.textAlign = 'center'; x.fillText('مشرف', 120, 95); }
+  x.fillStyle = 'rgba(255,255,255,.14)'; x.fillRect(60, 196, W - 120, 2);
+  // الصورة
+  x.save(); x.beginPath(); x.arc(150, 330, 90, 0, Math.PI * 2); x.closePath(); x.clip();
+  if (ph) { const s = Math.min(ph.width, ph.height); x.drawImage(ph, (ph.width - s) / 2, (ph.height - s) / 2, s, s, 60, 240, 180, 180); }
+  else { x.fillStyle = '#dbe5fb'; x.fillRect(60, 240, 180, 180); x.font = `700 70px ${F}`; x.fillStyle = '#27418f'; x.textAlign = 'center'; x.fillText(ini(me.full_name).toUpperCase(), 150, 354); }
+  x.restore();
+  x.beginPath(); x.arc(150, 330, 93, 0, Math.PI * 2); x.lineWidth = 6; x.strokeStyle = '#d4a72c'; x.stroke();
+  // البيانات
+  const d = new Date(), ay = d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear() - 1, cd = new Date(me.created_at);
+  const mno = `LST-${cd.getFullYear()}-${me.id.slice(0, 6).toUpperCase()}`;
+  t(me.full_name, 50, 700, 285, '#fff', W - 60, 650);
+  t('اللجنة: ' + cn(me.committee), 30, 600, 337, '#d4a72c', W - 60, 650);
+  t(me.specialization + (me.year ? ' · ' + me.year : ''), 28, 500, 383, '#c9d3ee', W - 60, 650);
+  t('الرقم الجامعي: ' + me.card_no, 26, 500, 426, '#8fa3d8', W - 60, 650);
+  t('رقم العضوية', 22, 500, 488, '#8fa3d8', W - 60, 650);
+  t(mno, 42, 700, 538, '#fff', W - 60, 600);
+  t(`السنة الجامعية ${ay}/${ay + 1}  •  عضو منذ ${cd.toLocaleDateString('ar-u-nu-latn', {month:'long', year:'numeric'})}`, 24, 500, 590, '#8fa3d8', W - 60, 640);
+  // رمز QR
+  if (typeof qrcode === 'function') {
+    try {
+      const q = qrcode(0, 'M'); q.addData(location.origin + location.pathname + '#u/' + me.id); q.make();
+      const n = q.getModuleCount(), s = 150, pad = 10, m = (s - 2 * pad) / n;
+      rr(60, 450, s, s, 18); x.fillStyle = '#fff'; x.fill(); x.fillStyle = '#0b1430';
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) x.fillRect(60 + pad + c * m, 450 + pad + r * m, m + .5, m + .5);
+    } catch (e) {}
+  }
+  x.restore();
+}
 function pMe(){
   main.innerHTML = `<div class="pf"><div class="pb dark"></div><div class="pc"><div class="pa"><span id="avp">${av(me,112)}</span><label class="cam">${ic('camera',20)}<input type="file" id="avf" accept="image/*" hidden></label></div>
   <h1>${esc(me.full_name)}</h1><p class="mut">${esc(me.specialization)}${me.year ? ' · ' + esc(me.year) : ''} · ${esc(cn(me.committee))}</p>
