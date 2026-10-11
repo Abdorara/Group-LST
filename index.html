@@ -740,7 +740,7 @@ function filt(kind){
 }
 const filterBox = () => `<div class="pan"><div class="sr"><input id="q" placeholder="ابحث بالاسم، الرقم الجامعي، الجوال…">${ic('search',20)}</div>
   <select id="fc"><option value="">كل اللجان</option>${COMMS.map(c => `<option value="${c.k}">${c.t}</option>`).join('')}</select>
-  <select id="fd" style="margin-top:12px"><option value="">كل الأقسام</option>${DEPTS.map(d => `<option>${d}</option>`).join('')}</select></div>`;
+  <select id="fd" style="margin-top:12px"><option value="">كل الأقسام</option>${DOMAINS.map(d => `<optgroup label="${esc(d.n)}">${flat(d.it).map(y => `<option>${esc(y)}</option>`).join('')}</optgroup>`).join('')}</select></div>`;
 const chips = (arr, cur, attr) => `<div class="fc">${arr.map(([k,t,n]) => `<button ${attr}="${k}" class="${cur === k ? 'on' : ''}">${t} (${n})</button>`).join('')}</div>`;
 
 function tRq(){
