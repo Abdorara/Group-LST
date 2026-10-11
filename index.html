@@ -434,9 +434,11 @@ function pLogin(){
   <p class="note">ليس لديك حساب؟ <a href="#join" style="color:var(--goldtx);font-weight:700">انضم إلينا</a></p></form>`;
   $('#lf').onsubmit = async e => {
     e.preventDefault(); const f = e.target, b = f.querySelector('button'); b.disabled = true;
-    const {error} = await sb.auth.signInWithPassword({email: emailOf(f.card.value), password: f.pw.value});
+    const {data, error} = await sb.auth.signInWithPassword({email: emailOf(f.card.value), password: f.pw.value});
     b.disabled = false;
-    if (error) return toast('الرقم الجامعي أو كلمة المرور غير صحيحة');
+    if (error) { alert('خطأ الدخول: ' + error.message + '\nالمشروع: ' + SUPABASE_URL); return; }
+    const r = await sb.from('profiles').select('*').eq('id', data.user.id).maybeSingle();
+    alert('البريد: ' + data.user.email + '\nالملف: ' + JSON.stringify(r.data) + '\nخطأ القراءة: ' + (r.error ? r.error.message : 'لا يوجد'));
     await loadMe(); nav(me?.role === 'admin' ? '#admin' : '#home');
   };
 }
