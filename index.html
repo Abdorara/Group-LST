@@ -447,7 +447,8 @@ function pJoin(){
    <div class="note" id="cnt">0 / 20 حرفاً كحد أدنى</div>
    <button class="btn gold block" style="margin-top:22px">إرسال طلب الانضمام ${ic('send',20)}</button>
    <p class="note">بإرسالك الطلب فأنت توافق على أن يتواصل معك فريق النادي بشأن طلب عضويتك. بياناتك محفوظة ولن تُستخدم لأي غرض آخر.</p></form>`;
-  const f = $('#jf');
+    const f = $('#jf');
+  f.dom.onchange = () => { const d = DOMAINS[f.dom.value]; f.dept.innerHTML = '<option value="">اختر التخصص</option>' + (d ? optsOf(d.it) : ''); f.dept.disabled = !d; };
   f.why.oninput = () => $('#cnt').textContent = `${f.why.value.trim().length} / 20 حرفاً كحد أدنى`;
   f.onsubmit = async e => {
     e.preventDefault();
