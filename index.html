@@ -558,7 +558,7 @@ function pMe(){
       const r = await sb.rpc('update_my_profile', {p_bio: me.bio || '', p_avatar: url, p_phone: me.phone || ''});
       if (r.error) throw r.error;
       if (old) { const k = old.split('/avatars/')[1]; if (k) sb.storage.from('avatars').remove([k]); }
-      await loadMe(); drawShell(); if ($('#avp')) $('#avp').innerHTML = av(me, 112); toast('تم تحديث الصورة ✓');
+      await loadMe(); drawShell(); if ($('#avp')) $('#avp').innerHTML = av(me, 112); drawCard(); toast('تم تحديث الصورة ✓');
     } catch (err) { toast('تعذّر رفع الصورة'); }
   };
   $('#pfm').onsubmit = async e => {
