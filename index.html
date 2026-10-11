@@ -536,6 +536,9 @@ function pMe(){
   main.innerHTML = `<div class="pf"><div class="pb dark"></div><div class="pc"><div class="pa"><span id="avp">${av(me,112)}</span><label class="cam">${ic('camera',20)}<input type="file" id="avf" accept="image/*" hidden></label></div>
   <h1>${esc(me.full_name)}</h1><p class="mut">${esc(me.specialization)}${me.year ? ' · ' + esc(me.year) : ''} · ${esc(cn(me.committee))}</p>
   <a href="#u/${me.id}" style="color:var(--goldtx);font-weight:700;font-size:.9rem">عرض ملفي كما يراه الأعضاء</a></div></div>
+  <div class="fcard fc2 c" style="padding:22px 16px"><div class="fl" style="margin:0 0 14px;justify-content:center">${ic('badge',20)}بطاقة العضوية</div>
+  <canvas id="idc" class="idc" width="1012" height="638"></canvas>
+  <div class="ar" style="justify-content:center;gap:10px;margin-top:16px"><button class="btn gold sm" data-a="cdl">${ic('download',16)}تحميل البطاقة</button></div></div>
   <form class="fcard fc2" id="pfm"><div class="fl" style="margin-top:0">${ic('chat',20)}نبذة عنك (300 حرف)</div><textarea name="bio" maxlength="300" style="min-height:110px" placeholder="عرّف بنفسك واهتماماتك…">${esc(me.bio || '')}</textarea>
   <div class="fl">${ic('phone',20)}رقم الجوال</div><input name="phone" type="tel" value="${esc(me.phone || '')}">
   <button class="btn navy block" style="margin-top:20px">${ic('save',20)}حفظ</button></form>
