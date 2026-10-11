@@ -804,6 +804,12 @@ document.addEventListener('click', async e => {
     const {error} = await sb.from('profiles').update({role: a === 'mkadm' ? 'admin' : 'student'}).eq('id', id);
     if (error) return toast('تعذّر التنفيذ'); toast('تم'); return adminTab();
   }
+    if (a === 'cdl') {
+    const cv = $('#idc'); if (!cv) return;
+    try { cv.toBlob(b => { const u = URL.createObjectURL(b), l = document.createElement('a'); l.href = u; l.download = 'LST-CLUB-card.png'; l.click(); setTimeout(() => URL.revokeObjectURL(u), 3000); }); }
+    catch (err) { toast('تعذّر تحميل البطاقة'); }
+    return;
+  }
   if (a === 'view') return showP(id);
   if (a === 'appr' || a === 'rej') {
     if (a === 'rej' && !confirm('تأكيد الرفض / الإيقاف؟')) return;
