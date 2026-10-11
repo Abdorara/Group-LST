@@ -436,7 +436,8 @@ function pJoin(){
    <div class="fl" style="margin-top:0">${ic('user',20)}الاسم الكامل</div><input name="fullname" required placeholder="مثال: عبدالله محمد السالم">
    <div class="fl">${ic('badge',20)}الرقم الجامعي</div><input name="card" required placeholder="مثال: 202304567" autocomplete="username">
    <div class="fl">${ic('phone',20)}رقم الجوال / واتساب</div><input name="phone" type="tel" required placeholder="05xxxxxxxx">
-   <div class="fl">${ic('graduation',20)}القسم / التخصص</div><select name="dept" required><option value="">اختر القسم</option>${DEPTS.map(d => `<option>${d}</option>`).join('')}</select>
+      <div class="fl">${ic('graduation',20)}الميدان</div><select name="dom" required><option value="">اختر الميدان</option>${DOMAINS.map((d, i) => `<option value="${i}">${esc(d.n)}</option>`).join('')}</select>
+   <div class="fl">${ic('graduation',20)}القسم / التخصص</div><select name="dept" required disabled><option value="">اختر الميدان أولاً</option></select>
    <div class="fl">${ic('graduation',20)}السنة الدراسية</div><select name="year" required><option value="">اختر السنة</option>${YEARS.map(d => `<option>${d}</option>`).join('')}</select>
    <div class="fl">${ic('key',20)}كلمة المرور (6 أحرف على الأقل)</div><input name="pw" type="password" required autocomplete="new-password">
    <div class="fl">${ic('file',20)}شهادة الجامعة (صورة أو PDF، حتى 5MB)</div><input name="cert" type="file" accept="image/*,application/pdf" required>
