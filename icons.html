@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:sans-serif;padding:20px;background:#0b1430;color:#fff;text-align:center">
+<h2>مولّد أيقونات التطبيق</h2><p>اضغط على كل أيقونة لتحميلها</p><div id="o"></div>
+<script>
+const im = new Image();
+im.onload = () => {
+  [['icon-192.png',192,0.1],['icon-512.png',512,0.1],['icon-maskable-512.png',512,0.22]].forEach(([n,s,p]) => {
+    const c = document.createElement('canvas'); c.width = c.height = s;
+    const x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, s, s);
+    const m = s * p, k = Math.min((s - 2*m) / im.width, (s - 2*m) / im.height), w = im.width * k, h = im.height * k;
+    x.drawImage(im, (s - w) / 2, (s - h) / 2, w, h);
+    const a = document.createElement('a'); a.href = c.toDataURL('image/png'); a.download = n;
+    a.style.cssText = 'display:inline-block;margin:10px;color:#fff';
+    a.innerHTML = '<img src="' + a.href + '" width="120" style="border-radius:16px;background:#fff"><br>' + n;
+    document.getElementById('o').appendChild(a);
+  });
+};
+im.src = 'logo.jpg';
+</script></body></html>
