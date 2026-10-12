@@ -497,8 +497,7 @@ function pPending(){
 }
 
 // ===== الأعضاء والملفات الشخصية =====
-const cts = a => `<div class="ct"><a href="#inbox" class="${a==='inbox'?'on':''}">الرسائل الخاصة${unread ? `<i class="nb">${unread}</i>` : ''}</a><a href="#chat" class="${a==='chat'?'on':''}">المحادثة الجماعية</a><a href="#members" class="${a==='members'?'on':''}">الأعضاء</a></div>`;
-
+const cts = a => `<div class="ct"><a href="#inbox" class="${a==='inbox'?'on':''}">الرسائل${unread ? `<i class="nb">${unread}</i>` : ''}</a><a href="#groups" class="${a==='groups'?'on':''}">المجموعات</a><a href="#chat" class="${a==='chat'?'on':''}">العامة</a><a href="#members" class="${a==='members'?'on':''}">الأعضاء</a></div>`;
 function pMembers(){
   main.innerHTML = `<div class="chw" style="max-width:900px">${cts('members')}<div class="sr"><input id="q" placeholder="ابحث عن عضو بالاسم أو القسم…">${ic('search',20)}</div>
   <select id="fc" style="margin-bottom:14px"><option value="">كل اللجان</option>${COMMS.map(c => `<option value="${c.k}">${c.t}</option>`).join('')}</select><div class="mg" id="mg"></div></div>`;
