@@ -881,5 +881,343 @@ document.addEventListener('click', async e => {
 
 (async () => { main.innerHTML = loader; await Promise.all([loadMe(), loadSettings()]); render(); })();
 </script>
+  <style>
+.cbar2{display:flex;gap:6px;align-items:center}
+.cbar2 input[name=t]{flex:1;border-radius:99px;padding:12px 18px}
+.cbar2 .ib{font-size:1.35rem;padding:6px;cursor:pointer;line-height:1}
+.pnl{max-height:200px;overflow-y:auto;background:#fff;border:1px solid var(--bd);border-radius:18px;padding:10px;margin-bottom:8px}
+.pnl h5{font-size:.8rem;color:var(--mut);margin:6px 4px}
+.pnl .eg{display:flex;flex-wrap:wrap}
+.pnl button{background:none;border:0;font-size:1.5rem;padding:4px 6px;cursor:pointer}
+.pnl .sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.pnl .sg button{padding:0}
+.stkr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--c,#2563eb);color:#fff;border-radius:22px;padding:10px 14px;min-width:96px}
+.stkr span{font-size:2.6rem;line-height:1.1}.stkr b{font-size:.85rem}
+.msg .mb.stk,.msg.me .mb.stk{background:none;border:0;padding:0}
+.mb.stk .mt{color:var(--mut)}
+.mi{max-width:100%;max-height:300px;border-radius:14px;display:block;cursor:zoom-in;margin-bottom:4px}
+.pv{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:6px;margin-bottom:8px}
+.pv img{height:60px;border-radius:10px}
+.gal{display:grid;gap:4px;margin:12px 0 8px;border-radius:20px;overflow:hidden}
+.gal.g1{grid-template-columns:1fr}.gal.g2,.gal.g3,.gal.g4{grid-template-columns:1fr 1fr}
+.gal img{width:100%;height:100%;object-fit:cover;aspect-ratio:4/3;cursor:zoom-in;display:block}
+.gal.g1 img{aspect-ratio:16/10}
+.gal.g3 img:first-child{grid-column:1/-1;aspect-ratio:16/9}
+.ar2{display:flex;gap:8px;margin-top:12px}
+.ar2 button{font-family:inherit;background:var(--bg);border:1px solid var(--bd);color:var(--navy);border-radius:99px;padding:8px 16px;font-weight:600;cursor:pointer}
+.ar2 button.on{background:#fde8ee;border-color:#f9a8c0;color:var(--no)}
+.cmts{margin-top:12px;border-top:1px solid var(--bd);padding-top:12px;text-align:right}
+.cmi{display:flex;gap:10px;margin-bottom:12px}
+.cmi .bx{background:var(--bg);border-radius:16px;padding:8px 14px;flex:1;min-width:0}
+.cmi .bx b{font-size:.85rem}
+.cmi .bx p{margin:0;color:var(--navy);line-height:1.8;word-break:break-word}
+.cmi .bx small{color:var(--mut)}
+.cmf{display:flex;gap:8px}.cmf input{border-radius:99px;padding:10px 16px}
+</style>
+<script>
+(() => {
+const STICKERS = [
+ {id:'hi',e:'👋',t:'مرحباً',c:'#2563eb'},{id:'thx',e:'🙏',t:'شكراً',c:'#0f9d78'},{id:'wow',e:'🤩',t:'رائع',c:'#d4a72c'},{id:'gj',e:'👏',t:'أحسنت',c:'#7c3aed'},
+ {id:'ok',e:'👌',t:'تمام',c:'#0ea5e9'},{id:'lol',e:'😂',t:'هههه',c:'#f59e0b'},{id:'love',e:'😍',t:'أحببتها',c:'#e11d48'},{id:'sad',e:'😢',t:'حزين',c:'#64748b'},
+ {id:'fire',e:'🔥',t:'نار',c:'#ea580c'},{id:'think',e:'🤔',t:'أفكر',c:'#0891b2'},{id:'party',e:'🎉',t:'مبروك',c:'#db2777'},{id:'sci',e:'🔬',t:'علم',c:'#0b1430'},
+ {id:'rocket',e:'🚀',t:'انطلاق',c:'#1d4ed8'},{id:'bulb',e:'💡',t:'فكرة',c:'#ca8a04'},{id:'coffee',e:'☕',t:'قهوة؟',c:'#78350f'},{id:'night',e:'🌙',t:'تصبحون على خير',c:'#312e81'}];
+const EMO = [
+ ['وجوه','😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😋 😎 🤩 🥳 🤔 🤨 😐 😴 😢 😭 😤 😡 🥺 😱 🤯 😬 🙄'],
+ ['إيماءات','👍 👎 👏 🙌 🙏 🤝 💪 ✌️ 🤞 👌 👋 🤙 ☝️ 👆 👇 👉 👈 ✋'],
+ ['قلوب ونجوم','❤️ 🧡 💛 💚 💙 💜 🖤 🤍 💔 💕 💖 💯 ✨ 🔥 ⭐ 🌟'],
+ ['علوم ودراسة','🔬 🧪 🧬 🔭 💻 ⌨️ 📱 🤖 ⚙️ 🔧 💡 🚀 🛰️ 📚 🎓 📝 📊 🏆 🥇 🎯'],
+ ['متنوعة','🎉 🎊 🎁 ☕ 🍕 🌙 ☀️ 🌈 🌹 ⚽ 🎮 🎧 📷']];
+const findStk = c => STICKERS.find(s => s.e + ' ' + s.t === c);
+const stickerHTML = c => { const s = findStk(c); return s ? `<div class="stkr" style="--c:${s.c}"><span>${s.e}</span><b>${esc(s.t)}</b></div>` : esc(c); };
+const MEDIA = /^https:\/\/[A-Za-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/media\/[A-Za-z0-9._\/-]+$/;
+const okImg = u => MEDIA.test(u || '') ? esc(u) : '';
+let CSEND = null, CPEND = null, CURG = null, GMEM = [], GR = [], GC = {}, GM = new Set(), AS = {}, ML = new Set();
+
+// ===== الصور =====
+const compress = (file, max, q) => new Promise((res, rej) => {
+  const im = new Image(), u = URL.createObjectURL(file);
+  im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas');
+    c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+    c.toBlob(b => b ? res(b) : rej(new Error('img')), 'image/jpeg', q); };
+  im.onerror = () => rej(new Error('img')); im.src = u; });
+async function uploadMedia(file){
+  const blob = await compress(file, 1280, .8), path = `${me.id}/${crypto.randomUUID()}.jpg`;
+  const up = await sb.storage.from('media').upload(path, blob, {contentType:'image/jpeg'});
+  if (up.error) throw up.error;
+  return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+}
+
+// ===== شريط الكتابة =====
+const composer = ph => `<div id="pnl" class="pnl" style="display:none"></div><div id="prev"></div>
+<form id="cf" class="cbar2"><button type="button" class="ib" data-a="emo" aria-label="إيموجي">😊</button><button type="button" class="ib" data-a="stk" aria-label="ستيكر">🎭</button>
+<label class="ib" aria-label="صورة">🖼️<input type="file" id="cpic" accept="image/*" hidden></label><label class="ib" aria-label="كاميرا">📷<input type="file" id="ccam" accept="image/*" capture="environment" hidden></label>
+<input name="t" maxlength="1000" placeholder="${ph}" autocomplete="off"><button class="btn gold sm" aria-label="إرسال">${ic('send',18)}</button></form>`;
+const setPend = f => { CPEND = f; const p = $('#prev'); if (p) p.innerHTML = f ? `<div class="pv"><img src="${URL.createObjectURL(f)}" alt=""><button type="button" class="ib" data-a="pvx">✕</button></div>` : ''; };
+function bindComposer(){
+  const f = $('#cf'); if (!f) return;
+  ['cpic','ccam'].forEach(id => { const i = $('#' + id); i.onchange = () => { const x = i.files[0]; i.value = ''; if (!x) return; if (!x.type.startsWith('image/')) return toast('اختر صورة'); setPend(x); }; });
+  f.onsubmit = async e => {
+    e.preventDefault(); const t = f.t.value.trim(); if (!t && !CPEND) return;
+    const b = f.querySelector('.btn'); b.disabled = true;
+    try {
+      const url = CPEND ? await uploadMedia(CPEND) : null;
+      if (await CSEND({content: t || '📷 صورة', kind:'text', image_url: url})) { f.t.value = ''; setPend(null); } else toast('تعذّر الإرسال');
+    } catch (err) { toast('تعذّر رفع الصورة'); }
+    b.disabled = false;
+  };
+}
+function showPanel(kind){
+  const p = $('#pnl'); if (!p) return;
+  if (p.dataset.k === kind && p.style.display !== 'none') { p.style.display = 'none'; return; }
+  p.dataset.k = kind; p.style.display = 'block';
+  p.innerHTML = kind === 'emo'
+    ? EMO.map(([t, s]) => `<h5>${t}</h5><div class="eg">${s.split(' ').map(e => `<button type="button" data-a="emj" data-e="${e}">${e}</button>`).join('')}</div>`).join('')
+    : `<div class="sg">${STICKERS.map(s => `<button type="button" data-a="stks" data-id="${s.id}">${stickerHTML(s.e + ' ' + s.t)}</button>`).join('')}</div>`;
+}
+
+// ===== فقاعات الرسائل =====
+function bub(r, t){
+  const uid = t === 'd' ? r.sender_id : r.user_id, own = uid === me.id, p = MB[uid];
+  const pre = t === 'g' ? 'msg' : t === 'd' ? 'dm' : 'gm', act = t === 'g' ? 'dm' : t === 'd' ? 'ddm' : 'gdm';
+  const del = own || (t !== 'd' && me.role === 'admin') || (t === 'k' && CURG && CURG.owner_id === me.id);
+  const sk = r.kind === 'sticker', img = okImg(r.image_url), showN = t !== 'd' && !own;
+  const body = sk ? stickerHTML(r.content)
+    : `${img ? `<img class="mi" src="${img}" data-a="img" data-u="${img}" alt="" loading="lazy">` : ''}${img && r.content === '📷 صورة' ? '' : `<div>${esc(r.content)}</div>`}`;
+  return `<div class="msg ${own ? 'me' : ''}" id="${pre}${r.id}">${showN ? `<a href="#u/${uid}">${av(p || {full_name: r.author_name}, 34)}</a>` : ''}<div class="mb${sk ? ' stk' : ''}">${showN ? `<div class="mn"><a href="#u/${uid}">${esc(r.author_name || p?.full_name || 'عضو')}</a></div>` : ''}${body}<div class="mt">${hm(r.created_at)}${del ? ` <a href="#" data-a="${act}" data-id="${r.id}">🗑</a>` : ''}</div></div></div>`;
+}
+function pushB(id, html, force){
+  const box = $('#mbox'); if (!box || document.getElementById(id)) return;
+  $('#empty')?.remove();
+  const near = box.scrollHeight - box.scrollTop - box.clientHeight < 160;
+  box.insertAdjacentHTML('beforeend', html);
+  if (near || force) box.scrollTop = box.scrollHeight;
+}
+const emptyMsg = '<div class="c mut" id="empty" style="padding:30px">ابدأ المحادثة 👋</div>';
+
+// المحادثة العامة
+window.pChat = async function(){
+  main.innerHTML = `<div class="chw">${cts('chat')}<div class="chat"><div id="mbox" class="msgs">${loader}</div>${composer('اكتب رسالة للجميع…')}</div></div>`;
+  const {data} = await sb.from('messages').select('*').order('created_at', {ascending:false}).limit(100);
+  const box = $('#mbox'); if (!box || view !== 'chat') return;
+  box.innerHTML = (data || []).length ? data.reverse().map(r => bub(r, 'g')).join('') : emptyMsg;
+  box.scrollTop = box.scrollHeight;
+  chan = sb.channel('chat-room')
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'messages'}, p => pushB('msg' + p.new.id, bub(p.new, 'g')))
+    .on('postgres_changes', {event:'DELETE', schema:'public', table:'messages'}, p => $('#msg' + p.old.id)?.remove()).subscribe();
+  CSEND = async o => { const {data, error} = await sb.from('messages').insert(o).select().single(); if (error) return false; pushB('msg' + data.id, bub(data, 'g'), true); return true; };
+  bindComposer();
+};
+
+// الرسائل الخاصة
+window.pDM = async function(id){
+  const p = MB[id]; if (!p || id === me.id) return nav('#inbox');
+  curDM = id;
+  main.innerHTML = `<div class="chw"><div class="chat"><div class="dh"><a href="#inbox" class="ib" style="font-size:1.5rem">→</a><a href="#u/${id}" class="who">${av(p,46)}<div><b>${esc(p.full_name)}</b><small class="mut" style="display:block">${esc(cn(p.committee))}</small></div></a></div>
+  <div id="mbox" class="msgs">${loader}</div>${composer('اكتب رسالة…')}</div></div>`;
+  const {data} = await sb.from('dms').select('*').or(`and(sender_id.eq.${me.id},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${me.id})`).order('created_at', {ascending:false}).limit(150);
+  const box = $('#mbox'); if (!box || curDM !== id || view !== 'dm') return;
+  box.innerHTML = (data || []).length ? data.reverse().map(r => bub(r, 'd')).join('') : emptyMsg;
+  box.scrollTop = box.scrollHeight;
+  await sb.rpc('mark_read', {p_other: id}); refreshUnread();
+  CSEND = async o => { const {data, error} = await sb.from('dms').insert({receiver_id: id, ...o}).select().single(); if (error) return false; pushB('dm' + data.id, bub(data, 'd'), true); return true; };
+  bindComposer();
+};
+window.onDM = async function(p){
+  const m = p.new;
+  if (view === 'dm' && curDM === m.sender_id) { pushB('dm' + m.id, bub(m, 'd'), true); await sb.rpc('mark_read', {p_other: m.sender_id}); }
+  else { unread++; drawMenu(); if (view === 'inbox') pInbox(); else toast('💬 رسالة جديدة من ' + (MB[m.sender_id]?.full_name || 'عضو')); }
+};
+
+// ===== المجموعات =====
+async function loadGroups(){
+  const [g, c, m] = await Promise.all([sb.from('groups').select('*').order('created_at', {ascending:false}), sb.rpc('group_counts'), sb.from('group_members').select('group_id').eq('user_id', me.id)]);
+  GR = g.data || []; GC = {}; (c.data || []).forEach(x => GC[x.group_id] = Number(x.n)); GM = new Set((m.data || []).map(x => x.group_id));
+}
+async function pGroups(){
+  main.innerHTML = `<div class="chw" style="max-width:900px">${cts('groups')}<div class="ar" style="margin:6px 0 14px"><h2>المجموعات</h2><button class="btn gold sm" data-a="gnew">＋ مجموعة جديدة</button></div><div id="gl">${loader}</div></div>`;
+  await loadGroups(); if (view !== 'groups' || !$('#gl')) return;
+  const card = g => `<a class="mc" href="#group/${g.id}"><span style="font-size:2.4rem">${esc(g.icon || '💬')}</span><b>${esc(g.name)}</b><small>${esc(g.description || '')}</small><small>${GC[g.id] || 0} عضو${g.is_private ? ' · 🔒 خاصة' : ''}</small>${GM.has(g.id) ? '' : '<span class="chip" style="font-size:.75rem;padding:4px 12px">عرض / انضمام</span>'}</a>`;
+  const my = GR.filter(g => GM.has(g.id)), ot = GR.filter(g => !GM.has(g.id));
+  $('#gl').innerHTML = `<h3 style="margin:8px 0">مجموعاتي</h3><div class="mg">${my.map(card).join('') || '<p class="mut">لم تنضم لأي مجموعة بعد.</p>'}</div><h3 style="margin:22px 0 8px">اكتشف مجموعات</h3><div class="mg">${ot.map(card).join('') || '<p class="mut">لا توجد مجموعات أخرى.</p>'}</div>`;
+}
+function newGroupModal(){
+  $('#modal').innerHTML = `<div class="box"><button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button><h3 style="margin-bottom:6px">مجموعة جديدة</h3>
+  <form id="gf"><div class="fl">اسم المجموعة</div><input name="n" required maxlength="60"><div class="fl">وصف (اختياري)</div><input name="d" maxlength="300">
+  <div class="fl">الأيقونة</div><select name="i">${['💬','🔬','💻','🎨','🧪','📚','⚽','🎮','🚀','🎓'].map(x => `<option>${x}</option>`).join('')}</select>
+  <label class="opt" style="margin-top:14px"><span class="rd"></span><div><b>مجموعة خاصة</b><small>لا تظهر لغير أعضائها، ويضيف المنشئ الأعضاء بنفسه.</small></div><input type="checkbox" name="p"></label>
+  <button class="btn gold block" style="margin-top:14px">إنشاء</button></form></div>`;
+  $('#modal').style.display = 'flex';
+  $('#gf').onsubmit = async e => { e.preventDefault(); const f = e.target;
+    const {data, error} = await sb.from('groups').insert({name: f.n.value.trim(), description: f.d.value.trim() || null, icon: f.i.value, is_private: f.p.checked}).select().single();
+    if (error) return toast('تعذّر إنشاء المجموعة'); $('#modal').style.display = 'none'; nav('#group/' + data.id); };
+}
+async function pGroup(id){
+  const gid = +id; if (!gid) return nav('#groups');
+  main.innerHTML = loader;
+  const [g, mem] = await Promise.all([sb.from('groups').select('*').eq('id', gid).maybeSingle(), sb.from('group_members').select('user_id,role').eq('group_id', gid)]);
+  if (view !== 'group') return;
+  if (!g.data) { toast('المجموعة غير متاحة'); return nav('#groups'); }
+  CURG = g.data; GMEM = mem.data || [];
+  const isM = GMEM.some(x => x.user_id === me.id), owner = CURG.owner_id === me.id;
+  const head = `<div class="dh"><a href="#groups" class="ib" style="font-size:1.5rem">→</a><div class="who"><span style="font-size:2rem">${esc(CURG.icon || '💬')}</span><div><b>${esc(CURG.name)}</b><small class="mut" style="display:block">${GMEM.length} عضو${CURG.is_private ? ' · 🔒' : ''}</small></div></div>
+   <div class="ar" style="gap:6px;margin-inline-start:auto;flex-wrap:nowrap"><button class="btn line sm" data-a="gmem">الأعضاء</button>${isM && !owner ? '<button class="btn line sm" data-a="gleave">مغادرة</button>' : ''}${owner || me.role === 'admin' ? '<button class="btn no sm" data-a="gdel">حذف</button>' : ''}</div></div>`;
+  if (!isM) { main.innerHTML = `<div class="chw">${head}<div class="fcard fc2 c"><p class="mut" style="line-height:2;margin-bottom:14px">${esc(CURG.description || '')}</p>${CURG.is_private ? '<p class="mut">هذه مجموعة خاصة.</p>' : '<button class="btn gold" data-a="gjoin">انضم إلى المجموعة</button>'}</div></div>`; return; }
+  main.innerHTML = `<div class="chw"><div class="chat">${head}<div id="mbox" class="msgs">${loader}</div>${composer('اكتب رسالة للمجموعة…')}</div></div>`;
+  const {data} = await sb.from('group_messages').select('*').eq('group_id', gid).order('created_at', {ascending:false}).limit(100);
+  const box = $('#mbox'); if (!box || view !== 'group') return;
+  box.innerHTML = (data || []).length ? data.reverse().map(r => bub(r, 'k')).join('') : emptyMsg;
+  box.scrollTop = box.scrollHeight;
+  chan = sb.channel('grp-' + gid)
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'group_messages', filter:`group_id=eq.${gid}`}, p => pushB('gm' + p.new.id, bub(p.new, 'k')))
+    .on('postgres_changes', {event:'DELETE', schema:'public', table:'group_messages'}, p => $('#gm' + p.old.id)?.remove()).subscribe();
+  CSEND = async o => { const {data, error} = await sb.from('group_messages').insert({group_id: gid, ...o}).select().single(); if (error) return false; pushB('gm' + data.id, bub(data, 'k'), true); return true; };
+  bindComposer();
+}
+function membersModal(){
+  const owner = CURG.owner_id === me.id, ids = new Set(GMEM.map(x => x.user_id)), cand = MBL.filter(p => !ids.has(p.id));
+  $('#modal').innerHTML = `<div class="box"><button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button><h3 style="margin-bottom:10px">أعضاء المجموعة (${GMEM.length})</h3>
+  ${owner && cand.length ? `<div class="g2" style="grid-template-columns:1fr auto;margin:12px 0"><select id="gsel"><option value="">إضافة عضو…</option>${cand.map(p => `<option value="${p.id}">${esc(p.full_name)}</option>`).join('')}</select><button class="btn navy sm" data-a="gadd">إضافة</button></div>` : ''}
+  ${GMEM.map(x => { const p = MB[x.user_id]; return `<div class="who" style="padding:8px 0;border-top:1px solid var(--bd)"><a href="#u/${x.user_id}" class="who">${av(p,40)}<b>${esc(p?.full_name || 'عضو')}</b></a>${x.role === 'owner' ? '<span class="badge">المنشئ</span>' : ''}${owner && x.role !== 'owner' ? `<button class="btn no sm" style="margin-inline-start:auto" data-a="grm" data-id="${x.user_id}">إزالة</button>` : ''}</div>`; }).join('')}</div>`;
+  $('#modal').style.display = 'flex';
+}
+async function reloadMembers(){ const r = await sb.from('group_members').select('user_id,role').eq('group_id', CURG.id); GMEM = r.data || []; membersModal(); }
+
+// ===== المنشورات: صور وإعجاب وتعليق =====
+const statsRow = a => { const s = AS[a.id] || {likes:0, comments:0}, l = ML.has(a.id);
+  return `<button class="${l ? 'on' : ''}" data-a="lk" data-id="${a.id}">${l ? '❤️' : '🤍'} ${s.likes}</button><button data-a="cm" data-id="${a.id}">💬 ${s.comments}</button>`; };
+function drawStats(n){ const a = acts.find(x => x.id === n), el = $('#st' + n); if (a && el) el.innerHTML = statsRow(a); }
+window.loadActs = async function(){
+  const [a, c, s] = await Promise.all([sb.from('activities').select('*').order('event_date', {ascending:true}), sb.rpc('activity_counts'), sb.rpc('activity_stats')]);
+  acts = a.data || []; counts = {}; (c.data || []).forEach(x => counts[x.activity_id] = Number(x.n));
+  AS = {}; (s.data || []).forEach(x => AS[x.activity_id] = {likes: Number(x.likes), comments: Number(x.comments)});
+  mine = new Set(); ML = new Set();
+  if (me && me.status === 'approved') {
+    const [r, l] = await Promise.all([sb.from('registrations').select('activity_id').eq('user_id', me.id), sb.from('likes').select('activity_id').eq('user_id', me.id)]);
+    mine = new Set((r.data || []).map(x => x.activity_id)); ML = new Set((l.data || []).map(x => x.activity_id));
+  }
+};
+window.evCard = function(a){
+  const n = counts[a.id] || 0, past = isPast(a), full = a.capacity && n >= a.capacity, joined = mine.has(a.id);
+  let b = '';
+  if (safeUrl(a.reg_link)) b += `<a class="btn gold sm" target="_blank" rel="noopener" href="${safeUrl(a.reg_link)}">رابط التسجيل ${ic('ext',16)}</a>`;
+  if (!past) {
+    if (!me) b += '<a class="btn line sm" href="#login">سجّل الدخول للمشاركة</a>';
+    else if (me.status === 'approved') b += joined ? `<button class="btn line sm" data-a="leave" data-id="${a.id}">إلغاء التسجيل ✓</button>` : full ? '<button class="btn line sm" disabled>اكتمل العدد</button>' : `<button class="btn navy sm" data-a="join" data-id="${a.id}">سجّل في الفعالية</button>`;
+  }
+  const imgs = (a.images || []).map(okImg).filter(Boolean).slice(0, 4);
+  const gal = imgs.length ? `<div class="gal g${imgs.length}">${imgs.map(u => `<img src="${u}" data-a="img" data-u="${u}" alt="" loading="lazy">`).join('')}</div>` : '';
+  return `<div class="cd ev"><span class="chip">${past ? 'انتهت' : 'قادمة'}</span><h3 style="margin-top:14px">${esc(a.title)}</h3><p>${esc(a.description)}</p>${gal}
+  <div class="meta"><span>${ic('calendar',18)}${fd(a.event_date)}</span>${a.location ? `<span>${ic('pin',18)}${esc(a.location)}</span>` : ''}<span>${ic('users',18)}${n}${a.capacity ? ' / ' + a.capacity : ''} مسجّل</span></div>
+  <div class="ar2" id="st${a.id}">${statsRow(a)}</div><div class="cmts" id="cmt${a.id}" style="display:none"></div><div class="row">${b}</div></div>`;
+};
+async function loadCmts(n){
+  const box = $('#cmt' + n); if (!box) return;
+  if (!me || me.status !== 'approved') { box.innerHTML = '<p class="mut c">سجّل الدخول كعضو لقراءة التعليقات والمشاركة.</p>'; return; }
+  box.innerHTML = loader;
+  const {data} = await sb.from('comments').select('*').eq('activity_id', n).order('created_at');
+  const list = (data || []).map(c => `<div class="cmi">${av(MB[c.user_id] || {full_name: c.author_name}, 36)}<div class="bx"><b><a href="#u/${c.user_id}">${esc(c.author_name || 'عضو')}</a></b><p>${esc(c.content)}</p><small>${shortT(c.created_at)}${(c.user_id === me.id || me.role === 'admin') ? ` · <a href="#" data-a="cmd" data-id="${c.id}" data-n="${n}">حذف</a>` : ''}</small></div></div>`).join('');
+  box.innerHTML = list + `<form class="cmf" data-n="${n}"><input placeholder="اكتب تعليقاً…" maxlength="500" required><button class="btn navy sm">نشر</button></form>`;
+  if (AS[n]) { AS[n].comments = (data || []).length; drawStats(n); }
+}
+window.tEv = async function(){
+  await loadActs();
+  const up = acts.filter(a => !isPast(a)).length;
+  $('#ac').innerHTML = `<h1>إدارة الفعاليات والمنشورات</h1><p class="sub">انشر فعالية مع صور، ويتفاعل معها الأعضاء بالإعجاب والتعليق</p>
+  <form class="pan" id="af"><h3><i class="g">${ic('calplus',24)}</i>فعالية / منشور جديد</h3>
+   <div class="fl" style="margin-top:0">عنوان الفعالية</div><input name="ttl" required placeholder="مثال: ورشة عمل: مدخل إلى علم البيانات">
+   <div class="g2"><div><div class="fl">التاريخ</div><input type="date" name="dt" required></div><div><div class="fl">الوقت (اختياري)</div><input type="time" name="tm"></div></div>
+   <div class="fl">الموقع</div><input name="loc" placeholder="مثال: قاعة المؤتمرات – المبنى الرئيسي">
+   <div class="fl">رابط التسجيل (اختياري)</div><input name="lnk" type="url" placeholder="https://forms.gle/…">
+   <div class="fl">عدد المقاعد (اختياري)</div><input name="cap" type="number" min="1">
+   <div class="fl">${ic('camera',20)}صور (حتى 4)</div><input type="file" id="aimg" accept="image/*" multiple><div id="aprev" class="ar" style="justify-content:flex-start;gap:8px;margin-top:8px"></div>
+   <div class="fl">الوصف</div><textarea name="dsc" placeholder="وصف موجز للفعالية وما ينتظر الحضور…"></textarea>
+   <button class="btn navy block" style="margin-top:22px">نشر ${ic('ext',20)}</button></form>
+  <h2 style="margin:26px 0 14px;font-size:1.5rem">الفعاليات القادمة <span class="cnt">${up}</span></h2>
+  ${acts.slice().reverse().map(a => { const t = okImg((a.images || [])[0]), s = AS[a.id] || {likes:0, comments:0};
+   return `<div class="pan"><div class="ar"><div class="who">${t ? `<img src="${t}" alt="" style="width:56px;height:56px;border-radius:14px;object-fit:cover">` : ''}<div><b>${esc(a.title)}</b> ${isPast(a) ? '<span class="st2 s-rejected">منتهية</span>' : ''}<div class="mut">${fd(a.event_date)}${a.location ? ' · ' + esc(a.location) : ''} · ❤️ ${s.likes} · 💬 ${s.comments}</div></div></div>
+   <div class="ar" style="gap:8px"><button class="btn line sm" data-a="regs" data-id="${a.id}">المسجلون</button><button class="btn no sm" data-a="del" data-id="${a.id}">حذف</button></div></div><div id="rg${a.id}" class="mut" style="margin-top:8px;line-height:2"></div></div>`; }).join('') || '<div class="pan c mut">لا توجد فعاليات بعد.</div>'}`;
+  $('#aimg').onchange = e => { const fs = [...e.target.files].slice(0, 4); $('#aprev').innerHTML = fs.map(f => `<img src="${URL.createObjectURL(f)}" alt="" style="height:64px;border-radius:12px">`).join(''); };
+  $('#af').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, b = f.querySelector('button.navy'); b.disabled = true;
+    try {
+      const urls = []; for (const x of [...$('#aimg').files].slice(0, 4)) urls.push(await uploadMedia(x));
+      const {error} = await sb.from('activities').insert({title: f.ttl.value.trim(), description: f.dsc.value.trim(), location: f.loc.value.trim(),
+        event_date: f.dt.value ? new Date(f.dt.value + 'T' + (f.tm.value || '00:00')).toISOString() : null,
+        reg_link: f.lnk.value.trim() || null, capacity: f.cap.value ? +f.cap.value : null, images: urls});
+      if (error) throw error; toast('تم النشر ✓'); tEv();
+    } catch (err) { toast('تعذّر النشر'); b.disabled = false; }
+  };
+};
+
+// ===== القائمة والتوجيه =====
+window.drawMenu = function(){
+  if (!$('#mbtn')) return;
+  $('#mbtn').innerHTML = ic('menu', 30) + (unread ? '<i class="dot"></i>' : '');
+  const l = [['#home','الرئيسية'],['#events','الفعاليات والمنشورات']];
+  if (!me) l.push(['#join','انضم إلينا'],['#login','تسجيل الدخول']);
+  else if (me.status === 'approved') {
+    l.push(['#inbox','💬 الرسائل' + (unread ? ` (${unread})` : '')],['#groups','👥 المجموعات'],['#chat','🗨️ المحادثة العامة'],['#members','🧑‍🤝‍🧑 الأعضاء'],['#me','👤 ملفي الشخصي']);
+    if (me.role === 'admin') l.push(['#admin','لوحة الإدارة']);
+  }
+  $('#menu').innerHTML = l.map(([h, t]) => `<a href="${h}">${t}</a>`).join('') + (me ? '<button data-a="out" style="color:var(--no)">تسجيل الخروج</button>' : '');
+};
+const oldRender = window.render;
+window.removeEventListener('hashchange', oldRender);
+window.render = async function(){
+  leaveChat(); $('#menu').style.display = 'none'; $('#modal').style.display = 'none'; CSEND = null; CPEND = null;
+  const [v0, arg] = (location.hash || '#home').slice(1).split('/');
+  const MEM = ['chat','inbox','dm','members','u','me','groups','group'];
+  let v = v0;
+  if (![...['home','events','join','login','admin','pending'], ...MEM].includes(v)) v = 'home';
+  if (!me) { if (['admin','pending', ...MEM].includes(v)) v = 'login'; }
+  else if (me.status !== 'approved') { if (!['home','events'].includes(v)) v = 'pending'; }
+  else { if (['join','login','pending'].includes(v)) v = 'home'; if (v === 'admin' && me.role !== 'admin') v = 'home'; }
+  view = v; drawShell(); window.scrollTo(0, 0);
+  const R = {home:pHome, events:pEvents, join:pJoin, login:pLogin, chat:pChat, admin:pAdmin, pending:pPending, inbox:pInbox, members:pMembers, me:pMe, dm:() => pDM(arg), u:() => pUser(arg), groups:pGroups, group:() => pGroup(arg)};
+  R[v]();
+};
+window.addEventListener('hashchange', () => window.render());
+
+// ===== الأزرار =====
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a, id = el.dataset.id;
+  if (a === 'emo' || a === 'stk') return showPanel(a);
+  if (a === 'emj') { const i = $('#cf')?.t; if (!i) return; const s = i.selectionStart ?? i.value.length, en = i.selectionEnd ?? s, em = el.dataset.e;
+    i.value = i.value.slice(0, s) + em + i.value.slice(en); i.focus(); i.setSelectionRange(s + em.length, s + em.length); return; }
+  if (a === 'stks') { const s = STICKERS.find(x => x.id === id); if (s && CSEND) { await CSEND({content: s.e + ' ' + s.t, kind:'sticker', image_url:null}); const p = $('#pnl'); if (p) p.style.display = 'none'; } return; }
+  if (a === 'pvx') return setPend(null);
+  if (a === 'img') { const u = okImg(el.dataset.u); if (!u) return;
+    $('#modal').innerHTML = `<div class="box" style="padding:8px;max-width:94vw;background:#0b1430"><img src="${u}" data-a="mx" style="width:100%;max-height:86vh;object-fit:contain;border-radius:14px;display:block;cursor:zoom-out" alt=""></div>`;
+    $('#modal').style.display = 'flex'; return; }
+  if (a === 'gnew') return newGroupModal();
+  if (a === 'gmem') return membersModal();
+  if (a === 'gjoin') { const {error} = await sb.from('group_members').insert({group_id: CURG.id, user_id: me.id, role:'member'}); if (error) return toast('تعذّر الانضمام'); return pGroup(CURG.id); }
+  if (a === 'gleave') { if (!confirm('مغادرة المجموعة؟')) return; await sb.from('group_members').delete().eq('group_id', CURG.id).eq('user_id', me.id); return nav('#groups'); }
+  if (a === 'gdel') { if (!confirm('حذف المجموعة وكل رسائلها نهائياً؟')) return; const {error} = await sb.from('groups').delete().eq('id', CURG.id); if (error) return toast('تعذّر الحذف'); return nav('#groups'); }
+  if (a === 'gadd') { const v = $('#gsel')?.value; if (!v) return; const {error} = await sb.from('group_members').insert({group_id: CURG.id, user_id: v, role:'member'}); if (error) return toast('تعذّرت الإضافة'); return reloadMembers(); }
+  if (a === 'grm') { if (!confirm('إزالة هذا العضو؟')) return; await sb.from('group_members').delete().eq('group_id', CURG.id).eq('user_id', id); return reloadMembers(); }
+  if (a === 'gdm') { const {error} = await sb.from('group_messages').delete().eq('id', id); if (error) return toast('تعذّر الحذف'); return $('#gm' + id)?.remove(); }
+  if (a === 'lk') {
+    if (!me || me.status !== 'approved') return nav('#login');
+    const n = +id, had = ML.has(n), s = AS[n] || (AS[n] = {likes:0, comments:0});
+    had ? ML.delete(n) : ML.add(n); s.likes += had ? -1 : 1; drawStats(n);
+    const {error} = had ? await sb.from('likes').delete().eq('activity_id', n).eq('user_id', me.id) : await sb.from('likes').insert({activity_id: n});
+    if (error) { had ? ML.add(n) : ML.delete(n); s.likes += had ? 1 : -1; drawStats(n); toast('تعذّر التنفيذ'); }
+    return;
+  }
+  if (a === 'cm') { const n = +id, box = $('#cmt' + n); if (!box) return; if (box.style.display === 'none') { box.style.display = 'block'; loadCmts(n); } else box.style.display = 'none'; return; }
+  if (a === 'cmd') { if (!confirm('حذف التعليق؟')) return; const {error} = await sb.from('comments').delete().eq('id', id); if (error) return toast('تعذّر الحذف'); return loadCmts(+el.dataset.n); }
+});
+document.addEventListener('submit', async e => {
+  const f = e.target.closest ? e.target.closest('.cmf') : null; if (!f) return;
+  e.preventDefault(); const i = f.querySelector('input'), t = i.value.trim(); if (!t) return;
+  const n = +f.dataset.n; i.disabled = true;
+  const {error} = await sb.from('comments').insert({activity_id: n, content: t});
+  i.disabled = false; if (error) return toast('تعذّر النشر'); i.value = ''; loadCmts(n);
+});
+})();
+</script>
 </body>
 </html>
