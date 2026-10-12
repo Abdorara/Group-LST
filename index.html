@@ -1225,5 +1225,37 @@ document.addEventListener('submit', async e => {
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 </script>
+<style>
+#inst{position:fixed;bottom:18px;left:18px;z-index:40;display:none;align-items:center;gap:8px;background:var(--gold);color:var(--navy);border:0;border-radius:99px;padding:12px 20px;font-family:inherit;font-weight:700;font-size:.95rem;box-shadow:0 10px 26px rgba(11,20,48,.3);cursor:pointer}
+</style>
+<button id="inst" aria-label="تثبيت التطبيق">⬇️ تثبيت التطبيق</button>
+<script>
+(() => {
+  const APK_URL = ''; // بعد رفع ملف الـ APK للمستودع اكتب اسمه هنا، مثل: 'lst-club.apk'
+  const btn = document.getElementById('inst');
+  const standalone = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;
+  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const pages = ['', '#home', '#events', '#join', '#login', '#me'];
+  let dp = null, done = false;
+  try { done = localStorage.getItem('lst_installed') === '1'; } catch (e) {}
+  const refresh = () => { btn.style.display = (!standalone && !done && pages.includes(location.hash)) ? 'inline-flex' : 'none'; };
+  addEventListener('hashchange', refresh); refresh();
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e; });
+  addEventListener('appinstalled', () => { done = true; try { localStorage.setItem('lst_installed', '1'); } catch (e) {} refresh(); });
+  btn.onclick = async () => {
+    if (dp) { dp.prompt(); try { await dp.userChoice; } catch (e) {} dp = null; return; }
+    const steps = iOS
+      ? 'افتح الموقع في <b>Safari</b>، ثم اضغط زر المشاركة ⬆️، ثم اختر <b>«إضافة إلى الشاشة الرئيسية»</b>.'
+      : 'في Chrome اضغط ⋮ (أعلى المتصفح)، ثم اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>.';
+    const m = document.getElementById('modal');
+    m.innerHTML = '<div class="box"><button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>'
+      + '<h3 style="margin-bottom:6px">تثبيت تطبيق LST CLUB</h3>'
+      + '<p class="mut" style="line-height:2;margin:10px 0 16px">' + steps + '</p>'
+      + ((APK_URL && !iOS) ? '<a class="btn gold block" href="' + APK_URL + '" download>تحميل ملف APK</a>' : '')
+      + '</div>';
+    m.style.display = 'flex';
+  };
+})();
+</script>
 </body>
 </html>
