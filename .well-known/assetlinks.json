@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "dev.pages.lst_club.twa",
+        "sha256_cert_fingerprints": ["B8:5B:80:60:BC:8F:62:E8:44:4A:B7:27:6E:62:BB:C0:07:57:A6:6B:23:9C:7F:AD:C9:5E:B4:DC:01:36:13:A5"]
+      }
+    }]
