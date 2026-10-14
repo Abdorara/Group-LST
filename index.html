@@ -767,7 +767,7 @@ function tMb(){
   const draw = () => { const l = filt('mb'); $('#rs').textContent = `${a.length} عضو – ${l.length} معروض`;
     $('#tb').innerHTML = `<div class="tw"><table><thead><tr><th>العضو</th><th>القسم</th><th>اللجنة</th><th>الجوال</th><th>إجراء</th></tr></thead><tbody>${l.map(p => `<tr>
     <td><div class="who"><span class="av">${esc(ini(p.full_name))}</span><div><b>${esc(p.full_name)}</b><small>${esc(p.card_no)} · انضم ${new Date(p.created_at).toLocaleDateString('ar-u-nu-latn', {dateStyle:'medium'})}</small></div></div></td>
-    <td>${esc(p.specialization)}<small>${esc(p.year || '')}</small></td><td>${esc(cn(p.committee))}</td><td>${esc(p.phone || '—')}</td>
+    <td>${esc(p.specialization)}<small>${esc(p.year || '')}</small></td><td><select data-cm="${p.id}" style="padding:8px 12px;border-radius:12px;font-size:.85rem"><option value="">—</option>${COMMS.map(c => `<option value="${c.k}" ${p.committee === c.k ? 'selected' : ''}>${esc(c.t)}</option>`).join('')}</select></td><td>${esc(p.phone || '—')}</td>
    <td><div class="ar" style="justify-content:flex-start;gap:8px">${p.role === 'admin' ? `<span class="badge">مشرف</span>${p.id !== me.id ? `<button class="btn line sm" data-a="rmadm" data-id="${p.id}">إلغاء الإشراف</button>` : ''}` : `<button class="btn navy sm" data-a="mkadm" data-id="${p.id}">ترقية لمشرف</button><button class="btn no sm" data-a="rej" data-id="${p.id}">إيقاف</button>`}</div></td>`).join('') || '<tr><td colspan="5" class="c mut">لا توجد نتائج</td></tr>'}</tbody></table></div>`; };
   ['q','fc','fd'].forEach(i => { $('#' + i).oninput = draw; $('#' + i).onchange = draw; }); draw();
 }
@@ -1255,6 +1255,153 @@ if ('serviceWorker' in navigator) window.addEventListener('load', () => navigato
       + '</div>';
     m.style.display = 'flex';
   };
+})();
+</script>
+  <script>
+(() => {
+// ===== الأقسام الثلاثة =====
+COMMS.splice(0, COMMS.length,
+ {k:'hr', t:'قسم الموارد البشرية', i:'users', d:'يهتم بتسيير أعضاء النادي. يتكفل بالتوظيف، التنظيم الداخلي، متابعة الفرق، والحفاظ على بيئة عمل جيدة لضمان التنسيق الفعال بين جميع الأعضاء.'},
+ {k:'ext', t:'قسم العلاقات الخارجية والاتصال', i:'megaphone', d:'يتكفل بالتواصل بين النادي والشركاء أو الممولين أو مختلف الهيئات. وهو مسؤول عن نشر المعلومات، إدارة التعاونات، والمحافظة على صورة إيجابية للنادي خارجياً.'},
+ {k:'design', t:'قسم التصميم والإعلام', i:'palette', d:'مسؤول عن إنشاء الهوية البصرية للنادي. يهتم بتصميم الملصقات، منشورات مواقع التواصل الاجتماعي، الفيديوهات، الصور، وكل المحتوى الإبداعي. كما يساهم في الترويج لنشاطات النادي بطريقة جذابة واحترافية.'});
+
+// ===== بطاقة العضوية الجديدة =====
+const PW = 60, PH = 90; // حجم الطباعة بالملّيمتر
+const rrect = (x, a, b, w, h, r) => { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); };
+window.drawCard = async function(p, cid){
+  p = p || me; cid = cid || 'idc';
+  const cv = document.getElementById(cid); if (!p || !cv) return;
+  const K = 2, W = 853 * K, H = 1280 * K, F = '"IBM Plex Sans Arabic", sans-serif', s = v => v * K;
+  try { await Promise.all([document.fonts.load('700 40px "IBM Plex Sans Arabic"', 'عربي LST'), document.fonts.load('500 30px "IBM Plex Sans Arabic"', 'عربي 123')]); } catch (e) {}
+  const li = (src, cors) => new Promise(r => { if (!src) return r(null); const i = new Image(); if (cors) i.crossOrigin = 'anonymous'; i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+  const [bg, ph] = await Promise.all([li('card-bg.jpg'), li(p.avatar_url, true)]);
+  if (!document.getElementById(cid)) return;
+  if (!bg) { if (!cv.nextElementSibling?.classList.contains('note')) cv.insertAdjacentHTML('afterend', '<p class="note">ارفع صورة قالب البطاقة باسم card-bg.jpg إلى المستودع لتظهر البطاقة.</p>'); return; }
+  cv.width = W; cv.height = H; cv.style.maxWidth = '360px';
+  const x = cv.getContext('2d'); x.direction = 'rtl';
+  x.drawImage(bg, 0, 0, W, H);
+  // الصورة داخل الدائرة
+  const cx = s(426), cy = s(556), r = s(154);
+  x.save(); x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.closePath(); x.clip();
+  if (ph) { const m = Math.min(ph.width, ph.height); x.drawImage(ph, (ph.width - m) / 2, (ph.height - m) / 2, m, m, cx - r, cy - r, 2 * r, 2 * r); }
+  else { x.fillStyle = '#dbe5fb'; x.fillRect(cx - r, cy - r, 2 * r, 2 * r); x.font = `700 ${s(90)}px ${F}`; x.fillStyle = '#27418f'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(ini(p.full_name).toUpperCase(), cx, cy + s(4)); }
+  x.restore();
+  // الاسم والقسم ورقم العضوية
+  x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+  let fs = 46; x.font = `700 ${s(fs)}px ${F}`;
+  while (x.measureText(p.full_name).width > s(430) && fs > 26) { fs -= 2; x.font = `700 ${s(fs)}px ${F}`; }
+  x.fillStyle = '#0b1430'; x.fillText(p.full_name, s(426), s(800));
+  const dep = COMMS.some(c => c.k === p.committee) ? cn(p.committee) : 'عضو في النادي';
+  let ds = 28; x.font = `600 ${s(ds)}px ${F}`;
+  while (x.measureText(dep).width > s(380) && ds > 18) { ds -= 1; x.font = `600 ${s(ds)}px ${F}`; }
+  const pw = Math.min(s(440), x.measureText(dep).width + s(56));
+  rrect(x, cx - pw / 2, s(822), pw, s(56), s(28)); x.fillStyle = '#0f2350'; x.fill();
+  x.fillStyle = '#fff'; x.textBaseline = 'middle'; x.fillText(dep, cx, s(852)); x.textBaseline = 'alphabetic';
+  x.font = `500 ${s(22)}px ${F}`; x.fillStyle = '#5f6f8f';
+  x.fillText(`LST-${new Date(p.created_at).getFullYear()}-${String(p.id).slice(0, 6).toUpperCase()}`, cx, s(916));
+  // رمز QR لصفحة النادي الرسمية
+  if (typeof qrcode === 'function') {
+    try {
+      let link = (typeof S !== 'undefined' && S.instagram) ? S.instagram : 'https://www.instagram.com/lst.scientific.club';
+      try { const u = new URL(link); link = u.origin + u.pathname; } catch (e) {}
+      const q = qrcode(0, 'M'); q.addData(link); q.make();
+      const n = q.getModuleCount(), bx = s(344), by = s(955), bs = s(166), pad = s(9), m = (bs - 2 * pad) / n;
+      rrect(x, bx, by, bs, bs, s(14)); x.fillStyle = '#fff'; x.fill(); x.fillStyle = '#0b1430';
+      for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) if (q.isDark(a, b)) x.fillRect(bx + pad + b * m, by + pad + a * m, m + .6, m + .6);
+    } catch (e) {}
+  }
+  // أزرار التحميل والطباعة
+  if (cid === 'idc') {
+    const row = cv.parentElement.querySelector('.ar');
+    if (row && !row.querySelector('[data-a="cdl2"]')) row.innerHTML = `<button class="btn gold sm" data-a="cdl2">${ic('download',16)}تحميل</button><button class="btn line sm" data-a="cprint">🖨️ طباعة</button>`;
+  }
+};
+function printCard(){
+  const cv = document.getElementById('idc'); if (!cv) return;
+  let url; try { url = cv.toDataURL('image/png'); } catch (e) { return toast('تعذّرت الطباعة'); }
+  const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;width:0;height:0;border:0;right:0;bottom:0'; document.body.appendChild(f);
+  const d = f.contentWindow.document; d.open();
+  d.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>بطاقة العضوية</title><style>@page{size:A4;margin:12mm}html,body{margin:0}body{display:flex;justify-content:center}img{width:${PW}mm;height:${PH}mm;display:block;outline:.3mm dashed #999;outline-offset:1mm}</style></head><body><img id="i" src="${url}"></body></html>`);
+  d.close();
+  const go = () => { f.contentWindow.focus(); f.contentWindow.print(); setTimeout(() => f.remove(), 60000); };
+  const im = d.getElementById('i'); if (im.complete) setTimeout(go, 250); else im.onload = () => setTimeout(go, 250);
+}
+
+// ===== نسيت كلمة المرور =====
+const _pl = window.pLogin;
+window.pLogin = function(){
+  _pl();
+  const f = document.getElementById('lf');
+  if (f && !document.getElementById('fgl')) f.querySelector('button.gold').insertAdjacentHTML('afterend', '<p class="note" id="fgl" style="text-align:center"><a href="#" data-a="forgot" style="color:var(--goldtx);font-weight:700">نسيت كلمة المرور؟</a></p>');
+};
+function forgotModal(){
+  const m = document.getElementById('modal');
+  m.innerHTML = `<div class="box"><button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button><h3 style="margin-bottom:6px">نسيت كلمة المرور؟</h3>
+  <p class="mut" style="line-height:2">اكتب رقمك الجامعي ورقم الجوال المسجّل في حسابك، وسنرسل الطلب لإدارة النادي لتزوّدك بكلمة مرور مؤقتة عبر الواتساب أو الاتصال. بعد الدخول بها غيّرها من «ملفي الشخصي».</p>
+  <form id="ff"><div class="fl">الرقم الجامعي</div><input name="c" required autocomplete="username"><div class="fl">رقم الجوال المسجّل</div><input name="p" type="tel" required>
+  <button class="btn gold block" style="margin-top:16px">إرسال الطلب</button></form></div>`;
+  m.style.display = 'flex';
+  document.getElementById('ff').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, b = f.querySelector('button'); b.disabled = true;
+    const {error} = await sb.rpc('request_password_reset', {p_card: f.c.value.trim(), p_phone: f.p.value.trim()});
+    if (error) { b.disabled = false; return toast('تعذّر إرسال الطلب'); }
+    f.outerHTML = '<p class="c" style="line-height:2.1;padding:14px 0">✅ تم استلام طلبك إن كانت البيانات صحيحة.<br>سيتواصل معك أحد المشرفين قريباً.</p>';
+  };
+}
+
+// ===== لوحة الإدارة: طلبات الاستعادة =====
+const _to = window.tOv;
+window.tOv = async function(){ await _to(); drawResets(); };
+async function drawResets(){
+  const ac = document.getElementById('ac'); if (!ac || view !== 'admin' || tab !== 'ov') return;
+  const {data} = await sb.from('password_resets').select('id,user_id,created_at,profiles(full_name,card_no,phone)').eq('status', 'open').order('created_at');
+  const ac2 = document.getElementById('ac'); if (!ac2 || tab !== 'ov') return;
+  document.getElementById('rsp-box')?.remove();
+  if (!data || !data.length) return;
+  ac2.insertAdjacentHTML('afterbegin', `<div class="pan" id="rsp-box" style="border-color:var(--gold)"><h3><i class="g">${ic('key',24)}</i>طلبات استعادة كلمة المرور <span class="cnt" style="background:#fde8ee;color:var(--no)">${data.length}</span></h3>
+  ${data.map(r => `<div class="ar" style="padding:10px 0;border-top:1px solid var(--bd)"><div><b>${esc(r.profiles?.full_name)}</b><div class="mut">${esc(r.profiles?.card_no)} · ${esc(r.profiles?.phone || '—')} · ${shortT(r.created_at)}</div></div>
+  <div class="ar" style="gap:8px"><button class="btn navy sm" data-a="rsp" data-id="${r.user_id}">تعيين كلمة مؤقتة</button><button class="btn line sm" data-a="rsx" data-id="${r.id}">تجاهل</button></div></div>`).join('')}</div>`);
+}
+
+// ===== الأزرار =====
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a;
+  if (a === 'forgot') { e.preventDefault(); return forgotModal(); }
+  if (a === 'cprint') return printCard();
+  if (a === 'cdl2') {
+    const cv = document.getElementById('idc'); if (!cv) return;
+    try { cv.toBlob(b => { const u = URL.createObjectURL(b), l = document.createElement('a'); l.href = u; l.download = 'LST-CLUB-card.png'; l.click(); setTimeout(() => URL.revokeObjectURL(u), 3000); }); }
+    catch (err) { toast('تعذّر تحميل البطاقة'); }
+    return;
+  }
+  if (a === 'cpw') { try { await navigator.clipboard.writeText(el.dataset.t); toast('تم النسخ ✓'); } catch (err) { toast('انسخها يدوياً'); } return; }
+  if (a === 'rsx') { await sb.from('password_resets').delete().eq('id', el.dataset.id); return drawResets(); }
+  if (a === 'rsp') {
+    if (!confirm('تعيين كلمة مرور مؤقتة جديدة لهذا العضو؟ ستنتهي جلساته الحالية.')) return;
+    const al = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789', rnd = crypto.getRandomValues(new Uint32Array(10));
+    const pw = [...rnd].map(v => al[v % al.length]).join('');
+    const {error} = await sb.rpc('admin_reset_password', {p_uid: el.dataset.id, p_pw: pw});
+    if (error) return toast('تعذّر التنفيذ');
+    const {data} = await sb.from('profiles').select('full_name,phone,card_no').eq('id', el.dataset.id).maybeSingle();
+    let ph = String(data?.phone || '').replace(/\D/g, ''); if (ph.startsWith('0')) ph = '213' + ph.slice(1);
+    const msg = encodeURIComponent(`مرحباً ${data?.full_name || ''}،\nكلمة المرور المؤقتة لحسابك في LST CLUB:\n${pw}\nالدخول برقمك الجامعي ${data?.card_no || ''}. غيّرها بعد الدخول من «ملفي الشخصي».`);
+    const m = document.getElementById('modal');
+    m.innerHTML = `<div class="box c"><button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button><h3>كلمة المرور المؤقتة</h3>
+    <p class="mut">${esc(data?.full_name || '')} · ${esc(data?.card_no || '')}</p>
+    <div style="font-family:monospace;font-size:1.8rem;letter-spacing:3px;background:var(--bg);border-radius:16px;padding:16px;margin:14px 0;direction:ltr">${pw}</div>
+    <div class="row" style="justify-content:center"><button class="btn navy sm" data-a="cpw" data-t="${pw}">نسخ</button>${ph ? `<a class="btn ok sm" target="_blank" rel="noopener" href="https://wa.me/${ph}?text=${msg}">إرسال عبر واتساب</a>` : ''}</div>
+    <p class="note">احفظها أو أرسلها الآن، فلن تظهر مرة أخرى.</p></div>`;
+    m.style.display = 'flex'; drawResets(); return;
+  }
+});
+
+// ===== تغيير قسم العضو (للمشرف) =====
+document.addEventListener('change', async e => {
+  const sel = e.target.closest ? e.target.closest('[data-cm]') : null; if (!sel) return;
+  const {error} = await sb.from('profiles').update({committee: sel.value || null}).eq('id', sel.dataset.cm);
+  toast(error ? 'تعذّر التغيير' : 'تم تغيير القسم ✓');
+});
 })();
 </script>
 </body>
