@@ -1404,5 +1404,381 @@ document.addEventListener('change', async e => {
 });
 })();
 </script>
+<style>
+.s-banned{background:#fde2e8;color:#be123c}
+.rpx{background:var(--bg);border-radius:14px;padding:10px 14px;margin:8px 0;line-height:1.9;word-break:break-word}
+.att-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--bd)}
+</style>
+<script>
+(() => {
+ST.banned = 'محظور';
+const KIND = {message:'رسالة في المحادثة العامة', group_message:'رسالة في مجموعة', dm:'رسالة خاصة', comment:'تعليق على فعالية', user:'ملف عضو'};
+const okMedia = u => /^https:\/\/[A-Za-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/media\/[A-Za-z0-9._\/-]+$/.test(u || '') ? esc(u) : '';
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const openModal = html => { const m = document.getElementById('modal'); m.innerHTML = html; m.style.display = 'flex'; };
+const mkResolved = id => sb.from('reports').update({status:'resolved', handled_at: new Date().toISOString()}).eq('id', id);
+
+// ===== أدوات مشتركة =====
+async function fetchAll(t){
+  const out = [];
+  for (let from = 0; ; from += 1000) {
+    const {data, error} = await sb.from(t).select('*').range(from, from + 999);
+    if (error) throw error; out.push(...(data || [])); if (!data || data.length < 1000) break;
+  }
+  return out;
+}
+const csvOf = rows => {
+  if (!rows.length) return '';
+  const cols = [...new Set(rows.flatMap(r => Object.keys(r)))];
+  const q = v => { let s = v == null ? '' : typeof v === 'object' ? JSON.stringify(v) : String(v); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  return '\ufeff' + [cols.map(q).join(','), ...rows.map(r => cols.map(c => q(r[c])).join(','))].join('\n');
+};
+const saveFile = (name, text, type) => { const u = URL.createObjectURL(new Blob([text], {type})), a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 3000); };
+function printImg(url, size, w, h){
+  const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;width:0;height:0;border:0;right:0;bottom:0'; document.body.appendChild(f);
+  const d = f.contentWindow.document; d.open();
+  d.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>LST CLUB</title><style>@page{size:${size};margin:0}html,body{margin:0}img{width:${w};height:${h};display:block}</style></head><body><img id="i" src="${url}"></body></html>`);
+  d.close();
+  const go = () => { f.contentWindow.focus(); f.contentWindow.print(); setTimeout(() => f.remove(), 60000); };
+  const im = d.getElementById('i'); if (im.complete) setTimeout(go, 250); else im.onload = () => setTimeout(go, 250);
+}
+function qrInto(x, text, bx, by, bs, pad){
+  if (typeof qrcode !== 'function') return false;
+  const q = qrcode(0, 'M'); q.addData(text); q.make();
+  const n = q.getModuleCount(), m = (bs - 2 * pad) / n;
+  x.fillStyle = '#fff'; x.fillRect(bx, by, bs, bs); x.fillStyle = '#0b1430';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) x.fillRect(bx + pad + c * m, by + pad + r * m, m + .6, m + .6);
+  return true;
+}
+const siteUrl = () => location.origin + location.pathname;
+
+// ===== لوحة الإدارة: تبويبان جديدان =====
+window.pAdmin = function(){
+  const tabs = [['ov','نظرة عامة','grid'],['rq','طلبات الانضمام','users'],['mb','أعضاء النادي','usercheck'],['ev','إدارة الفعاليات','calendar'],['rp','البلاغات','xc'],['bk','النسخ الاحتياطي','download'],['st','الإعدادات','settings']];
+  main.innerHTML = `<div class="ah"><div class="ar"><div class="al"><i>${ic('flask',26)}</i>لوحة الإدارة</div><div class="ar" style="gap:14px"><a class="badge" href="#home">الموقع</a><button class="out-b" data-a="out">${ic('logout',20)}خروج</button></div></div>
+  <div class="tabs">${tabs.map(([k,t,i]) => `<a href="#admin" data-tab="${k}" class="${tab === k ? 'on' : ''}">${ic(i,20)}${t}</a>`).join('')}</div></div><div class="ac" id="ac">${loader}</div>`;
+  adminTab();
+  sb.from('reports').select('id', {count:'exact', head:true}).eq('status', 'open').then(r => { const a = document.querySelector('.tabs [data-tab="rp"]'); if (a && r.count) a.insertAdjacentHTML('beforeend', `<i class="nb">${r.count}</i>`); });
+};
+window.adminTab = async function(){
+  document.querySelectorAll('.tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
+  const ac = $('#ac'); if (!ac) return; ac.innerHTML = loader;
+  if (['ov','rq','mb'].includes(tab)) await loadP();
+  if (!$('#ac')) return;
+  ({ov:tOv, rq:tRq, mb:tMb, ev:tEv, st:tSt, rp:tRp, bk:tBk})[tab]();
+};
+
+// ===== 1) النسخ الاحتياطي =====
+const BK = [['profiles','الأعضاء'],['activities','الفعاليات'],['registrations','تسجيلات الفعاليات'],['attendance','الحضور'],['comments','تعليقات الفعاليات'],['messages','المحادثة العامة'],['groups','المجموعات'],['group_members','أعضاء المجموعات'],['reports','البلاغات'],['settings','إعدادات الموقع']];
+function tBk(){
+  const last = +localStorage.getItem('lst_backup') || 0, days = last ? Math.floor((Date.now() - last) / 864e5) : null;
+  $('#ac').innerHTML = `<h1>النسخ الاحتياطي والتصدير</h1><p class="sub">احفظ بيانات النادي على جهازك بانتظام</p>
+  <div class="pan" style="border-color:${days === null || days > 7 ? 'var(--warn)' : 'var(--bd)'}"><h3><i class="g">${ic('download',24)}</i>نسخة كاملة</h3>
+   <p class="mut" style="line-height:2;margin-bottom:12px">${last ? 'آخر نسخة: ' + new Date(last).toLocaleString('ar-u-nu-latn') + (days > 7 ? ' — مرّ أكثر من أسبوع ⚠️' : '') : '⚠️ لم تحفظ نسخة بعد.'}</p>
+   <button class="btn navy" data-a="bkfull">${ic('download',20)}تنزيل نسخة كاملة (JSON)</button>
+   <p class="note">تشمل: الأعضاء والفعاليات والتسجيلات والحضور والتعليقات والمحادثة العامة والمجموعات والبلاغات والإعدادات. لا تشمل الرسائل الخاصة (خصوصية الأعضاء)، ولا الصور والملفات المرفوعة، ولا حسابات الدخول نفسها.</p></div>
+  <div class="pan"><h3><i>${ic('file',24)}</i>تصدير جدول بصيغة CSV</h3><div class="row" style="margin:0">${BK.map(([t, n]) => `<button class="btn line sm" data-a="bkcsv" data-t="${t}">${n}</button>`).join('')}</div></div>
+  <div class="pan"><h3><i class="g">${ic('building',24)}</i>الصور والشهادات المرفوعة</h3><p class="mut" style="line-height:2">محفوظة في Supabase ← Storage، ويمكنك تنزيلها من هناك عند الحاجة.</p></div>`;
+}
+const _to2 = window.tOv;
+window.tOv = async function(){
+  await _to2();
+  const last = +localStorage.getItem('lst_backup') || 0, ac = $('#ac');
+  if (ac && tab === 'ov' && Date.now() - last > 7 * 864e5 && !$('#bk-note'))
+    ac.insertAdjacentHTML('afterbegin', `<div class="pan" id="bk-note" style="border-color:var(--warn)"><div class="ar"><span>⚠️ ${last ? 'مرّ أكثر من أسبوع على آخر نسخة احتياطية.' : 'لم تحفظ نسخة احتياطية بعد.'}</span><a class="btn navy sm" href="#admin" data-tab="bk">حفظ نسخة الآن</a></div></div>`);
+};
+
+// ===== 2) الإبلاغ والحظر =====
+let BLK = new Set(), blkLoaded = false, blkLoading = false;
+async function loadBlocks(){
+  if (blkLoading || !me || me.status !== 'approved') return;
+  blkLoading = true;
+  const {data} = await sb.from('blocks').select('blocked_id');
+  BLK = new Set((data || []).map(x => x.blocked_id)); blkLoaded = true; blkLoading = false; decorate();
+}
+async function mapComments(box){
+  if (box.dataset.mapping) return; box.dataset.mapping = '1';
+  const n = +box.id.replace('cmt', '');
+  const {data} = await sb.from('comments').select('id,user_id').eq('activity_id', n).order('created_at');
+  [...box.querySelectorAll('.cmi')].forEach((it, i) => {
+    const c = data && data[i]; if (!c) { it.dataset.cid = ''; return; }
+    it.dataset.cid = c.id;
+    if (c.user_id !== me.id && !it.querySelector('[data-a="rpt"]')) { const s = it.querySelector('.bx small'); if (s) s.insertAdjacentHTML('beforeend', ` · <a href="#" data-a="rpt" data-k="comment" data-id="${c.id}">إبلاغ</a>`); }
+    if (BLK.has(c.user_id)) it.style.display = 'none';
+  });
+  delete box.dataset.mapping;
+}
+function decorate(){
+  if (!me || me.status !== 'approved') { blkLoaded = false; BLK = new Set(); return; }
+  if (!blkLoaded) loadBlocks();
+  const m = document.getElementById('main'); if (!m) return;
+  m.querySelectorAll('.msg:not(.me):not([data-rp])').forEach(el => {
+    el.dataset.rp = '1';
+    const id = el.id || '', k = id.startsWith('msg') ? 'message' : id.startsWith('gm') ? 'group_message' : id.startsWith('dm') ? 'dm' : null;
+    const n = id.replace(/^(msg|gm|dm)/, ''), mt = el.querySelector('.mt');
+    if (k && n && mt) mt.insertAdjacentHTML('beforeend', ` <a href="#" data-a="rpt" data-k="${k}" data-id="${esc(n)}" title="إبلاغ">🚩</a>`);
+  });
+  m.querySelectorAll('.cmts').forEach(box => { if (box.querySelector('.cmi:not([data-cid])')) mapComments(box); });
+  if (BLK.size) {
+    m.querySelectorAll('a[href^="#u/"]').forEach(a => { if (BLK.has(a.getAttribute('href').slice(3))) { const b = a.closest('.msg, .cmi, .mc'); if (b) b.style.display = 'none'; } });
+    m.querySelectorAll('a.ci[href^="#dm/"]').forEach(a => { if (BLK.has(a.getAttribute('href').slice(4))) a.style.display = 'none'; });
+  }
+}
+let obsT = null;
+new MutationObserver(() => { clearTimeout(obsT); obsT = setTimeout(decorate, 60); }).observe(document.getElementById('main'), {childList: true, subtree: true});
+
+function reportModal(kind, target){
+  openModal(`<div class="box">${closeX}<h3 style="margin-bottom:6px">🚩 إبلاغ</h3><p class="mut" style="line-height:2">سيراجع المشرفون البلاغ، ولن يعرف العضو من أبلغ عنه.</p>
+  <form id="rptf"><div class="fl">السبب</div><select name="r"><option>إساءة أو تنمّر</option><option>محتوى غير لائق</option><option>رسائل مزعجة (سبام)</option><option>انتحال شخصية أو معلومات كاذبة</option><option>أخرى</option></select>
+  <div class="fl">تفاصيل (اختياري)</div><textarea name="d" maxlength="200" style="min-height:80px"></textarea><button class="btn no block" style="margin-top:14px">إرسال البلاغ</button></form></div>`);
+  document.getElementById('rptf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, b = f.querySelector('button'); b.disabled = true;
+    const reason = f.r.value + (f.d.value.trim() ? ' — ' + f.d.value.trim() : '');
+    const {error} = await sb.rpc('report_content', {p_kind: kind, p_target: String(target), p_reason: reason});
+    if (error) { b.disabled = false; return toast('تعذّر إرسال البلاغ'); }
+    document.getElementById('modal').style.display = 'none'; toast('تم إرسال البلاغ، شكراً لك ✓');
+  };
+}
+const _pu = window.pUser;
+window.pUser = function(id){
+  _pu(id);
+  setTimeout(() => {
+    const pc = document.querySelector('#main .pc');
+    if (!pc || !me || id === me.id || view !== 'u' || pc.querySelector('[data-a="blk"],[data-a="unblk"]')) return;
+    const b = BLK.has(id);
+    pc.insertAdjacentHTML('beforeend', `<div class="row" style="justify-content:center;margin-top:12px"><button class="btn line sm" data-a="${b ? 'unblk' : 'blk'}" data-id="${id}">${b ? 'إلغاء الحظر' : '🚫 حظر'}</button><button class="btn line sm" data-a="rpt" data-k="user" data-id="${id}">🚩 إبلاغ</button></div>`);
+  }, 0);
+};
+const _pd = window.pDM;
+window.pDM = async function(id){
+  await _pd(id);
+  if (!blkLoaded) await loadBlocks();
+  if (BLK.has(id) && view === 'dm') { document.getElementById('cf')?.remove(); document.getElementById('mbox')?.insertAdjacentHTML('afterend', '<p class="note c">لقد حظرت هذا العضو. ألغِ الحظر من «ملفي الشخصي» لمراسلته.</p>'); }
+};
+const _pp = window.pPending;
+window.pPending = function(){
+  if (me && me.status === 'banned') {
+    main.innerHTML = `<section class="dark ph" style="padding-bottom:90px"><span class="pill">${ic('flask',18)} ${esc(S.club_name)}</span><h1>تم إيقاف حسابك</h1></section><div class="fcard c"><div style="font-size:3rem">🚫</div><p class="mut" style="margin:10px 0 22px;line-height:2">تم إيقاف حسابك من إدارة النادي بسبب مخالفة القواعد. للاستفسار تواصل مع الإدارة.</p><button class="btn line" data-a="out">خروج</button></div>`;
+    return;
+  }
+  _pp();
+};
+
+async function tRp(){
+  await loadP();
+  const {data, error} = await sb.from('reports').select('*').order('status', {ascending: true}).order('created_at', {ascending: false}).limit(200);
+  if (!$('#ac')) return;
+  if (error) { $('#ac').innerHTML = '<div class="pan c mut">تعذّر تحميل البلاغات. تأكد من تنفيذ كود SQL.</div>'; return; }
+  const nm = id => esc(P.find(p => p.id === id)?.full_name || 'عضو');
+  const card = r => {
+    const tp = P.find(p => p.id === r.target_user), banned = tp && tp.status === 'banned', img = okMedia(r.image_url);
+    return `<div class="pan"><div class="ar"><b>${KIND[r.kind] || r.kind}</b><span class="st2 s-${r.status === 'open' ? 'pending' : 'approved'}">${r.status === 'open' ? 'بانتظار المراجعة' : 'تمت المعالجة'}</span></div>
+    <p class="mut" style="margin:6px 0">المُبلِّغ: ${nm(r.reporter_id)} · المُبلَّغ عنه: <b>${nm(r.target_user)}</b>${banned ? ' (محظور)' : ''} · ${fd(r.created_at)}</p>
+    ${r.excerpt ? `<div class="rpx">${esc(r.excerpt)}</div>` : ''}${img ? `<a href="${img}" target="_blank" rel="noopener" style="font-weight:700">🖼️ عرض الصورة المرفقة</a>` : ''}
+    <p style="margin:8px 0">السبب: ${esc(r.reason || '—')}</p>
+    ${r.status === 'open' ? `<div class="row" style="margin-top:6px">${['message','group_message','comment'].includes(r.kind) ? `<button class="btn no sm" data-a="rpdel" data-id="${r.id}" data-k="${r.kind}" data-t="${esc(r.target_id)}">حذف المحتوى</button>` : ''}${banned ? '' : `<button class="btn no sm" data-a="rpban" data-id="${r.id}" data-u="${r.target_user}">حظر العضو</button>`}<button class="btn line sm" data-a="rpok" data-id="${r.id}">تمت المعالجة</button></div>` : ''}</div>`;
+  };
+  const open = (data || []).filter(r => r.status === 'open'), done = (data || []).filter(r => r.status !== 'open');
+  $('#ac').innerHTML = `<h1>البلاغات</h1><p class="sub">${open.length} بلاغ بانتظار المراجعة</p>${open.map(card).join('') || '<div class="pan c mut">لا توجد بلاغات مفتوحة 🎉</div>'}${done.length ? `<h3 style="margin:22px 0 10px">تمت معالجتها (${done.length})</h3>${done.slice(0, 20).map(card).join('')}` : ''}`;
+}
+
+// ===== 3) الحضور والشهادات =====
+const RE_CI = /^#checkin\/(\d+)\.([0-9a-f]{12})$/i, RE_VF = /^#verify\/([A-Za-z0-9]{6,20})$/;
+let handled = {h: '', t: 0};
+const prep = () => { leaveChat(); const mn = $('#menu'); if (mn) mn.style.display = 'none'; view = 'checkin'; drawShell(); window.scrollTo(0, 0); };
+const showCard = (emoji, title, text, btns) => { main.innerHTML = `<section class="dark ph" style="padding-bottom:90px"><span class="pill">${ic('badge',18)} ${esc(S.club_name)}</span><h1>${title}</h1></section><div class="fcard c"><div style="font-size:3rem">${emoji}</div><p class="mut" style="margin:10px 0 22px;line-height:2">${text}</p>${btns || ''}</div>`; };
+async function pCheckin(aid, tok){
+  prep();
+  if (!me) {
+    try { localStorage.setItem('lst_ci', JSON.stringify({h: location.hash, t: Date.now()})); } catch (e) {}
+    return showCard('🔐', 'تسجيل الحضور', 'سجّل الدخول بحسابك وسيُسجَّل حضورك تلقائياً.', '<a class="btn gold" href="#login">تسجيل الدخول</a> <a class="btn line" href="#join">انضم إلينا</a>');
+  }
+  if (me.status !== 'approved') return showCard('⏳', 'حسابك غير مفعّل بعد', 'يجب أن تكون عضواً مقبولاً لتسجيل حضورك.', '');
+  showCard('⏳', 'تسجيل الحضور', 'جارٍ تسجيل حضورك…', '');
+  const [r, a] = await Promise.all([sb.rpc('check_in', {p_aid: +aid, p_token: tok.toLowerCase()}), sb.from('activities').select('title').eq('id', +aid).maybeSingle()]);
+  const t = a.data && a.data.title ? `«${esc(a.data.title)}»` : 'الفعالية', res = r.data;
+  if (res === 'ok' || res === 'already') showCard('✅', res === 'ok' ? 'تم تسجيل حضورك' : 'حضورك مسجّل مسبقاً', `فعالية ${t}`, `<button class="btn gold" data-a="cert2" data-aid="${aid}">🎓 احصل على شهادتك</button>`);
+  else if (res === 'closed') showCard('🔒', 'التسجيل مغلق', 'لم يُفتح تسجيل الحضور لهذه الفعالية، أو انتهى وقته.', '');
+  else if (res === 'invalid') showCard('⌛', 'الرمز منتهي الصلاحية', 'يتغيّر الرمز كل دقيقتين. امسح الرمز المعروض الآن من جديد.', '');
+  else showCard('⚠️', 'تعذّر تسجيل الحضور', 'حاول مرة أخرى.', '');
+}
+async function pVerify(code){
+  prep(); showCard('⏳', 'التحقق من الشهادة', 'جارٍ التحقق…', '');
+  const {data} = await sb.rpc('verify_certificate', {p_code: code}), v = data && data[0];
+  if (v) showCard('✅', 'شهادة صحيحة', `صادرة عن ${esc(S.club_name)}<br><b style="color:var(--navy)">${esc(v.full_name)}</b><br>حضر فعالية «${esc(v.title)}»<br>${v.event_date ? fd(v.event_date) : ''}`, '');
+  else showCard('❌', 'لم يتم العثور على الشهادة', 'تأكد من رقم الشهادة، أو أنها غير صادرة عن النادي.', '');
+}
+function special(){
+  const h = location.hash, ci = h.match(RE_CI), vf = h.match(RE_VF);
+  if (!ci && !vf) return false;
+  if (handled.h === h && Date.now() - handled.t < 4000) return true;
+  handled = {h, t: Date.now()};
+  if (ci) pCheckin(ci[1], ci[2]); else pVerify(vf[1]);
+  return true;
+}
+const _r = window.render;
+window.render = async function(){
+  if (special()) return;
+  try {
+    const p = JSON.parse(localStorage.getItem('lst_ci') || 'null');
+    if (p && me && me.status === 'approved' && !location.hash.startsWith('#checkin/')) { localStorage.removeItem('lst_ci'); if (Date.now() - p.t < 6 * 60000) { location.hash = p.h; return; } }
+  } catch (e) {}
+  return _r();
+};
+addEventListener('hashchange', () => setTimeout(special, 30));
+
+// شهادة
+async function firstImg(list){ for (const s of list) { const i = await new Promise(r => { const m = new Image(); m.onload = () => r(m); m.onerror = () => r(null); m.src = s; }); if (i) return i; } return null; }
+async function drawCert(cv, name, act, code){
+  const W = 1754, H = 1240, F = '"IBM Plex Sans Arabic", sans-serif'; cv.width = W; cv.height = H;
+  try { await Promise.all([document.fonts.load('700 40px "IBM Plex Sans Arabic"', 'عربي LST'), document.fonts.load('500 30px "IBM Plex Sans Arabic"', 'عربي 123')]); } catch (e) {}
+  const lg = await firstImg(['logo.jpg', 'logo.jpeg', 'logo.png']);
+  const x = cv.getContext('2d'); x.direction = 'rtl'; x.textAlign = 'center';
+  const t = (s, px, wt, y, col, mw, ax) => { x.font = `${wt} ${px}px ${F}`; x.fillStyle = col; x.textAlign = ax || 'center'; x.fillText(String(s), ax === 'right' ? W - 300 : W / 2, y, mw); };
+  x.fillStyle = '#0b1430'; x.fillRect(0, 0, W, H); x.fillStyle = '#fff'; x.fillRect(34, 34, W - 68, H - 68);
+  x.strokeStyle = '#d4a72c'; x.lineWidth = 6; x.strokeRect(58, 58, W - 116, H - 116);
+  x.fillStyle = '#0b1430'; x.fillRect(64, 64, W - 128, 230);
+  x.fillStyle = '#fff'; x.beginPath(); x.roundRect ? x.roundRect(W - 270, 96, 166, 166, 32) : x.rect(W - 270, 96, 166, 166); x.fill();
+  if (lg) { const k = Math.min(140 / lg.width, 140 / lg.height), w = lg.width * k, h = lg.height * k; x.drawImage(lg, W - 270 + (166 - w) / 2, 96 + (166 - h) / 2, w, h); }
+  x.textAlign = 'right'; x.font = `700 64px ${F}`; x.fillStyle = '#fff'; x.fillText(S.club_name, W - 300, 176, 900);
+  x.font = `500 32px ${F}`; x.fillStyle = '#8fa3d8'; x.fillText(S.university || '', W - 300, 232, 900);
+  t('شهادة حضور ومشاركة', 108, 700, 440, '#0b1430', 1300);
+  x.fillStyle = '#d4a72c'; x.fillRect(W / 2 - 180, 475, 360, 8);
+  t('تشهد إدارة ' + S.club_name + ' بأن', 44, 500, 570, '#5f6f8f', 1300);
+  let fs = 124; x.font = `700 ${fs}px ${F}`; while (x.measureText(name).width > 1350 && fs > 50) { fs -= 4; x.font = `700 ${fs}px ${F}`; }
+  t(name, fs, 700, 720, '#0b1430', 1400);
+  const nw = Math.min(1400, x.measureText(name).width + 120); x.fillStyle = '#d4a72c'; x.fillRect(W / 2 - nw / 2, 752, nw, 5);
+  t('قد حضر(ت) وشارك(ت) في فعالية', 44, 500, 840, '#5f6f8f', 1300);
+  let ts = 72; x.font = `700 ${ts}px ${F}`; while (x.measureText(act.title || '').width > 1400 && ts > 36) { ts -= 4; x.font = `700 ${ts}px ${F}`; }
+  t(act.title || '', ts, 700, 940, '#0f2350', 1450);
+  const d = act.event_date ? new Date(act.event_date).toLocaleDateString('ar-u-nu-latn', {dateStyle: 'long'}) : '';
+  t([d ? 'بتاريخ ' + d : '', act.location || ''].filter(Boolean).join('  •  '), 38, 500, 1010, '#5f6f8f', 1200);
+  x.fillStyle = '#0b1430'; x.fillRect(W - 560, 1118, 300, 3); t('رئيس النادي', 34, 600, 1158, '#0b1430', 300); 
+  x.textAlign = 'center'; x.font = `600 34px ${F}`; x.fillStyle = '#0b1430'; x.fillText('رئيس النادي', W - 410, 1158);
+  x.setLineDash([10, 8]); x.strokeStyle = '#9aa8c7'; x.lineWidth = 3; x.beginPath(); x.arc(W / 2, 1075, 62, 0, Math.PI * 2); x.stroke(); x.setLineDash([]);
+  x.font = `500 26px ${F}`; x.fillStyle = '#9aa8c7'; x.fillText('ختم النادي', W / 2, 1080);
+  qrInto(x, siteUrl() + '#verify/' + code, 130, 985, 150, 8);
+  x.textAlign = 'left'; x.direction = 'ltr'; x.font = `600 24px monospace`; x.fillStyle = '#5f6f8f'; x.fillText(code, 130, 1160);
+}
+async function certModal(aid, uid){
+  const rc = await sb.rpc('get_cert_code', {p_aid: aid, p_uid: uid || null});
+  if (!rc.data) return toast('لا يوجد حضور مسجّل لهذه الفعالية');
+  const {data: act} = await sb.from('activities').select('title,event_date,location').eq('id', aid).maybeSingle();
+  const name = uid ? ((P.find(p => p.id === uid) || MB[uid] || {}).full_name || 'عضو') : me.full_name;
+  openModal(`<div class="box" style="max-width:760px;padding:16px">${closeX}<h3 style="margin-bottom:10px">🎓 شهادة الحضور</h3><canvas id="certc" style="width:100%;border:1px solid var(--bd);border-radius:12px"></canvas>
+  <div class="row" style="justify-content:center"><button class="btn gold sm" data-a="certdl">تحميل</button><button class="btn line sm" data-a="certpr">🖨️ طباعة</button></div></div>`);
+  await drawCert(document.getElementById('certc'), name, act || {}, rc.data);
+}
+
+// حضور (للمشرف)
+let attAid = null, attTimer = null;
+const _te = window.tEv;
+window.tEv = async function(){
+  await _te();
+  document.querySelectorAll('[data-a="regs"]').forEach(b => { if (!b.parentElement.querySelector('[data-a="att"]')) b.insertAdjacentHTML('beforebegin', `<button class="btn gold sm" data-a="att" data-id="${b.dataset.id}">📲 الحضور</button>`); });
+};
+async function drawAttQR(){
+  const cv = document.getElementById('attc'); if (!cv) return;
+  const {data} = await sb.rpc('get_checkin', {p_aid: attAid}), info = data && data[0];
+  if (!info) return;
+  const url = siteUrl() + '#checkin/' + attAid + '.' + info.token;
+  cv.width = cv.height = 600; const x = cv.getContext('2d');
+  if (!qrInto(x, url, 0, 0, 600, 30)) cv.insertAdjacentHTML('afterend', `<input readonly value="${esc(url)}" style="margin-top:8px">`);
+}
+async function drawAttRows(){
+  const rows = document.getElementById('attrows'); if (!rows) return;
+  const {data} = await sb.from('attendance').select('user_id,checked_at').eq('activity_id', attAid).order('checked_at');
+  const nm = id => esc((P.find(p => p.id === id) || {}).full_name || 'عضو');
+  rows.innerHTML = `<h4 style="margin:14px 0 4px">الحاضرون (${(data || []).length})</h4>${(data || []).map(r => `<div class="att-row"><b style="flex:1">${nm(r.user_id)}</b><small class="mut">${hm(r.checked_at)}</small><button class="btn line sm" data-a="cert2" data-aid="${attAid}" data-uid="${r.user_id}">🎓</button><button class="btn no sm" data-a="atrm" data-u="${r.user_id}">✕</button></div>`).join('') || '<p class="mut">لم يسجّل أحد حضوره بعد.</p>'}`;
+  const sel = document.getElementById('atsel');
+  if (sel && !sel.dataset.set) { sel.dataset.set = '1'; sel.innerHTML = '<option value="">إضافة حاضر يدوياً…</option>' + P.filter(p => p.status === 'approved').map(p => `<option value="${p.id}">${esc(p.full_name)}</option>`).join(''); }
+}
+async function drawAtt(){
+  const q = document.getElementById('attq'); if (!q) return;
+  const {data} = await sb.rpc('get_checkin', {p_aid: attAid}), info = data && data[0], open = info && info.open_until && new Date(info.open_until) > new Date();
+  q.innerHTML = open
+    ? `<p class="mut" style="margin:6px 0;line-height:1.9">التسجيل مفتوح حتى ${hm(info.open_until)}. اعرض الرمز ليمسحه الأعضاء بكاميرا الهاتف. يتغيّر كل دقيقتين.</p><div class="c"><canvas id="attc" style="width:260px;height:260px;border:1px solid var(--bd);border-radius:18px"></canvas></div><div class="row" style="justify-content:center"><button class="btn no sm" data-a="atclose">إغلاق التسجيل</button></div>`
+    : `<p class="mut" style="margin:6px 0 10px">التسجيل مغلق. افتحه عند بدء الفعالية:</p><div class="row" style="margin:0"><select id="atmin" style="width:auto"><option value="60">ساعة</option><option value="120" selected>ساعتان</option><option value="240">4 ساعات</option><option value="720">12 ساعة</option></select><button class="btn gold sm" data-a="atopen">فتح التسجيل</button></div>`;
+  if (open) drawAttQR();
+  drawAttRows();
+}
+async function attModal(aid){
+  attAid = aid; await loadP();
+  const a = acts.find(x => x.id === aid) || {title: 'الفعالية'};
+  openModal(`<div class="box" style="max-width:560px">${closeX}<h3 style="margin-bottom:4px">📲 حضور: ${esc(a.title)}</h3><div id="attq"></div><div class="row" style="margin-top:10px"><select id="atsel" style="flex:1"></select><button class="btn navy sm" data-a="atadd">إضافة</button><button class="btn line sm" data-a="atcsv">CSV</button></div><div id="attrows"></div></div>`);
+  await drawAtt();
+  clearInterval(attTimer);
+  attTimer = setInterval(() => { if (!document.getElementById('attq') || document.getElementById('modal').style.display === 'none') { clearInterval(attTimer); return; } drawAttQR(); drawAttRows(); }, 25000);
+}
+
+// ===== ملفي الشخصي: شهاداتي والمحظورون =====
+const _pm = window.pMe;
+window.pMe = function(){ _pm(); setTimeout(myPanels, 0); };
+async function myPanels(){
+  const anchor = document.getElementById('pfm'); if (view !== 'me' || !anchor || document.getElementById('pnl-cert')) return;
+  anchor.insertAdjacentHTML('afterend', '<div class="fcard fc2" id="pnl-cert"><div class="fl" style="margin:0 0 10px">🎓 شهاداتي</div><div id="certl" class="mut">جارٍ التحميل…</div></div>');
+  const {data} = await sb.from('attendance').select('activity_id,checked_at,activities(title,event_date)').eq('user_id', me.id).order('checked_at', {ascending: false});
+  const el = document.getElementById('certl'); if (!el) return;
+  el.className = '';
+  el.innerHTML = (data || []).length ? data.map(r => `<div class="att-row"><div style="flex:1"><b>${esc(r.activities?.title || 'فعالية')}</b><div class="mut" style="font-size:.85rem">${r.activities?.event_date ? fd(r.activities.event_date) : ''}</div></div><button class="btn gold sm" data-a="cert2" data-aid="${r.activity_id}">عرض الشهادة</button></div>`).join('') : '<p class="mut" style="line-height:2">لا توجد شهادات بعد. تظهر هنا شهادات الفعاليات التي سجّلت حضورها بمسح رمز QR.</p>';
+  if (!blkLoaded) await loadBlocks();
+  if (BLK.size && !document.getElementById('pnl-blk')) {
+    document.getElementById('pnl-cert')?.insertAdjacentHTML('afterend', `<div class="fcard fc2" id="pnl-blk"><div class="fl" style="margin:0 0 10px">🚫 الأعضاء المحظورون</div>${[...BLK].map(id => `<div class="att-row"><b style="flex:1">${esc(MB[id]?.full_name || 'عضو')}</b><button class="btn line sm" data-a="unblk" data-id="${id}">إلغاء الحظر</button></div>`).join('')}</div>`);
+  }
+}
+
+// ===== الأزرار =====
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a, id = el.dataset.id;
+  if (a === 'rpt') { e.preventDefault(); return reportModal(el.dataset.k, id); }
+  if (a === 'blk') {
+    if (!confirm('حظر هذا العضو؟ لن تظهر لك رسائله، ولن يستطيع مراسلتك.')) return;
+    const {error} = await sb.from('blocks').insert({blocked_id: id}); if (error) return toast('تعذّر الحظر');
+    blkLoaded = false; await loadBlocks(); toast('تم الحظر'); return nav('#members');
+  }
+  if (a === 'unblk') { await sb.from('blocks').delete().eq('blocked_id', id); blkLoaded = false; await loadBlocks(); toast('تم إلغاء الحظر'); return render(); }
+  if (a === 'bkfull') {
+    el.disabled = true; toast('جارٍ تجهيز النسخة…');
+    const out = {exported_at: new Date().toISOString(), tables: {}}, skip = [];
+    for (const [t] of BK) { try { out.tables[t] = await fetchAll(t); } catch (err) { skip.push(t); } }
+    saveFile(`lst-club-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(out, null, 1), 'application/json');
+    try { localStorage.setItem('lst_backup', String(Date.now())); } catch (err) {}
+    toast(skip.length ? 'تم الحفظ، وتخطّى: ' + skip.join('، ') : 'تم حفظ النسخة ✓'); return tBk();
+  }
+  if (a === 'bkcsv') {
+    try { const rows = await fetchAll(el.dataset.t); if (!rows.length) return toast('الجدول فارغ'); saveFile(el.dataset.t + '.csv', csvOf(rows), 'text/csv;charset=utf-8'); }
+    catch (err) { toast('تعذّر التصدير'); }
+    return;
+  }
+  if (a === 'rpok') { await mkResolved(id); return tRp(); }
+  if (a === 'rpdel') {
+    if (!confirm('حذف هذا المحتوى نهائياً؟')) return;
+    const tb = {message: 'messages', group_message: 'group_messages', comment: 'comments'}[el.dataset.k];
+    const {error} = await sb.from(tb).delete().eq('id', el.dataset.t); if (error) return toast('تعذّر الحذف');
+    await mkResolved(id); toast('تم الحذف'); return tRp();
+  }
+  if (a === 'rpban') {
+    if (!confirm('حظر هذا العضو؟ سيفقد الوصول للموقع كله.')) return;
+    const {error} = await sb.from('profiles').update({status: 'banned'}).eq('id', el.dataset.u); if (error) return toast('تعذّر الحظر');
+    await sb.from('reports').update({status: 'resolved', handled_at: new Date().toISOString()}).eq('target_user', el.dataset.u).eq('status', 'open');
+    toast('تم حظر العضو'); return tRp();
+  }
+  if (a === 'att') return attModal(+id);
+  if (a === 'atopen') { const {error} = await sb.rpc('open_checkin', {p_aid: attAid, p_minutes: +document.getElementById('atmin').value}); if (error) return toast('تعذّر الفتح'); return drawAtt(); }
+  if (a === 'atclose') { await sb.rpc('close_checkin', {p_aid: attAid}); return drawAtt(); }
+  if (a === 'atadd') { const v = document.getElementById('atsel').value; if (!v) return; const {error} = await sb.from('attendance').insert({activity_id: attAid, user_id: v}); if (error) return toast('تعذّرت الإضافة'); document.getElementById('atsel').value = ''; return drawAttRows(); }
+  if (a === 'atrm') { if (!confirm('إزالة هذا العضو من الحضور؟')) return; await sb.from('attendance').delete().eq('activity_id', attAid).eq('user_id', el.dataset.u); return drawAttRows(); }
+  if (a === 'atcsv') {
+    const {data} = await sb.from('attendance').select('user_id,checked_at').eq('activity_id', attAid).order('checked_at');
+    const rows = (data || []).map(r => { const p = P.find(x => x.id === r.user_id) || {}; return {'الاسم': p.full_name, 'الرقم الجامعي': p.card_no, 'وقت الحضور': r.checked_at}; });
+    if (!rows.length) return toast('لا يوجد حاضرون'); return saveFile('attendance.csv', csvOf(rows), 'text/csv;charset=utf-8');
+  }
+  if (a === 'cert2') { e.preventDefault(); return certModal(+el.dataset.aid, el.dataset.uid || null); }
+  if (a === 'certdl') { const cv = document.getElementById('certc'); if (cv) cv.toBlob(b => saveFile('LST-CLUB-certificate.png', b, 'image/png')); return; }
+  if (a === 'certpr') { const cv = document.getElementById('certc'); if (cv) printImg(cv.toDataURL('image/png'), 'A4 landscape', '297mm', '210mm'); return; }
+});
+})();
+</script>
 </body>
 </html>
