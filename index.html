@@ -402,7 +402,7 @@ async function pHome(){
    <div class="hbtn">${prim}<a class="btn out" href="#events">${ic('calendar',22)}استعرض الفعاليات</a></div>
    <div class="stats">${STATS.map(([i,n,l]) => `<div class="st">${ic(i,34)}<b>${n}</b><span>${l}</span></div>`).join('')}</div></section>
   <section class="sec"><span class="chip">${ic('sparkles',18)}لجاننا</span><h2>اختر اللجنة التي تشبه شغفك</h2>
-   <p class="lead">خمس لجان متخصصة تعمل جنباً إلى جنب – اختر ما يناسب مهاراتك أو جرّب مجالاً جديداً بالكامل.</p>
+   <p class="lead">ثلاث لجان متخصصة تعمل جنباً إلى جنب – اختر ما يناسب مهاراتك أو جرّب مجالاً جديداً بالكامل.</p>
    <div class="cards">${COMMS.map(c => `<div class="cd"><div class="ico">${ic(c.i,28)}</div><h3>${c.t}</h3><p>${c.d}</p></div>`).join('')}</div>
    ${me ? '' : `<div class="call"><h3>لم تجد ما يناسبك؟</h3><p>سارع بالتقديم وسنراجع طلبك ونرشح لك اللجنة الأقرب لميولك.</p><a class="btn gold" href="#join">قدّم طلبك الآن ${ic('arrow-left',20)}</a></div>`}</section>
   <div class="alt"><section class="sec"><span class="chip">${ic('sparkles',18)}رسالتنا</span><h2>نصنع تجربة علمية متكاملة</h2>
