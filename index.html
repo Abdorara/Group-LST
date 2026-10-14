@@ -1780,5 +1780,125 @@ document.addEventListener('click', async e => {
 });
 })();
 </script>
+<script>
+(() => {
+const docBtn = (a, label, path) => `<button class="btn line sm" data-a="${a}" data-p="${esc(path)}">${label}</button>`;
+const hasDomains = typeof DOMAINS !== 'undefined' && typeof flat === 'function';
+
+// ===== 1) نموذج الانضمام: شهادة + بطاقة التعريف =====
+const _pj = window.pJoin;
+window.pJoin = function(){
+  _pj();
+  const f = document.getElementById('jf'); if (!f || f.idcard) return;
+  f.cert.insertAdjacentHTML('afterend', `<div class="fl">${ic('badge',20)}نسخة من بطاقة التعريف الوطنية (صورة واضحة أو PDF، حتى 5MB)</div><input name="idcard" type="file" accept="image/*,application/pdf" required>`);
+  f.querySelector('button.gold').insertAdjacentHTML('beforebegin', `<label class="opt" style="margin-top:16px"><span class="rd"></span><div><small>أوافق على استخدام الوثيقتين (شهادة الجامعة وبطاقة التعريف) للتحقق من هويتي فقط، وعلى أن يطّلع عليهما مشرفو النادي دون غيرهم.</small></div><input type="checkbox" name="consent"></label>`);
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const v = n => f[n].value.trim(), card = v('card'), phone = v('phone').replace(/\s/g, ''), pw = f.pw.value, why = v('why');
+    const file = f.cert.files[0], idf = f.idcard.files[0];
+    if (!/^[A-Za-z0-9]{4,20}$/.test(card)) return toast('الرقم الجامعي: 4 إلى 20 حرفاً/رقماً إنجليزياً');
+    if (!/^\+?\d{9,15}$/.test(phone)) return toast('رقم الجوال غير صالح');
+    if (pw.length < 6) return toast('كلمة المرور قصيرة');
+    if (!f.comm.value) return toast('اختر لجنة');
+    if (why.length < 20) return toast('اكتب 20 حرفاً على الأقل في سبب الانضمام');
+    if (!file) return toast('ارفع شهادة الجامعة');
+    if (!idf) return toast('ارفع نسخة من بطاقة التعريف الوطنية');
+    if (file.size > 5 * 1024 * 1024 || idf.size > 5 * 1024 * 1024) return toast('حجم الملف أكبر من 5MB');
+    if (!f.consent.checked) return toast('وافق على استخدام الوثائق للتحقق');
+    const b = f.querySelector('button.gold'); b.disabled = true;
+    const reset = () => b.disabled = false;
+    let uid;
+    const su = await sb.auth.signUp({email: emailOf(card), password: pw});
+    if (su.error && /registered|already/i.test(su.error.message)) {
+      const si = await sb.auth.signInWithPassword({email: emailOf(card), password: pw});
+      if (si.error) { reset(); return toast('الرقم الجامعي مسجّل مسبقاً. إن كنت بدأت التسجيل سابقاً فأعد المحاولة بنفس كلمة المرور، أو سجّل الدخول.'); }
+      const ex = await sb.from('profiles').select('id').eq('id', si.data.user.id).maybeSingle();
+      if (ex.data) { await sb.auth.signOut(); reset(); return toast('هذا الحساب مسجّل مسبقاً، سجّل الدخول.'); }
+      uid = si.data.user.id;
+    } else if (su.error) { reset(); return toast(su.error.message); }
+    else { if (!su.data.session) { reset(); return toast('عطّل تأكيد البريد في إعدادات Supabase Auth'); } uid = su.data.user.id; }
+    const ext = f => (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'jpg';
+    const pc = `${uid}/certificate.${ext(file)}`, pi = `${uid}/id.${ext(idf)}`;
+    const ok = r => !r.error || /exist|duplicate/i.test(r.error.message || '');
+    const u1 = await sb.storage.from('certificates').upload(pc, file);
+    const u2 = ok(u1) ? await sb.storage.from('idcards').upload(pi, idf) : null;
+    if (!ok(u1) || !ok(u2)) { reset(); return toast('فشل رفع الوثائق. أعد المحاولة بنفس البيانات وكلمة المرور.'); }
+    const ins = await sb.from('profiles').insert({id: uid, full_name: v('fullname'), specialization: f.dept.value, year: f.year.value, card_no: card, phone, committee: f.comm.value, motivation: why, certificate_url: pc, id_card_url: pi});
+    if (ins.error) { reset(); return toast('تعذّر حفظ البيانات. أعد المحاولة بنفس كلمة المرور.'); }
+    await loadMe(); nav('#pending');
+  };
+};
+
+// ===== 2) نافذة الطلب للمشرف =====
+const _sp = window.showP;
+window.showP = function(id){
+  _sp(id);
+  const p = P.find(x => x.id === id), box = document.querySelector('#modal .box'); if (!p || !box) return;
+  const rows = box.querySelectorAll('.ar'), row = rows[rows.length - 1]; if (!row) return;
+  const cb = row.querySelector('[data-a="cert"]');
+  if (cb && !p.certificate_url) cb.remove();
+  if (p.id_card_url) (cb && cb.isConnected ? cb : row).insertAdjacentHTML(cb && cb.isConnected ? 'afterend' : 'afterbegin', docBtn('idc', '🪪 بطاقة التعريف', p.id_card_url));
+  if (p.certificate_url || p.id_card_url) row.insertAdjacentHTML('beforeend', `<button class="btn no sm" data-a="docdel" data-id="${p.id}">🗑 حذف الوثائق</button>`);
+  if (!p.certificate_url && !p.id_card_url) row.insertAdjacentHTML('afterbegin', '<span class="mut" style="font-size:.85rem">لا توجد وثائق محفوظة</span>');
+  sb.from('profile_audit').select('old_name,new_name,created_at').eq('user_id', id).order('created_at', {ascending: false}).limit(5).then(r => {
+    if (r.data && r.data.length && box.isConnected) box.insertAdjacentHTML('beforeend', `<p class="mut" style="margin-top:14px;font-size:.85rem;line-height:2">سجل تغيير الاسم:<br>${r.data.map(x => `${esc(x.old_name)} ← ${esc(x.new_name)} (${shortT(x.created_at)})`).join('<br>')}</p>`);
+  });
+};
+
+// ===== 3) ملفي الشخصي: تعديل البيانات =====
+const _pm = window.pMe;
+window.pMe = function(){
+  _pm();
+  const f = document.getElementById('pfm'); if (!f || !me) return;
+  const cur = me.specialization || '';
+  const yearOpts = '<option value="">—</option>' + YEARS.map(y => `<option${me.year === y ? ' selected' : ''}>${esc(y)}</option>`).join('');
+  let specHTML, domIdx = hasDomains ? DOMAINS.findIndex(d => flat(d.it).includes(cur)) : -1;
+  const curOpt = cur && !(hasDomains ? domIdx >= 0 : DEPTS.includes(cur)) ? `<option selected>${esc(cur)}</option>` : '';
+  if (hasDomains) {
+    specHTML = `<div class="fl">${ic('graduation',20)}الميدان</div><select name="dom"><option value="">اختر الميدان</option>${DOMAINS.map((d, i) => `<option value="${i}"${i === domIdx ? ' selected' : ''}>${esc(d.n)}</option>`).join('')}</select>
+    <div class="fl">${ic('graduation',20)}القسم / التخصص</div><select name="spec" required>${curOpt}${domIdx >= 0 ? optsOf(DOMAINS[domIdx].it).replace(`<option>${esc(cur)}</option>`, `<option selected>${esc(cur)}</option>`) : ''}</select>`;
+  } else {
+    specHTML = `<div class="fl">${ic('graduation',20)}القسم / التخصص</div><select name="spec" required>${curOpt}${DEPTS.map(d => `<option${d === cur ? ' selected' : ''}>${esc(d)}</option>`).join('')}</select>`;
+  }
+  f.innerHTML = `<div class="fl" style="margin-top:0">${ic('user',20)}الاسم الكامل</div><input name="name" required minlength="3" maxlength="80" value="${esc(me.full_name)}">
+  ${specHTML}
+  <div class="fl">${ic('graduation',20)}السنة الدراسية</div><select name="year">${yearOpts}</select>
+  <div class="fl">${ic('phone',20)}رقم الجوال</div><input name="phone" type="tel" value="${esc(me.phone || '')}">
+  <div class="fl">${ic('chat',20)}نبذة عنك (300 حرف)</div><textarea name="bio" maxlength="300" style="min-height:110px" placeholder="عرّف بنفسك واهتماماتك…">${esc(me.bio || '')}</textarea>
+  <button class="btn navy block" style="margin-top:20px">${ic('save',20)}حفظ التعديلات</button>
+  <p class="note">الرقم الجامعي والقسم (اللجنة) يحدّدهما المشرف، ولا يمكن تغييرهما من هنا. يُسجَّل أي تغيير في الاسم ويراه المشرفون.</p>`;
+  if (hasDomains && f.dom) f.dom.onchange = () => { const d = DOMAINS[f.dom.value]; f.spec.innerHTML = '<option value="">اختر التخصص</option>' + (d ? optsOf(d.it) : ''); };
+  f.onsubmit = async e => {
+    e.preventDefault(); const b = f.querySelector('button.navy'); b.disabled = true;
+    const phone = f.phone.value.trim();
+    if (phone && !/^\+?\d{9,15}$/.test(phone.replace(/\s/g, ''))) { b.disabled = false; return toast('رقم الجوال غير صالح'); }
+    if (!f.spec.value) { b.disabled = false; return toast('اختر التخصص'); }
+    const r = await sb.rpc('update_profile_full', {p_name: f.name.value.trim(), p_spec: f.spec.value, p_year: f.year.value, p_phone: phone, p_bio: f.bio.value.trim()});
+    b.disabled = false;
+    if (r.error) return toast('تعذّر الحفظ، تحقق من البيانات');
+    await loadMe(); drawShell(); toast('تم حفظ التعديلات ✓'); pMe();
+  };
+};
+
+// ===== الأزرار =====
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a;
+  if (a === 'idc') {
+    const {data, error} = await sb.storage.from('idcards').createSignedUrl(el.dataset.p, 120);
+    return error ? toast('تعذّر فتح الملف') : window.open(data.signedUrl, '_blank');
+  }
+  if (a === 'docdel') {
+    if (!confirm('حذف شهادة الجامعة وبطاقة التعريف نهائياً من التخزين؟ تأكد أنك تحققت منهما أولاً.')) return;
+    const p = P.find(x => x.id === el.dataset.id); if (!p) return;
+    if (p.id_card_url) await sb.storage.from('idcards').remove([p.id_card_url]);
+    if (p.certificate_url) await sb.storage.from('certificates').remove([p.certificate_url]);
+    const {error} = await sb.from('profiles').update({certificate_url: null, id_card_url: null}).eq('id', p.id);
+    if (error) return toast('تعذّر التنفيذ');
+    toast('تم حذف الوثائق ✓'); document.getElementById('modal').style.display = 'none'; adminTab();
+  }
+});
+})();
+</script>
 </body>
 </html>
