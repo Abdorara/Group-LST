@@ -1780,52 +1780,5 @@ document.addEventListener('click', async e => {
 });
 })();
 </script>
-<style>
-#inst2{position:fixed;left:14px;bottom:14px;z-index:45;display:flex;align-items:center;gap:8px;background:var(--gold);color:var(--navy);border:0;border-radius:99px;padding:12px 18px;font-family:inherit;font-weight:700;font-size:.95rem;box-shadow:0 10px 26px rgba(11,20,48,.35);cursor:pointer}
-#inst2.up{bottom:96px}
-</style>
-<script>
-(() => {
-  const APK_URL = 'lst-club.apk';
-  document.getElementById('inst')?.remove(); document.getElementById('inst2')?.remove();
-  const btn = document.createElement('button');
-  btn.id = 'inst2'; btn.setAttribute('data-a', 'instm'); btn.setAttribute('aria-label', 'تحميل التطبيق'); btn.innerHTML = '⬇️ تحميل التطبيق';
-  document.body.appendChild(btn);
-  let dp = null;
-  addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e; });
-  addEventListener('appinstalled', () => { dp = null; });
-  const standalone = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;
-  const pos = () => btn.classList.toggle('up', /^#(chat|dm|group)/.test(location.hash));
-  addEventListener('hashchange', pos); pos();
-  const apkOk = async () => { try { const r = await fetch(APK_URL, {method: 'HEAD', cache: 'no-store'}); return r.ok && !/text\/html/i.test(r.headers.get('content-type') || ''); } catch (e) { return false; } };
-  async function openInst(){
-    const m = document.getElementById('modal');
-    m.innerHTML = '<div class="box"><button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button><h3 style="margin-bottom:8px">⬇️ تحميل تطبيق LST CLUB</h3><div id="instb" class="mut" style="padding:10px 0">جارٍ التحضير…</div></div>';
-    m.style.display = 'flex';
-    const ok = await apkOk(), b = document.getElementById('instb'); if (!b) return;
-    const parts = [];
-    if (standalone) parts.push('<p style="line-height:2">✅ أنت تستخدم التطبيق الآن.</p>');
-    else if (dp) parts.push('<button class="btn gold block" data-a="instgo">📲 تثبيت التطبيق الآن</button>');
-    else parts.push('<p style="line-height:2">على أندرويد (Chrome): اضغط ⋮ ثم <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>.</p>');
-    if (ok) parts.push(`<a class="btn ${(standalone || dp) ? 'line' : 'gold'} block" href="${APK_URL}" download style="margin-top:10px">⬇️ تحميل ملف APK لأندرويد</a><p class="note">عند التثبيت اسمح بـ «التثبيت من مصادر غير معروفة»، وإن ظهر تحذير Play Protect فاختر «تثبيت على أي حال».</p>`);
-    parts.push('<p class="note" style="line-height:2">آيفون: افتح الموقع في Safari ثم زر المشاركة ⬆️ ثم <b>«إضافة إلى الشاشة الرئيسية»</b>.</p>');
-    parts.push(`<div class="row" style="margin-top:6px"><button class="btn line sm" data-a="instcopy">نسخ رابط الموقع</button>${navigator.share ? '<button class="btn line sm" data-a="instshare">مشاركة</button>' : ''}</div>`);
-    b.className = ''; b.innerHTML = parts.join('');
-  }
-  const url = () => location.origin + location.pathname;
-  document.addEventListener('click', async e => {
-    const el = e.target.closest('[data-a]'); if (!el) return;
-    const a = el.dataset.a;
-    if (a === 'instm') { e.preventDefault(); const mn = document.getElementById('menu'); if (mn) mn.style.display = 'none'; return openInst(); }
-    if (a === 'instgo' && dp) { dp.prompt(); try { await dp.userChoice; } catch (err) {} dp = null; document.getElementById('modal').style.display = 'none'; return; }
-    if (a === 'instcopy') { try { await navigator.clipboard.writeText(url()); toast('تم نسخ الرابط ✓'); } catch (err) { toast(url()); } return; }
-    if (a === 'instshare') { try { await navigator.share({title: 'LST CLUB', url: url()}); } catch (err) {} return; }
-  });
-  const _dm = window.drawMenu;
-  window.drawMenu = function(){ _dm(); const m = document.getElementById('menu'); if (m) m.insertAdjacentHTML('beforeend', '<a href="#" data-a="instm">⬇️ تحميل التطبيق</a>'); };
-  const _ds = window.drawShell;
-  window.drawShell = function(){ _ds(); const f = document.getElementById('ft'); if (f && f.innerHTML && !f.querySelector('[data-a="instm"]')) f.insertAdjacentHTML('beforeend', '<div class="c" style="margin-top:22px"><button class="btn gold sm" data-a="instm">⬇️ تحميل التطبيق</button></div>'); };
-})();
-</script>
 </body>
 </html>
