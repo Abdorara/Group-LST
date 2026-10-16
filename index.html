@@ -1882,5 +1882,118 @@ document.addEventListener('click', async e => {
 });
 })();
 </script>
+<script>
+(() => {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const openModal = html => { const m = document.getElementById('modal'); m.innerHTML = html; m.style.display = 'flex'; };
+
+// ===== البريد الإلكتروني: نموذج الانضمام =====
+const _pj = window.pJoin;
+window.pJoin = function(){
+  _pj();
+  const f = document.getElementById('jf'); if (!f || f.email) return;
+  f.phone.insertAdjacentHTML('afterend', `<div class="fl">${ic('mail',20)}البريد الإلكتروني</div><input name="email" type="email" required maxlength="120" placeholder="name@example.com" dir="ltr" style="text-align:left">`);
+  const old = f.onsubmit;
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const em = f.email.value.trim();
+    if (!EMAIL_RE.test(em)) return toast('اكتب بريداً إلكترونياً صحيحاً');
+    await old.call(f, e);
+    if (me) await sb.rpc('set_my_email', {p_email: em});
+  };
+};
+
+// ===== البريد الإلكتروني: ملفي الشخصي =====
+const _pm = window.pMe;
+window.pMe = function(){
+  _pm();
+  const f = document.getElementById('pfm'); if (!f || !me || f.email) return;
+  f.phone.insertAdjacentHTML('afterend', `<div class="fl">${ic('mail',20)}البريد الإلكتروني</div><input name="email" type="email" maxlength="120" value="${esc(me.email || '')}" placeholder="name@example.com" dir="ltr" style="text-align:left">`);
+  const old = f.onsubmit;
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const em = f.email.value.trim();
+    if (em && !EMAIL_RE.test(em)) return toast('البريد الإلكتروني غير صالح');
+    if (em) { const r = await sb.rpc('set_my_email', {p_email: em}); if (r.error) return toast('تعذّر حفظ البريد'); }
+    return old.call(f, e);
+  };
+};
+
+// ===== Word: كتابة ملف docx بدون أي مكتبة =====
+const CT = new Uint32Array(256);
+for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; CT[n] = c >>> 0; }
+const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CT[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+function zipBlob(files){
+  const enc = new TextEncoder(), parts = [], cen = []; let off = 0;
+  const u16 = n => [n & 255, (n >> 8) & 255], u32 = n => [n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >>> 24) & 255];
+  files.forEach(f => {
+    const name = enc.encode(f.name), data = enc.encode(f.text), crc = crc32(data), sz = data.length;
+    const lh = new Uint8Array([0x50, 0x4b, 3, 4, ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(sz), ...u32(sz), ...u16(name.length), ...u16(0)]);
+    parts.push(lh, name, data); cen.push({name, crc, sz, off}); off += lh.length + name.length + sz;
+  });
+  let csize = 0;
+  cen.forEach(c => {
+    const h = new Uint8Array([0x50, 0x4b, 1, 2, ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(c.crc), ...u32(c.sz), ...u32(c.sz), ...u16(c.name.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(c.off)]);
+    parts.push(h, c.name); csize += h.length + c.name.length;
+  });
+  parts.push(new Uint8Array([0x50, 0x4b, 5, 6, 0, 0, 0, 0, ...u16(files.length), ...u16(files.length), ...u32(csize), ...u32(off), 0, 0]));
+  return new Blob(parts, {type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+const XM = s => String(s ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'}[c]));
+function buildDocx(title, sub, head, rows, widths){
+  const rf = '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>';
+  const cell = (t, w, o = {}) => { const sz = o.sz || 22, szc = o.rtl ? sz + 4 : sz;
+    return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>` : ''}<w:vAlign w:val="center"/></w:tcPr><w:p><w:pPr>${o.rtl ? '<w:bidi/>' : ''}<w:jc w:val="center"/></w:pPr><w:r><w:rPr>${rf}${o.b ? '<w:b/><w:bCs/>' : ''}<w:color w:val="${o.col || '000000'}"/><w:sz w:val="${sz}"/><w:szCs w:val="${szc}"/>${o.rtl ? '<w:rtl/>' : ''}</w:rPr><w:t xml:space="preserve">${XM(t)}</w:t></w:r></w:p></w:tc>`; };
+  const para = (t, sz, b, col) => `<w:p><w:pPr><w:bidi/><w:spacing w:after="120"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr>${rf}${b ? '<w:b/><w:bCs/>' : ''}<w:color w:val="${col}"/><w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/><w:rtl/></w:rPr><w:t xml:space="preserve">${XM(t)}</w:t></w:r></w:p>`;
+  const total = widths.reduce((a, b) => a + b, 0), bd = k => `<w:${k} w:val="single" w:sz="4" w:space="0" w:color="9AA8C7"/>`;
+  const hr = `<w:tr><w:trPr><w:tblHeader/></w:trPr>${head.map((h, i) => cell(h, widths[i], {fill: '0B1430', col: 'FFFFFF', b: 1, rtl: 1})).join('')}</w:tr>`;
+  const br = rows.map((r, ri) => `<w:tr><w:trPr><w:cantSplit/></w:trPr>${r.map((v, i) => cell(v, widths[i], {fill: ri % 2 ? 'F3F6FB' : '', rtl: i === 1})).join('')}</w:tr>`).join('');
+  const tbl = `<w:tbl><w:tblPr><w:bidiVisual/><w:tblW w:w="${total}" w:type="dxa"/><w:jc w:val="center"/><w:tblBorders>${['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(bd).join('')}</w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>${widths.map(w => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>${hr}${br}</w:tbl>`;
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${para(title, 40, 1, '0B1430')}${para(sub, 24, 0, '5F6F8F')}${tbl}<w:p/><w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  return zipBlob([
+    {name: '[Content_Types].xml', text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'},
+    {name: '_rels/.rels', text: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'},
+    {name: 'word/document.xml', text: doc}]);
+}
+
+// ===== Word: نافذة التصدير =====
+const listFor = (st, cm) => P.filter(p => (st === 'all' || p.status === 'approved') && (!cm || p.committee === cm)).sort((a, b) => String(a.full_name).localeCompare(String(b.full_name), 'ar'));
+function wnote(){
+  const el = document.getElementById('wnote'); if (!el) return;
+  const l = listFor(document.getElementById('wst').value, document.getElementById('wcm').value), miss = l.filter(p => !p.email).length;
+  el.innerHTML = `${l.length} شخص في القائمة${miss ? ` · ⚠️ ${miss} منهم لم يضيفوا بريداً إلكترونياً بعد` : ''}`;
+}
+function wordModal(){
+  openModal(`<div class="box">${closeX}<h3 style="margin-bottom:4px">📄 قائمة المنضمين (Word)</h3><p class="mut" style="line-height:2">جدول: الاسم واللقب، رقم بطاقة الطالب، البريد الإلكتروني، رقم الهاتف.</p>
+  <div class="fl">الأعضاء</div><select id="wst"><option value="approved">المقبولون فقط</option><option value="all">كل المتقدمين</option></select>
+  <div class="fl">القسم</div><select id="wcm"><option value="">كل الأقسام</option>${COMMS.map(c => `<option value="${c.k}">${esc(c.t)}</option>`).join('')}</select>
+  <p id="wnote" class="note"></p><button class="btn gold block" data-a="wdl" style="margin-top:14px">⬇️ تنزيل ملف Word</button></div>`);
+  document.getElementById('wst').onchange = wnote; document.getElementById('wcm').onchange = wnote; wnote();
+}
+const _pa = window.pAdmin;
+window.pAdmin = function(){
+  _pa();
+  const bar = document.querySelector('.ah > .ar > .ar');
+  if (bar && !bar.querySelector('[data-a="word"]')) bar.insertAdjacentHTML('afterbegin', '<button class="btn line sm" data-a="word" title="تصدير قائمة المنضمين (Word)" aria-label="تصدير قائمة المنضمين">📄 Word</button>');
+};
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a;
+  if (a === 'word') { e.preventDefault(); await loadP(); return wordModal(); }
+  if (a === 'wdl') {
+    await loadP();
+    const st = document.getElementById('wst').value, cm = document.getElementById('wcm').value, l = listFor(st, cm);
+    if (!l.length) return toast('القائمة فارغة');
+    const sub = `${st === 'all' ? 'كل المتقدمين' : 'الأعضاء المقبولون'} — ${cm ? cn(cm) : 'كل الأقسام'} — ${l.length} — ${new Date().toLocaleDateString('ar-u-nu-latn', {dateStyle: 'long'})}`;
+    const blob = buildDocx(`قائمة المنضمين إلى ${S.club_name}`, sub, ['#', 'الاسم واللقب', 'رقم بطاقة الطالب', 'البريد الإلكتروني', 'رقم الهاتف'],
+      l.map((p, i) => [String(i + 1), p.full_name, p.card_no, p.email || '—', p.phone || '—']), [800, 5200, 3000, 3800, 2200]);
+    const u = URL.createObjectURL(blob), x = document.createElement('a');
+    x.href = u; x.download = `LST-CLUB-members-${new Date().toISOString().slice(0, 10)}.docx`; document.body.appendChild(x); x.click(); x.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 4000); toast('تم تنزيل الملف ✓');
+  }
+});
+})();
+</script>
 </body>
 </html>
