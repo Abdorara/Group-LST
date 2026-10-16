@@ -1995,5 +1995,47 @@ document.addEventListener('click', async e => {
 });
 })();
 </script>
+<style>
+#instb{position:fixed;left:14px;bottom:14px;z-index:45;display:flex;align-items:center;gap:8px;background:var(--gold);color:var(--navy);border:0;border-radius:99px;padding:12px 18px;font-family:inherit;font-weight:700;font-size:.95rem;box-shadow:0 10px 26px rgba(11,20,48,.35);cursor:pointer}
+#instb.up{bottom:96px}
+</style>
+<script>
+(() => {
+  document.getElementById('inst')?.remove(); document.getElementById('inst2')?.remove();
+  let dp = null;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e; });
+  addEventListener('appinstalled', () => { dp = null; document.getElementById('instb')?.remove(); });
+  const standalone = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;
+  if (standalone) return;
+  const btn = document.createElement('button');
+  btn.id = 'instb'; btn.setAttribute('data-a', 'instb'); btn.setAttribute('aria-label', 'تثبيت التطبيق'); btn.innerHTML = '⬇️ تثبيت التطبيق';
+  document.body.appendChild(btn);
+  const pos = () => btn.classList.toggle('up', /^#(chat|dm|group)/.test(location.hash));
+  addEventListener('hashchange', pos); pos();
+  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const link = () => location.origin + location.pathname;
+  function howto(){
+    const m = document.getElementById('modal');
+    m.innerHTML = `<div class="box"><button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button><h3 style="margin-bottom:8px">⬇️ تثبيت التطبيق على هاتفك</h3>
+    <p style="line-height:2.1">${iOS ? 'افتح الموقع في <b>Safari</b>، ثم اضغط زر المشاركة ⬆️، ثم اختر <b>«إضافة إلى الشاشة الرئيسية»</b>.' : 'في متصفح <b>Chrome</b> اضغط ⋮ (أعلى المتصفح)، ثم اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>.'}</p>
+    <p class="note" style="line-height:2">يظهر بأيقونة النادي ويفتح بشاشة كاملة، ويتحدّث تلقائياً مع الموقع، ولا يحتاج ملفاً للتنزيل.</p>
+    <div class="row" style="margin-top:6px"><button class="btn line sm" data-a="instcopy">نسخ رابط الموقع</button>${navigator.share ? '<button class="btn line sm" data-a="instshare">مشاركة</button>' : ''}</div></div>`;
+    m.style.display = 'flex';
+  }
+  document.addEventListener('click', async e => {
+    const el = e.target.closest('[data-a]'); if (!el) return;
+    const a = el.dataset.a;
+    if (a === 'instb') {
+      e.preventDefault(); const mn = document.getElementById('menu'); if (mn) mn.style.display = 'none';
+      if (dp) { dp.prompt(); try { await dp.userChoice; } catch (err) {} dp = null; return; }
+      return howto();
+    }
+    if (a === 'instcopy') { try { await navigator.clipboard.writeText(link()); toast('تم نسخ الرابط ✓'); } catch (err) { toast(link()); } return; }
+    if (a === 'instshare') { try { await navigator.share({title: 'LST CLUB', url: link()}); } catch (err) {} }
+  });
+  const _dm = window.drawMenu;
+  window.drawMenu = function(){ _dm(); const m = document.getElementById('menu'); if (m && !m.querySelector('[data-a="instb"]')) m.insertAdjacentHTML('beforeend', '<a href="#" data-a="instb">⬇️ تثبيت التطبيق</a>'); };
+})();
+</script>
 </body>
 </html>
