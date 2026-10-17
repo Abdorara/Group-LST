@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مفاتيح الإشعارات</title></head>
+<body style="font-family:sans-serif;padding:18px;background:#0b1430;color:#fff;line-height:2">
+<h2>مولّد مفاتيح الإشعارات</h2>
+<p>تُولَّد المفاتيح داخل متصفحك فقط ولا تُرسَل لأي جهة. انسخ القيمتين ثم <b>احذف هذه الصفحة من المستودع</b>.</p>
+<button id="g" style="padding:12px 24px;font-size:1rem;border:0;border-radius:12px;background:#d4a72c">توليد مفاتيح جديدة</button>
+<div id="o" style="margin-top:16px"></div>
+<script>
+const u = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
+const e = a => btoa(String.fromCharCode(...a)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const row = (name, val, warn) => `<div style="margin:14px 0"><b>${name}</b>${warn ? ' <span style="color:#ff9bb0">(سرّي — لا تنشره)</span>' : ''}<br><textarea readonly rows="3" style="width:100%;font-family:monospace;font-size:.85rem" id="${name}">${val}</textarea><br><button onclick="navigator.clipboard.writeText(document.getElementById('${name}').value).then(()=>this.textContent='تم النسخ ✓')" style="padding:8px 18px;border:0;border-radius:10px">نسخ</button></div>`;
+document.getElementById('g').onclick = async () => {
+  const k = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign']);
+  const j = await crypto.subtle.exportKey('jwk', k.privateKey);
+  document.getElementById('o').innerHTML = row('VAPID_PUBLIC', e(new Uint8Array([4, ...u(j.x), ...u(j.y)])), false) + row('VAPID_PRIVATE', j.d, true);
+};
+</script></body></html>
