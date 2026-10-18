@@ -2601,5 +2601,496 @@ document.addEventListener('click', async e => {
 document.addEventListener('change', e => { if (e.target && e.target.id === 'tkc') { tkC = e.target.value; drawMgr(); } });
 })();
 </script>
+<style>
+.ofh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.ofg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.ofc{background:#fff;border:1px solid var(--bd);border-radius:26px;padding:20px 12px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 8px 24px rgba(11,20,48,.05)}
+.ofc.vac{background:var(--bg);border-style:dashed;box-shadow:none;color:var(--mut)}
+.ofp{width:96px;height:96px;border-radius:50%;object-fit:cover;background:#dbe5fb;color:#27418f;font-weight:700;font-size:1.9rem;display:flex;align-items:center;justify-content:center;margin-bottom:6px;border:3px solid var(--cream)}
+.ofc.vac .ofp{background:#eef1f7;color:#9aa7c4;border:3px dashed var(--bd)}
+.ofn{font-weight:700;font-size:1.02rem;line-height:1.6;color:var(--navy)}
+a.ofn:hover{text-decoration:underline}
+.ofs{color:var(--goldtx);font-weight:700;font-size:.9rem;line-height:1.7}
+.ofc .row{display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.ofb{display:inline-block;margin-inline-start:6px;background:var(--cream);color:var(--goldtx);border:1px solid #ecd9a0;border-radius:99px;padding:0 9px;font-size:.66rem;font-weight:700;line-height:1.8;vertical-align:middle;white-space:nowrap}
+.ofb.big{font-size:.85rem;padding:3px 16px;margin:6px 0 0}
+.ofa{margin-top:22px;border:1px solid var(--bd);border-radius:22px;padding:12px 16px;background:#fff}
+.ofa summary{cursor:pointer;font-weight:700;padding:6px 0}
+.ofo{border-top:1px solid var(--bd);padding:12px 0}
+.ofl{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:6px;line-height:1.9}
+.ofl small{color:var(--goldtx);font-weight:700;margin-inline-end:4px}
+.bst{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px}
+.bsc{background:#fff;border:1px solid var(--bd);border-radius:22px;padding:16px 12px;text-align:center;color:var(--navy);display:flex;flex-direction:column;gap:2px;box-shadow:0 8px 24px rgba(11,20,48,.05)}
+.bsc b{font-size:1.8rem;line-height:1.2}.bsc span{color:var(--mut);font-size:.88rem}
+</style>
+<script>
+(() => {
+const SEATS = [{k: 'president', t: 'رئيس النادي'}, {k: 'vice', t: 'نائب الرئيس'}, {k: 'secretary', t: 'الكاتب العام'}, {k: 'treasurer', t: 'أمين المال'}];
+const ST = k => (SEATS.find(s => s.k === k) || {t: ''}).t;
+const KINDS = {sponsor: 'الرعاة', partner: 'الشركاء', institution: 'جهات داعمة'};
+const KIND1 = {sponsor: 'راعٍ رسمي', partner: 'شريك', institution: 'جهة داعمة'};
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const ok = () => !!me && me.status === 'approved';
+const adm = () => ok() && me.role === 'admin';
+const headD = () => ok() && me.head_of === 'design';
+const canDesign = () => ok() && (me.role === 'admin' || me.head_of === 'design' || me.committee === 'design');
+const canPin = () => adm() || headD();
+const canPartners = () => adm() || (ok() && me.head_of === 'ext');
+const hero = (icon, pill, h1, sub) => `<section class="dark ph"><span class="pill">${ic(icon, 18)} ${pill}</span><h1>${h1}</h1><p>${sub}</p></section>`;
+const fdate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('ar-u-nu-latn', {year: 'numeric', month: 'long', day: 'numeric'}) : '';
+const dtt = iso => new Date(iso).toLocaleString('ar-u-nu-latn', {dateStyle: 'medium', timeStyle: 'short'});
+const SPH = /^https:\/\/[A-Za-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/(media|avatars)\/[A-Za-z0-9._\/-]+$/;
+const okPhoto = u => SPH.test(u || '') ? esc(u) : '';
+const nameOf = id => (typeof MB !== 'undefined' && MB && MB[id] && MB[id].full_name) || 'عضو';
+const ERR = {'not found or current': 'لا يمكن حذف العهدة الجارية', 'not allowed': 'غير مسموح لك بهذا الإجراء', 'no term': 'لا توجد عهدة جارية — ابدأ عهدة أولاً', 'term exists': 'توجد عهدة جارية بالفعل',
+  'not an approved member': 'هذا الحساب ليس عضواً مقبولاً', 'already seated': 'هذا العضو يشغل مقعداً آخر في المكتب', 'bad title': 'اكتب عنواناً من حرفين إلى 40 حرفاً',
+  'rate limit': 'أرسلت عدة رسائل مؤخراً، حاول بعد قليل', 'no office': 'لا يوجد أعضاء في المكتب حالياً', 'bad text': 'اكتب رسالة من حرفين إلى 1000 حرف',
+  'no names': 'اكتب اسماً واحداً على الأقل', 'bad name': 'كل اسم بين حرفين و80 حرفاً', 'not found': 'العنصر غير موجود'};
+const emsg = (e, d) => { const m = (e && e.message) || ''; for (const k in ERR) if (m.includes(k)) return ERR[k];
+  if (/does not exist|schema cache|Could not find/i.test(m)) return 'نفّذ كود SQL الخاص بالدفعة الرابعة أولاً'; return d || 'تعذّر التنفيذ'; };
+const box = html => { const m = $('#modal'); m.innerHTML = `<div class="box">${closeX}${html}</div>`; m.style.display = 'flex'; return m; };
+
+// ===== رفع صورة (خلفية بيضاء حتى لا تتحول الشعارات الشفافة إلى سوداء) =====
+const toBlob = (file, max) => new Promise((res, rej) => {
+  const im = new Image(), u = URL.createObjectURL(file);
+  im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k));
+    const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(new Error('img')), 'image/jpeg', .85); };
+  im.onerror = () => rej(new Error('img')); im.src = u; });
+async function upImg(file, max){
+  const blob = await toBlob(file, max), path = `${me.id}/${crypto.randomUUID()}.jpg`;
+  const up = await sb.storage.from('media').upload(path, blob, {contentType: 'image/jpeg'});
+  if (up.error) throw up.error;
+  return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+}
+
+// ===== بيانات المكتب =====
+let OF = {at: 0, terms: [], seats: [], err: false}, ofP = null;
+function loadOffice(force){
+  if (!force && OF.at && Date.now() - OF.at < 60000) return Promise.resolve(OF);
+  if (ofP) return ofP;
+  ofP = (async () => {
+    try {
+      const [t, s] = await Promise.all([sb.from('office_terms').select('*').order('id', {ascending: false}), sb.from('office_seats').select('*').order('id', {ascending: true})]);
+      OF.err = !!(t.error || s.error);
+      if (!OF.err) { OF.terms = t.data || []; OF.seats = s.data || []; }
+    } catch (e) { OF.err = true; }
+    OF.at = Date.now(); ofP = null; return OF;
+  })();
+  return ofP;
+}
+const cur = () => OF.terms.find(t => !t.ended_at) || null;
+const seatRow = (tid, k) => OF.seats.find(s => s.term_id === tid && s.seat === k) || null;
+const mySeat = () => { if (!ok()) return null; const c = cur(); if (!c) return null; const s = OF.seats.find(x => x.term_id === c.id && x.user_id === me.id); return s ? s.seat : null; };
+const isLead = () => ['president', 'vice'].includes(mySeat());
+
+// ===== الشارات بجانب الأسماء (الملف، التعليقات، المحادثات، قائمة الأعضاء) =====
+function paintBadges(){
+  const c = cur(); if (!c) return;
+  const map = {}; OF.seats.forEach(s => { if (s.term_id === c.id && s.user_id) map[s.user_id] = s.seat; });
+  if (!Object.keys(map).length) return;
+  document.querySelectorAll('#main a[href^="#u/"]').forEach(a => {
+    if (a.dataset.ofb) return; a.dataset.ofb = '1';
+    const k = map[a.getAttribute('href').slice(3)]; if (!k) return;
+    const cl = a.cloneNode(true); cl.querySelectorAll('.ava,img,svg').forEach(x => x.remove());
+    if (!cl.textContent.trim()) return;
+    const tag = `<span class="ofb">${esc(ST(k))}</span>`, b = a.querySelector('b');
+    if (b) b.insertAdjacentHTML('afterend', tag); else a.insertAdjacentHTML('afterend', tag);
+  });
+  if (view === 'u') {
+    const h = document.querySelector('#main .pc h1'), id = (location.hash.split('/')[1] || '');
+    if (h && !h.dataset.ofb) { h.dataset.ofb = '1'; if (map[id]) h.insertAdjacentHTML('afterend', `<div><span class="ofb big">${esc(ST(map[id]))}</span></div>`); }
+  }
+}
+let paintQ = false;
+function schedulePaint(){ if (paintQ) return; paintQ = true; requestAnimationFrame(() => { paintQ = false; try { paintBadges(); } catch (e) {} }); }
+try { new MutationObserver(schedulePaint).observe(main, {childList: true, subtree: true}); } catch (e) {}
+let menuFor = null;
+function kick(){
+  if (!ok()) return;
+  loadOffice().then(() => { schedulePaint(); const k = mySeat() || '-'; if (menuFor !== k) { menuFor = k; try { drawMenu(); } catch (e) {} } });
+}
+
+// ===== صفحة فريقنا: المكتب + الشركاء =====
+let PT = [];
+const ptCard = p => { const u = safeUrl(p.url), logo = okImg(p.logo_url);
+  const inner = `${logo ? `<img class="pti" src="${logo}" alt="" loading="lazy">` : `<span class="ptn">${esc(ini(p.name))}</span>`}<b>${esc(p.name)}</b>`;
+  return `<div class="ptw">${u ? `<a class="ptc" href="${u}" target="_blank" rel="noopener noreferrer">${inner}</a>` : `<div class="ptc">${inner}</div>`}
+  ${canPartners() ? `<div class="row"><button class="btn line sm" data-a="b4ptedit" data-id="${p.id}">✎</button><button class="btn no sm" data-a="b4ptdel" data-id="${p.id}">🗑</button></div>` : ''}</div>`; };
+function drawPartners(){
+  const el = $('#ptl'); if (!el) return;
+  const html = Object.keys(KINDS).map(k => { const l = PT.filter(p => p.kind === k); return l.length ? `<h3 style="margin:18px 0 10px">${KINDS[k]}</h3><div class="ptg">${l.map(ptCard).join('')}</div>` : ''; }).join('');
+  el.innerHTML = html || '<p class="mut c" style="padding:20px">لا يوجد شركاء معلنون بعد.</p>';
+}
+async function loadPartners(){
+  const p = await sb.from('partners').select('*').order('sort', {ascending: true}).order('id', {ascending: true});
+  if (!$('#ptl')) return;
+  if (p.error) { $('#ptl').innerHTML = '<p class="mut c" style="padding:20px">تعذّر تحميل الشركاء. تأكد من تنفيذ كود SQL الخاص بالدفعة الثالثة.</p>'; return; }
+  PT = p.data || []; drawPartners();
+}
+function seatCard(c, k){
+  const s = seatRow(c.id, k), title = ST(k);
+  if (!s) {
+    if (k === 'treasurer' && !adm()) return '';
+    return `<div class="ofc vac"><span class="ofp">؟</span><b class="ofn">شاغر</b><span class="ofs">${title}</span>${k === 'treasurer' ? '<small class="mut">مقعد اختياري</small>' : ''}
+    ${adm() ? `<div class="row"><button class="btn gold sm" data-a="b4seat" data-k="${k}">${k === 'treasurer' ? 'تفعيل المقعد' : 'تعيين'}</button></div>` : ''}</div>`;
+  }
+  const ph = okPhoto(s.photo_url);
+  const img = ph ? `<img class="ofp" src="${ph}" alt="" loading="lazy">` : `<span class="ofp">${esc(ini(s.full_name))}</span>`;
+  const nm = ok() && s.user_id ? `<a class="ofn" data-ofb="1" href="#u/${esc(s.user_id)}">${esc(s.full_name)}</a>` : `<b class="ofn">${esc(s.full_name)}</b>`;
+  return `<div class="ofc">${img}${nm}<span class="ofs">${title}</span>
+  ${adm() ? `<div class="row"><button class="btn line sm" data-a="b4seat" data-k="${k}">تغيير</button><button class="btn no sm" data-a="b4vac" data-k="${k}">إخلاء</button></div>` : ''}</div>`;
+}
+let ofaOpen = false;
+function archiveHTML(){
+  const old = OF.terms.filter(t => t.ended_at).sort((a, b) => (new Date(b.ended_at) - new Date(a.ended_at)) || (b.id - a.id));
+  if (!old.length && !adm()) return '';
+  return `<details class="ofa"${ofaOpen ? ' open' : ''}><summary>📜 أرشيف المكاتب السابقة (${old.length})</summary>
+  ${old.map(t => { const list = SEATS.map(s => { const r = seatRow(t.id, s.k); return r ? `<span><small>${s.t}</small> ${esc(r.full_name)}</span>` : ''; }).join('');
+    return `<div class="ofo"><div class="ar"><b>${esc(t.title)}</b>${adm() ? `<button class="btn no sm" data-a="b4del" data-id="${t.id}">🗑</button>` : ''}</div><div class="ofl">${list || '<small class="mut">لا أسماء</small>'}</div></div>`; }).join('') || '<p class="mut" style="padding:8px 0">لا توجد مكاتب سابقة بعد.</p>'}
+  ${adm() ? '<button class="btn line sm" data-a="b4arc" style="margin-top:10px">＋ إضافة مكتب سابق</button>' : ''}</details>`;
+}
+function drawOffice(){
+  const el = $('#ofx'); if (!el) return;
+  if (OF.err) { el.innerHTML = '<p class="mut c" style="padding:20px">تعذّر تحميل المكتب. تأكد من تنفيذ كود SQL الخاص بالدفعة الرابعة.</p>'; return; }
+  const c = cur();
+  if (!c) {
+    el.innerHTML = (adm() ? '<div class="pan c"><p class="mut" style="margin-bottom:12px">لم تبدأ أي عهدة بعد.</p><button class="btn gold" data-a="b4start">＋ بدء العهدة الأولى</button></div>'
+      : '<p class="mut c" style="padding:20px">سيُعلن عن أعضاء المكتب قريباً.</p>') + archiveHTML();
+    return;
+  }
+  const holders = OF.seats.some(s => s.term_id === c.id && s.user_id);
+  const acts = [];
+  if (ok() && holders) acts.push('<button class="btn gold" data-a="b4contact">📨 راسل المكتب</button>');
+  else if (!me && holders) acts.push('<a class="btn line" href="#login">سجّل الدخول لمراسلة المكتب</a>');
+  if (mySeat()) acts.push('<a class="btn navy" href="#bureau">🏛️ لوحة المكتب</a>');
+  el.innerHTML = `<div class="ofh"><span class="chip">العهدة ${esc(c.title)}</span>${adm() ? `<div class="ar" style="gap:8px"><button class="btn line sm" data-a="b4ren" data-id="${c.id}">✎ العنوان</button><button class="btn no sm" data-a="b4hand">🤝 تسليم المهام</button></div>` : ''}</div>
+  <div class="ofg">${SEATS.map(s => seatCard(c, s.k)).join('')}</div>
+  ${acts.length ? `<div class="ar" style="justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap">${acts.join('')}</div>` : ''}${archiveHTML()}`;
+}
+async function pTeam(){
+  main.innerHTML = hero('users', 'فريقنا', 'الفريق والشركاء', 'الوجوه التي تصنع النادي، والجهات التي تدعم رسالته.') +
+  `<div class="sec rt" style="padding-top:36px"><div class="ar" style="margin-bottom:14px"><h2 style="margin:0;font-size:1.6rem">المكتب</h2></div><div id="ofx">${loader}</div>
+  <div class="ar" style="margin:42px 0 6px"><h2 style="margin:0;font-size:1.6rem">الشركاء والداعمون</h2>${canPartners() ? '<button class="btn gold sm" data-a="b4ptnew">＋ إضافة شريك</button>' : ''}</div><div id="ptl">${loader}</div></div>`;
+  await Promise.all([loadOffice(true), loadPartners()]);
+  drawOffice(); schedulePaint();
+}
+
+// ===== نوافذ المكتب =====
+async function seatModal(k){
+  const c = cur(); if (!c) return toast('ابدأ العهدة أولاً');
+  box(`<h3 style="margin-bottom:6px">${seatRow(c.id, k) ? '✎ تغيير' : '＋ تعيين'} ${ST(k)}</h3><p class="mut" style="margin-bottom:8px;line-height:1.9">يظهر اسم العضو وصورته في صفحة المكتب، وتُضاف له صلاحيات المقعد.</p>
+  <input id="smq" placeholder="ابحث بالاسم…" autocomplete="off"><select id="sml" size="7" style="margin-top:10px;padding:8px"><option disabled>جارٍ التحميل…</option></select>
+  <button class="btn navy block" id="smb" style="margin-top:14px" disabled>حفظ</button>`);
+  let list = [];
+  const r = await sb.from('public_profiles').select('id,full_name,committee').order('full_name');
+  list = (r.data && r.data.length ? r.data : ((typeof MBL !== 'undefined' && MBL) || [])).slice();
+  const used = {}; OF.seats.filter(s => s.term_id === c.id && s.user_id && s.seat !== k).forEach(s => used[s.user_id] = ST(s.seat));
+  const sel = $('#sml'), q = $('#smq'), b = $('#smb'); if (!sel) return;
+  const draw = () => { const t = q.value.trim(); const l = list.filter(p => !t || (p.full_name || '').includes(t));
+    sel.innerHTML = l.length ? l.map(p => `<option value="${esc(p.id)}"${used[p.id] ? ' disabled' : ''}>${esc(p.full_name)}${used[p.id] ? ' — ' + used[p.id] : ''}</option>`).join('') : '<option disabled>لا نتائج</option>'; b.disabled = true; };
+  draw(); q.oninput = draw; sel.onchange = () => { b.disabled = !sel.value; };
+  b.onclick = async () => {
+    if (!sel.value) return; b.disabled = true;
+    const {error} = await sb.rpc('office_assign', {p_seat: k, p_user: sel.value});
+    if (error) { b.disabled = false; return toast(emsg(error)); }
+    $('#modal').style.display = 'none'; toast('تم التعيين ✓'); await loadOffice(true); drawOffice(); schedulePaint();
+  };
+}
+function titleModal(kind, id){
+  const cfg = {start: ['＋ بدء العهدة الأولى', 'عنوان العهدة (مثال: 2025–2026)', 'بدء'], ren: ['✎ تعديل عنوان العهدة', 'العنوان الجديد', 'حفظ'], hand: ['🤝 تسليم المهام', 'عنوان العهدة الجديدة (مثال: 2026–2027)', 'تسليم المهام']}[kind];
+  const c = cur();
+  box(`<h3 style="margin-bottom:6px">${cfg[0]}</h3>${kind === 'hand' ? `<p class="mut" style="line-height:1.9;margin-bottom:6px">سينتقل مكتب «${esc(c ? c.title : '')}» إلى الأرشيف، وتبدأ عهدة جديدة بمقاعد شاغرة تعيّن أنت أعضاءها. يفقد أعضاء المكتب القديم صلاحياتهم فوراً، وتبقى محادثتهم القديمة لهم وحدهم.</p>` : ''}
+  <form id="tmf2"><div class="fl">${cfg[1]}</div><input name="t" required minlength="2" maxlength="40" value="${kind === 'ren' && c ? esc(c.title) : ''}">
+  <button class="btn ${kind === 'hand' ? 'gold' : 'navy'} block" style="margin-top:16px">${cfg[2]}</button></form>`);
+  $('#tmf2').onsubmit = async e => {
+    e.preventDefault(); const t = e.target.t.value.trim(), btn = e.target.querySelector('button'); btn.disabled = true;
+    if (kind === 'hand' && !confirm('تأكيد تسليم المهام؟ لا يمكن التراجع عنه.')) { btn.disabled = false; return; }
+    const r = kind === 'start' ? await sb.rpc('office_start_term', {p_title: t}) : kind === 'ren' ? await sb.rpc('office_rename_term', {p_id: id, p_title: t}) : await sb.rpc('office_handover', {p_title: t});
+    if (r.error) { btn.disabled = false; return toast(emsg(r.error)); }
+    $('#modal').style.display = 'none'; toast(kind === 'hand' ? 'تم تسليم المهام ✓' : 'تم الحفظ ✓'); await loadOffice(true); drawOffice(); schedulePaint();
+  };
+}
+function archiveModal(){
+  box(`<h3 style="margin-bottom:6px">＋ مكتب سابق</h3><p class="mut" style="line-height:1.9;margin-bottom:4px">أسماء فقط، بلا حسابات. اكتب سنة العهدة في العنوان ليُرتَّب الأرشيف تلقائياً.</p>
+  <form id="arf"><div class="fl">العهدة (مثال: 2024–2025)</div><input name="t" required minlength="2" maxlength="40">
+  ${SEATS.map(s => `<div class="fl">${s.t}${s.k === 'treasurer' ? ' (اختياري)' : ''}</div><input name="${s.k}" maxlength="80">`).join('')}
+  <button class="btn navy block" style="margin-top:16px">إضافة إلى الأرشيف</button></form>`);
+  $('#arf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, btn = f.querySelector('button'), names = {};
+    SEATS.forEach(s => { const v = f[s.k].value.trim(); if (v) names[s.k] = v; });
+    btn.disabled = true; const {error} = await sb.rpc('office_add_archive', {p_title: f.t.value.trim(), p_names: names});
+    if (error) { btn.disabled = false; return toast(emsg(error)); }
+    $('#modal').style.display = 'none'; toast('تمت الإضافة ✓'); await loadOffice(true); drawOffice();
+  };
+}
+function contactModal(){
+  box(`<h3 style="margin-bottom:6px">📨 راسل المكتب</h3><p class="mut" style="line-height:1.9;margin-bottom:6px">تصل رسالتك إلى أعضاء المكتب في صندوق رسائلهم، وتجد ردودهم في صندوق رسائلك.</p>
+  <form id="cmf2"><textarea name="x" required minlength="2" maxlength="1000" placeholder="اقتراح، استفسار، أو ملاحظة…" style="min-height:130px"></textarea>
+  <button class="btn gold block" style="margin-top:14px">إرسال</button></form>`);
+  $('#cmf2').onsubmit = async e => {
+    e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true;
+    const {data, error} = await sb.rpc('office_contact', {p_text: e.target.x.value.trim()});
+    if (error) { btn.disabled = false; return toast(emsg(error)); }
+    $('#modal').style.display = 'none'; toast(`وصلت رسالتك إلى ${data} من أعضاء المكتب ✓`);
+  };
+}
+function partnerModal(id){
+  const p = id ? PT.find(x => String(x.id) === String(id)) : null;
+  box(`<h3 style="margin-bottom:6px">${p ? '✎ تعديل الشريك' : '＋ شريك أو داعم جديد'}</h3><form id="ptf">
+  <div class="fl">الاسم</div><input name="n" required minlength="2" maxlength="80" value="${esc(p ? p.name : '')}">
+  <div class="g2"><div><div class="fl">النوع</div><select name="k">${Object.keys(KIND1).map(k => `<option value="${k}"${p && p.kind === k ? ' selected' : ''}>${KIND1[k]}</option>`).join('')}</select></div>
+  <div><div class="fl">الترتيب</div><input name="s" type="number" min="0" max="999" value="${p ? p.sort : PT.length + 1}"></div></div>
+  <div class="fl">موقعه (اختياري)</div><input name="u" type="url" placeholder="https://…" value="${esc(p ? p.url || '' : '')}">
+  <div class="fl">الشعار (اختياري)</div><div class="who" style="gap:12px"><span>${p && okImg(p.logo_url) ? `<img src="${okImg(p.logo_url)}" alt="" style="width:56px;height:56px;object-fit:contain">` : ''}</span><input type="file" id="ptimg" accept="image/*"></div>
+  <button class="btn navy block" style="margin-top:18px">حفظ</button></form>`);
+  const f = $('#ptf');
+  f.onsubmit = async e => {
+    e.preventDefault(); const link = f.u.value.trim();
+    if (link && !/^https?:\/\//i.test(link)) return toast('الرابط يجب أن يبدأ بـ http أو https');
+    const b = f.querySelector('button.navy'); b.disabled = true;
+    try {
+      const file = $('#ptimg').files[0]; let url = p ? p.logo_url : null; if (file) url = await upImg(file, 700);
+      const row = {name: f.n.value.trim(), kind: f.k.value, url: link || null, logo_url: url || null, sort: parseInt(f.s.value, 10) || 0};
+      const {error} = p ? await sb.from('partners').update(row).eq('id', p.id) : await sb.from('partners').insert(row);
+      if (error) throw error;
+      $('#modal').style.display = 'none'; toast('تم الحفظ ✓'); loadPartners();
+    } catch (err) { b.disabled = false; toast('تعذّر الحفظ'); }
+  };
+}
+
+// ===== لوحة المكتب (رئيس / نائب / كاتب عام / أمين مال) =====
+const TABS = {ov: ['نظرة عامة', 'flask'], ap: ['الطلبات', 'file'], tk: ['المهام', 'key'], ev: ['الفعاليات', 'calendar'], mb: ['الأعضاء', 'users']};
+const tabsFor = k => k === 'president' || k === 'vice' ? ['ov', 'ap', 'tk', 'ev'] : k === 'secretary' ? ['ov', 'ev', 'mb'] : ['ov', 'ev'];
+const stTxt = {pending: ['قيد المراجعة', 's-pending'], interview: ['مقابلة', 's-pending'], rejected: ['مرفوض', 's-rejected'], approved: ['مقبول', 's-approved']};
+const tkTxt = {todo: ['للتنفيذ', 's-pending'], doing: ['جارية', 's-pending'], done: ['منجزة', 's-approved']};
+const isPastEv = a => a.event_date && new Date(a.event_date) < new Date();
+let BF = {};
+async function pBureau(arg){
+  const k = mySeat(), tabs = tabsFor(k), t = tabs.includes(arg) ? arg : 'ov';
+  main.innerHTML = hero('flask', 'لوحة المكتب', ST(k), 'متابعة عمل النادي. القبول والرفض من اختصاص الموارد البشرية، ونشر الفعاليات من اختصاص قسم التصميم.') +
+  `<div class="sec rt" style="padding-top:12px"><div class="tabs">${tabs.map(x => `<a href="#bureau/${x}" class="${x === t ? 'on' : ''}">${ic(TABS[x][1], 20)}${TABS[x][0]}</a>`).join('')}</div><div id="bc">${loader}</div></div>`;
+  const live = () => view === 'bureau' && $('#bc');
+  if (t === 'ov') return bOverview(k, live);
+  if (t === 'ap') return bApps(live);
+  if (t === 'tk') return bTasks(live);
+  if (t === 'ev') return bEvents(live);
+  if (t === 'mb') return bMembers(live);
+}
+async function bOverview(k, live){
+  const c = cur(), lead = k === 'president' || k === 'vice';
+  const [ap, tk, ev, mb] = await Promise.all([
+    lead ? sb.rpc('office_applications') : null,
+    lead ? sb.from('tasks').select('id,status') : null,
+    sb.from('activities').select('id,event_date'),
+    k === 'secretary' ? sb.rpc('office_members') : null]);
+  if (!live()) return;
+  const cards = [];
+  if (lead) {
+    const open = (ap && ap.data || []).filter(x => x.status !== 'rejected').length;
+    cards.push(['طلبات قيد المراجعة', open, '#bureau/ap'], ['مهام مفتوحة', (tk && tk.data || []).filter(x => x.status !== 'done').length, '#bureau/tk']);
+  }
+  if (k === 'secretary') cards.push(['الأعضاء المقبولون', (mb && mb.data || []).length, '#bureau/mb']);
+  cards.push(['فعاليات قادمة', (ev.data || []).filter(a => !isPastEv(a)).length, '#bureau/ev']);
+  $('#bc').innerHTML = `<div class="pan"><div class="ar"><div><b style="font-size:1.15rem">${ST(k)}</b><div class="mut">العهدة ${esc(c ? c.title : '')}</div></div>${c && c.group_id ? `<a class="btn gold sm" href="#group/${c.group_id}">💬 محادثة المكتب</a>` : ''}</div></div>
+  <div class="bst">${cards.map(([l, n, h]) => `<a class="bsc" href="${h}"><b>${n}</b><span>${l}</span></a>`).join('')}</div>
+  <p class="mut" style="line-height:2;margin-top:16px">${lead ? 'صلاحياتك قراءة فقط: الطلبات والمهام والفعاليات. يمكنك مراسلة رئيس القسم المعني مباشرة من صفحة العضو.' : k === 'secretary' ? 'تدير قائمة الأعضاء وتصديرها. الحضور والشهادات ستُضاف لاحقاً.' : 'يمكنك متابعة الفعاليات القادمة.'}</p>`;
+}
+async function bApps(live){
+  const r = await sb.rpc('office_applications');
+  if (!live()) return;
+  if (r.error) { $('#bc').innerHTML = `<div class="pan c mut">${esc(emsg(r.error, 'تعذّر التحميل'))}</div>`; return; }
+  const all = r.data || [], f = BF.ap || 'all', list = all.filter(x => f === 'all' || x.status === f);
+  const chip = (v, l) => `<button class="btn ${f === v ? 'navy' : 'line'} sm" data-a="b4f" data-g="ap" data-v="${v}">${l}</button>`;
+  $('#bc').innerHTML = `<p class="mut" style="margin-bottom:10px">عرض للقراءة فقط · ${all.length} طلب</p><div class="ar" style="justify-content:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:14px">${chip('all', 'الكل')}${chip('pending', 'قيد المراجعة')}${chip('interview', 'مقابلة')}${chip('rejected', 'مرفوض')}</div>
+  ${list.map(x => { const s = stTxt[x.status] || [x.status, 's-pending'];
+    return `<div class="pan"><div class="ar"><b>${esc(x.full_name)}</b><span class="st2 ${s[1]}">${esc(s[0])}</span></div>
+    <div class="mut" style="margin:4px 0">${esc(x.specialization || '')}${x.year ? ' · ' + esc(x.year) : ''}${x.committee ? ' · ' + esc(cn(x.committee)) : ''} · ${x.created_at ? new Date(x.created_at).toLocaleDateString('ar-u-nu-latn') : ''}</div>
+    ${x.motivation ? `<details><summary class="mut" style="cursor:pointer">دافع الانضمام</summary><p style="line-height:2;white-space:pre-wrap;margin-top:6px">${esc(x.motivation)}</p></details>` : ''}</div>`; }).join('') || '<div class="pan c mut">لا توجد طلبات.</div>'}`;
+}
+async function bTasks(live){
+  const [t, a] = await Promise.all([sb.from('tasks').select('*').order('created_at', {ascending: false}), sb.from('task_assignees').select('task_id,user_id')]);
+  if (!live()) return;
+  if (t.error) { $('#bc').innerHTML = `<div class="pan c mut">${esc(emsg(t.error, 'تعذّر التحميل'))}</div>`; return; }
+  const all = t.data || [], who = {}; (a.data || []).forEach(x => (who[x.task_id] = who[x.task_id] || []).push(x.user_id));
+  const fc = BF.tkc || 'all', fs = BF.tks || 'open';
+  const list = all.filter(x => (fc === 'all' || x.committee === fc) && (fs === 'all' || (fs === 'open' ? x.status !== 'done' : x.status === fs)));
+  const chip = (g, cur2, v, l) => `<button class="btn ${cur2 === v ? 'navy' : 'line'} sm" data-a="b4f" data-g="${g}" data-v="${v}">${l}</button>`;
+  $('#bc').innerHTML = `<p class="mut" style="margin-bottom:10px">عرض للقراءة فقط · ${all.length} مهمة</p>
+  <div class="ar" style="justify-content:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:8px">${chip('tkc', fc, 'all', 'كل الأقسام')}${COMMS.map(c => chip('tkc', fc, c.k, c.t)).join('')}</div>
+  <div class="ar" style="justify-content:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:14px">${chip('tks', fs, 'open', 'المفتوحة')}${chip('tks', fs, 'done', 'المنجزة')}${chip('tks', fs, 'all', 'الكل')}</div>
+  ${list.map(x => { const s = tkTxt[x.status] || [x.status, 's-pending'], late = x.due_at && x.status !== 'done' && new Date(x.due_at) < new Date();
+    return `<div class="pan"><div class="ar"><b>${esc(x.title)}</b><span class="st2 ${s[1]}">${esc(s[0])}</span></div>
+    <div class="mut" style="margin:4px 0">${esc(cn(x.committee))}${x.due_at ? ` · ${late ? '⚠️ ' : ''}الموعد ${dtt(x.due_at)}` : ''}</div>
+    ${x.details ? `<p style="line-height:1.9;white-space:pre-wrap">${esc(x.details)}</p>` : ''}
+    <div class="mut" style="font-size:.9rem">المكلّفون: ${(who[x.id] || []).map(i => esc(nameOf(i))).join('، ') || '—'}</div></div>`; }).join('') || '<div class="pan c mut">لا توجد مهام.</div>'}`;
+}
+async function bEvents(live){
+  const [a, c] = await Promise.all([sb.from('activities').select('id,title,event_date,location,capacity').order('event_date', {ascending: false}), sb.rpc('activity_counts')]);
+  if (!live()) return;
+  const cnt = {}; (c.data || []).forEach(x => cnt[x.activity_id] = Number(x.n));
+  $('#bc').innerHTML = `<p class="mut" style="margin-bottom:10px">عرض للقراءة فقط</p>` + ((a.data || []).map(x => `<div class="pan"><div class="ar"><b>${esc(x.title)}</b>${isPastEv(x) ? '<span class="st2 s-rejected">منتهية</span>' : '<span class="st2 s-approved">قادمة</span>'}</div>
+  <div class="mut" style="margin:4px 0">${fd(x.event_date)}${x.location ? ' · ' + esc(x.location) : ''} · ${cnt[x.id] || 0}${x.capacity ? ' / ' + x.capacity : ''} مسجّل</div>
+  <button class="btn line sm" data-a="b4regs" data-id="${x.id}">المسجّلون</button><div id="rg${x.id}" class="mut" style="margin-top:8px;line-height:2"></div></div>`).join('') || '<div class="pan c mut">لا توجد فعاليات.</div>');
+}
+let MEMB = [];
+function membList(){
+  const q = ($('#mq') ? $('#mq').value : '').trim(), fc = $('#mc') ? $('#mc').value : '';
+  return MEMB.filter(m => (!q || [m.full_name, m.card_no, m.specialization].some(v => String(v || '').includes(q))) && (!fc || m.committee === fc));
+}
+function drawMembers(){
+  const l = membList(), el = $('#ml'); if (!el) return;
+  $('#mn').textContent = l.length;
+  el.innerHTML = l.map((m, i) => `<div class="pan" style="padding:16px 18px"><div class="ar"><b>${i + 1}. ${esc(m.full_name)}</b><span class="chip" style="font-size:.75rem;padding:4px 12px">${esc(cn(m.committee))}</span></div>
+  <div class="mut" style="margin-top:4px;line-height:1.9">${esc(m.specialization || '')}${m.year ? ' · ' + esc(m.year) : ''}<br>رقم البطاقة: ${esc(m.card_no || '—')}${m.phone ? ' · ' + esc(m.phone) : ''}${m.email ? '<br>' + esc(m.email) : ''}</div></div>`).join('') || '<div class="pan c mut">لا نتائج.</div>';
+}
+async function bMembers(live){
+  const r = await sb.rpc('office_members');
+  if (!live()) return;
+  if (r.error) { $('#bc').innerHTML = `<div class="pan c mut">${esc(emsg(r.error, 'تعذّر التحميل'))}</div>`; return; }
+  MEMB = r.data || [];
+  $('#bc').innerHTML = `<div class="ar" style="margin-bottom:12px"><b>الأعضاء المقبولون <span class="cnt" id="mn">${MEMB.length}</span></b><button class="btn gold sm" data-a="b4doc">📄 تصدير Word</button></div>
+  <input id="mq" placeholder="ابحث بالاسم أو رقم البطاقة أو التخصص…"><select id="mc" style="margin:10px 0 14px"><option value="">كل الأقسام</option>${COMMS.map(c => `<option value="${c.k}">${c.t}</option>`).join('')}</select><div id="ml"></div>`;
+  $('#mq').oninput = drawMembers; $('#mc').onchange = drawMembers; drawMembers();
+}
+function exportDoc(){
+  const rows = membList(), day = new Date().toISOString().slice(0, 10);
+  const td = v => `<td>${esc(v == null ? '' : v)}</td>`;
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>قائمة الأعضاء</title>
+<style>body{font-family:Arial,sans-serif;direction:rtl}table{border-collapse:collapse;width:100%}td,th{border:1px solid #555;padding:5px 8px;text-align:right;font-size:11pt}th{background:#e9effb}</style></head>
+<body dir="rtl"><h2>LST CLUB — قائمة الأعضاء</h2><p>العدد: ${rows.length} · التاريخ: ${day}</p>
+<table><thead><tr><th>#</th><th>الاسم</th><th>رقم البطاقة</th><th>التخصص</th><th>السنة</th><th>القسم</th><th>الهاتف</th><th>البريد</th></tr></thead><tbody>
+${rows.map((m, i) => `<tr>${td(i + 1)}${td(m.full_name)}${td(m.card_no)}${td(m.specialization)}${td(m.year)}${td(m.committee ? cn(m.committee) : '')}${td(m.phone)}${td(m.email)}</tr>`).join('')}
+</tbody></table></body></html>`;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff', html], {type: 'application/msword'})); a.download = `members-${day}.doc`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+// ===== لوحة التصميم والإعلام (نشر الفعاليات، الإعلان المثبّت، المعرض) =====
+const DTABS = {ev: ['الفعاليات', 'calplus'], pin: ['الإعلان المثبّت', 'pin']};
+async function pDesign(arg){
+  const t = arg === 'pin' && canPin() ? 'pin' : 'ev', tabs = canPin() ? ['ev', 'pin'] : ['ev'];
+  main.innerHTML = hero('camera', 'قسم التصميم والإعلام', 'لوحة التصميم', 'انشر الفعاليات، وأدِر الإعلان المثبّت ومعرض الصور.') +
+  `<div class="sec rt" style="padding-top:12px"><div class="tabs">${tabs.map(x => `<a href="#design/${x}" class="${x === t ? 'on' : ''}">${ic(DTABS[x][1], 20)}${DTABS[x][0]}</a>`).join('')}<a href="#gallery">${ic('camera', 20)}معرض الصور</a></div><div id="dc">${loader}</div></div>`;
+  return t === 'pin' ? dPin() : dEvents();
+}
+const dLive = () => view === 'design' && $('#dc');
+async function dEvents(){
+  const [a, c] = await Promise.all([sb.from('activities').select('id,title,event_date,location,images,created_by').order('event_date', {ascending: false}), sb.rpc('activity_counts')]);
+  if (!dLive()) return;
+  const cnt = {}, mgr = adm() || headD(); (c.data || []).forEach(x => cnt[x.activity_id] = Number(x.n));
+  $('#dc').innerHTML = `<form class="pan" id="daf"><h3><i class="g">${ic('calplus', 24)}</i>فعالية / منشور جديد</h3>
+   <div class="fl" style="margin-top:0">عنوان الفعالية</div><input name="ttl" required maxlength="150" placeholder="مثال: ورشة عمل: مدخل إلى علم البيانات">
+   <div class="g2"><div><div class="fl">التاريخ</div><input type="date" name="dt" required></div><div><div class="fl">الوقت (اختياري)</div><input type="time" name="tm"></div></div>
+   <div class="fl">الموقع</div><input name="loc" placeholder="مثال: قاعة المؤتمرات – المبنى الرئيسي">
+   <div class="fl">رابط التسجيل (اختياري)</div><input name="lnk" type="url" placeholder="https://forms.gle/…">
+   <div class="fl">عدد المقاعد (اختياري)</div><input name="cap" type="number" min="1">
+   <div class="fl">${ic('camera', 20)}صور (حتى 4)</div><input type="file" id="daimg" accept="image/*" multiple><div id="daprev" class="ar" style="justify-content:flex-start;gap:8px;margin-top:8px"></div>
+   <div class="fl">الوصف</div><textarea name="dsc" placeholder="وصف موجز للفعالية وما ينتظر الحضور…"></textarea>
+   <button class="btn navy block" style="margin-top:22px">نشر</button></form>
+  <h2 style="margin:26px 0 14px;font-size:1.5rem">الفعاليات <span class="cnt">${(a.data || []).length}</span></h2>
+  ${(a.data || []).map(x => { const t = okImg((x.images || [])[0]), mine = mgr || x.created_by === me.id;
+    return `<div class="pan"><div class="ar"><div class="who">${t ? `<img src="${t}" alt="" style="width:56px;height:56px;border-radius:14px;object-fit:cover">` : ''}<div><b>${esc(x.title)}</b> ${isPastEv(x) ? '<span class="st2 s-rejected">منتهية</span>' : ''}<div class="mut">${fd(x.event_date)}${x.location ? ' · ' + esc(x.location) : ''} · ${cnt[x.id] || 0} مسجّل</div></div></div>
+    ${mine ? `<button class="btn no sm" data-a="b4evdel" data-id="${x.id}">حذف</button>` : ''}</div></div>`; }).join('') || '<div class="pan c mut">لا توجد فعاليات بعد.</div>'}`;
+  $('#daimg').onchange = e => { const fs = [...e.target.files].slice(0, 4); $('#daprev').innerHTML = fs.map(f => `<img src="${URL.createObjectURL(f)}" alt="" style="height:64px;border-radius:12px">`).join(''); };
+  $('#daf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, b = f.querySelector('button.navy'); b.disabled = true;
+    try {
+      const urls = []; for (const x of [...$('#daimg').files].slice(0, 4)) urls.push(await upImg(x, 1280));
+      const {error} = await sb.from('activities').insert({title: f.ttl.value.trim(), description: f.dsc.value.trim(), location: f.loc.value.trim(),
+        event_date: f.dt.value ? new Date(f.dt.value + 'T' + (f.tm.value || '00:00')).toISOString() : null,
+        reg_link: f.lnk.value.trim() || null, capacity: f.cap.value ? +f.cap.value : null, images: urls});
+      if (error) throw error; toast('تم النشر ✓'); dEvents();
+    } catch (err) { toast('تعذّر النشر'); b.disabled = false; }
+  };
+}
+async function dPin(){
+  const {data, error} = await sb.from('announcements').select('*').order('created_at', {ascending: false});
+  if (!dLive()) return;
+  if (error) { $('#dc').innerHTML = '<div class="pan c mut">تعذّر التحميل. تأكد من تنفيذ كود SQL الخاص بالدفعة الرابعة.</div>'; return; }
+  const now = new Date(), live = (data || []).find(a => a.active && (!a.expires_at || new Date(a.expires_at) > now));
+  const st = a => !a.active ? ['مخفي', 's-rejected'] : (a.expires_at && new Date(a.expires_at) <= now) ? ['منتهي', 's-rejected'] : live && a.id === live.id ? ['يظهر الآن', 's-approved'] : ['ساري', 's-pending'];
+  $('#dc').innerHTML = `<p class="mut" style="margin-bottom:12px">شريط يظهر أعلى الصفحة الرئيسية لكل الزوار. يظهر أحدث إعلان ساري فقط (قد يستغرق التحديث دقيقة).</p>
+  <form class="pan" id="dpf"><h3><i class="g">${ic('pin', 24)}</i>إعلان جديد</h3>
+   <div class="fl" style="margin-top:0">نص الإعلان</div><input name="b" required minlength="2" maxlength="200" placeholder="مثال: آخر أجل للتسجيل في ورشة الذكاء الاصطناعي: 30 أكتوبر">
+   <div class="g2"><div><div class="fl">رابط (اختياري)</div><input name="l" placeholder="https://… أو #join"></div><div><div class="fl">نص الزر</div><input name="t" maxlength="40" placeholder="سجّل الآن"></div></div>
+   <div class="fl">ينتهي في (اختياري)</div><input type="datetime-local" name="x">
+   <button class="btn navy block" style="margin-top:20px">نشر الإعلان</button></form>
+  <h3 style="margin:22px 0 12px">الإعلانات</h3>
+  ${(data || []).map(a => { const [t, c] = st(a); return `<div class="pan"><div class="ar"><b style="line-height:1.8">${esc(a.body)}</b><span class="st2 ${c}">${t}</span></div>
+   <div class="mut" style="font-size:.85rem;margin:6px 0">${a.link ? '🔗 ' + esc(a.link) + ' · ' : ''}${a.expires_at ? '⏰ ينتهي ' + dtt(a.expires_at) : 'بلا تاريخ انتهاء'}</div>
+   <div class="ar" style="justify-content:flex-start;gap:8px"><button class="btn line sm" data-a="b4pintg" data-id="${a.id}" data-v="${a.active ? 0 : 1}">${a.active ? 'إخفاء' : 'إظهار'}</button><button class="btn no sm" data-a="b4pindel" data-id="${a.id}">حذف</button></div></div>`; }).join('') || '<div class="pan c mut">لا توجد إعلانات بعد.</div>'}`;
+  $('#dpf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, link = f.l.value.trim();
+    if (link && !/^(https?:\/\/|#[a-z])/i.test(link)) return toast('الرابط يبدأ بـ http أو https أو # مثل #join');
+    const btn = f.querySelector('button.navy'); btn.disabled = true;
+    const {error} = await sb.from('announcements').insert({body: f.b.value.trim(), link: link || null, link_label: f.t.value.trim() || null, expires_at: f.x.value ? new Date(f.x.value).toISOString() : null, active: true});
+    if (error) { btn.disabled = false; return toast('تعذّر النشر'); }
+    toast('تم نشر الإعلان ✓'); dPin();
+  };
+}
+
+// ===== التوجيه والقوائم =====
+const _r = window.render;
+window.render = async function(){
+  const [v0, arg] = (location.hash || '#home').slice(1).split('/');
+  if (v0 === 'team' || v0 === 'bureau' || v0 === 'design') {
+    if (v0 !== 'team') {
+      if (!me) return nav('#login');
+      if (!ok()) return nav('#home');
+      if (v0 === 'bureau') { await loadOffice(); if (!mySeat()) return nav('#home'); }
+      if (v0 === 'design' && !canDesign()) return nav('#home');
+    }
+    leaveChat(); const mn = $('#menu'); if (mn) mn.style.display = 'none'; const md = $('#modal'); if (md) md.style.display = 'none';
+    view = v0; drawShell(); window.scrollTo(0, 0); const pb = $('#pinbar'); if (pb) pb.hidden = true;
+    if (ok()) kick();
+    return v0 === 'team' ? pTeam() : v0 === 'bureau' ? pBureau(arg) : pDesign(arg);
+  }
+  const r = await _r.apply(this, arguments); kick(); return r;
+};
+const _dm = window.drawMenu;
+window.drawMenu = function(){
+  _dm.apply(this, arguments);
+  const m = $('#menu'); if (!m || !ok()) return;
+  m.querySelectorAll('[data-b4]').forEach(x => x.remove());
+  const items = [];
+  if (mySeat()) items.push('<a data-b4="1" href="#bureau">🏛️ لوحة المكتب</a>');
+  if (canDesign() && me.role !== 'admin') items.push('<a data-b4="1" href="#design">🎨 لوحة التصميم</a>');
+  if (!items.length) return;
+  const after = m.querySelector('[href="#team"]') || m.querySelector('[href="#events"]');
+  if (after) after.insertAdjacentHTML('afterend', items.join('')); else m.insertAdjacentHTML('afterbegin', items.join(''));
+};
+
+// ===== الأزرار =====
+document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('ofa')) ofaOpen = e.target.open; }, true);
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a, id = el.dataset.id;
+  if (!a.startsWith('b4')) return;
+  if (a === 'b4seat') return seatModal(el.dataset.k);
+  if (a === 'b4vac') { if (!confirm('إخلاء مقعد ' + ST(el.dataset.k) + '؟')) return; const {error} = await sb.rpc('office_vacate', {p_seat: el.dataset.k}); if (error) return toast(emsg(error)); toast('تم الإخلاء'); await loadOffice(true); return drawOffice(); }
+  if (a === 'b4start') return titleModal('start');
+  if (a === 'b4ren') return titleModal('ren', +id);
+  if (a === 'b4hand') return titleModal('hand');
+  if (a === 'b4arc') return archiveModal();
+  if (a === 'b4del') { if (!confirm('حذف هذا المكتب من الأرشيف؟')) return; const {error} = await sb.rpc('office_delete_term', {p_id: +id}); if (error) return toast(emsg(error)); await loadOffice(true); return drawOffice(); }
+  if (a === 'b4contact') return contactModal();
+  if (a === 'b4ptnew') return partnerModal(null);
+  if (a === 'b4ptedit') return partnerModal(id);
+  if (a === 'b4ptdel') { if (!confirm('حذف هذا الشريك؟')) return; const {error} = await sb.from('partners').delete().eq('id', id); if (error) return toast('تعذّر الحذف'); return loadPartners(); }
+  if (a === 'b4f') { const g = el.dataset.g; BF[g] = el.dataset.v; return g === 'ap' ? bApps(() => view === 'bureau' && $('#bc')) : bTasks(() => view === 'bureau' && $('#bc')); }
+  if (a === 'b4regs') {
+    const box2 = $('#rg' + id); if (!box2) return; if (box2.dataset.o) { box2.dataset.o = ''; box2.textContent = ''; return; }
+    const {data, error} = await sb.from('registrations').select('user_id').eq('activity_id', id);
+    box2.dataset.o = '1'; box2.textContent = error ? 'تعذّر التحميل' : (data || []).map(x => nameOf(x.user_id)).join('، ') || 'لا مسجّلين بعد'; return;
+  }
+  if (a === 'b4doc') return exportDoc();
+  if (a === 'b4evdel') { if (!confirm('حذف الفعالية نهائياً؟')) return; const {error} = await sb.from('activities').delete().eq('id', id); if (error) return toast('تعذّر الحذف'); toast('تم الحذف'); return dEvents(); }
+  if (a === 'b4pintg') { const {error} = await sb.from('announcements').update({active: el.dataset.v === '1'}).eq('id', id); if (error) return toast('تعذّر التنفيذ'); return dPin(); }
+  if (a === 'b4pindel') { if (!confirm('حذف هذا الإعلان؟')) return; const {error} = await sb.from('announcements').delete().eq('id', id); if (error) return toast('تعذّر الحذف'); return dPin(); }
+});
+})();
+</script>
 </body>
 </html>
