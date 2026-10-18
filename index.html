@@ -2157,5 +2157,262 @@ document.addEventListener('change', async e => {
 if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'nav' && e.data.url) location.href = e.data.url; });
 })();
 </script>
+<style>
+.s-interview{background:#e0ecff;color:#1d4ed8}
+.apn{background:var(--bg);border-radius:14px;padding:8px 12px;margin:6px 0;line-height:1.9;word-break:break-word}
+.apn small{color:var(--mut)}
+</style>
+<script>
+(() => {
+ST.interview = 'مقابلة';
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const toLocalInput = iso => { if (!iso) return ''; const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+const dt = iso => new Date(iso).toLocaleString('ar-u-nu-latn', {dateStyle: 'long', timeStyle: 'short'});
+const waNum = ph => { let d = String(ph || '').replace(/\D/g, ''); if (d.startsWith('0')) d = '213' + d.slice(1); return d; };
+
+// ===== 1) مواسم التقديم =====
+function applyState(){
+  const m = S.apply_mode || 'open', f = S.apply_from ? new Date(S.apply_from) : null, u = S.apply_until ? new Date(S.apply_until) : null, now = new Date();
+  if (m === 'closed') return {open: false, msg: S.apply_msg};
+  if (m === 'dates') {
+    if (f && now < f) return {open: false, msg: S.apply_msg, next: f, future: true};
+    if (u && now > u) return {open: false, msg: S.apply_msg};
+    return {open: true, until: u};
+  }
+  return {open: true};
+}
+function closedPage(st){
+  main.innerHTML = `<section class="dark ph" style="padding-bottom:90px"><span class="pill">${ic('flask',18)} ${esc(S.club_name)}</span><h1>التقديم مغلق حالياً</h1></section>
+  <div class="fcard c"><div style="font-size:3rem">🔒</div><p class="mut" style="margin:10px 0;line-height:2.1">${esc(st.msg || 'يفتح باب الانضمام في مواسم محددة من السنة. تابع صفحة الفعاليات والإعلانات ليصلك الخبر.')}</p>
+  ${st.future ? `<p style="line-height:2">يفتح باب التقديم في <b>${dt(st.next)}</b></p>` : ''}
+  <div class="row" style="justify-content:center"><a class="btn gold" href="#events">الفعاليات والإعلانات</a><a class="btn line" href="#login">لديّ حساب</a></div></div>`;
+}
+const _pj = window.pJoin;
+window.pJoin = function(){
+  const st = applyState();
+  if (!st.open) { closedPage(st); return; }
+  _pj();
+  const f = document.getElementById('jf'); if (!f || f.dataset.sc) return; f.dataset.sc = '1';
+  if (st.until) { const h = main.querySelector('.ph'); if (h) h.insertAdjacentHTML('beforeend', `<p style="margin-top:14px;color:var(--gold);font-weight:700">⏳ التقديم مفتوح حتى ${dt(st.until)}</p>`); }
+  const old = f.onsubmit;
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const r = await sb.rpc('applications_open');
+    if (r.data === false) { await loadSettings(); toast('أُغلق باب التقديم'); return window.render(); }
+    return old.call(f, e);
+  };
+};
+const _ph = window.pHome;
+window.pHome = function(){
+  const r = _ph();
+  try {
+    const st = applyState(), b = document.querySelector('.hbtn');
+    if (b && !me) b.insertAdjacentHTML('afterend', `<p style="margin-top:16px;color:#b8c3de;font-weight:600">${st.open ? (st.until ? '⏳ التقديم مفتوح حتى ' + dt(st.until) : '✅ باب الانضمام مفتوح') : '🔒 التقديم مغلق حالياً' + (st.future ? ' — يفتح في ' + dt(st.next) : '')}</p>`);
+  } catch (e) {}
+  return r;
+};
+
+// إعدادات المواسم + رؤساء الأقسام داخل تبويب الإعدادات
+function drawSeasonPanel(){
+  const box = document.getElementById('seas-box'); if (!box) return;
+  const st = applyState(), m = S.apply_mode || 'open';
+  const status = st.open ? (st.until ? '✅ مفتوح حتى ' + dt(st.until) : '✅ مفتوح') : ('🔒 مغلق' + (st.future ? ' — يفتح في ' + dt(st.next) : ''));
+  box.innerHTML = `<form class="pan" id="sf2"><h3><i class="g">${ic('calendar',24)}</i>مواسم التقديم</h3>
+  <p style="margin:0 0 6px;font-weight:700">الحالة الآن: ${status}</p>
+  <div class="fl">وضع باب الانضمام</div><select name="m"><option value="open"${m === 'open' ? ' selected' : ''}>مفتوح دائماً</option><option value="dates"${m === 'dates' ? ' selected' : ''}>مفتوح بين تاريخين</option><option value="closed"${m === 'closed' ? ' selected' : ''}>مغلق</option></select>
+  <div class="g2"><div><div class="fl">يبدأ</div><input type="datetime-local" name="f" value="${toLocalInput(S.apply_from)}"></div><div><div class="fl">ينتهي</div><input type="datetime-local" name="u" value="${toLocalInput(S.apply_until)}"></div></div>
+  <div class="fl">رسالة تظهر للزوار عند الإغلاق (اختياري)</div><input name="msg" maxlength="200" value="${esc(S.apply_msg || '')}" placeholder="مثال: يفتح التقديم مجدداً بداية الشهر القادم">
+  <div class="row"><button class="btn navy sm">حفظ</button></div>
+  <div class="fl" style="margin-top:18px">اختصارات</div><div class="row" style="margin:0"><button type="button" class="btn line sm" data-a="seasq" data-d="7">افتح الآن 7 أيام</button><button type="button" class="btn line sm" data-a="seasq" data-d="14">14 يوماً</button><button type="button" class="btn line sm" data-a="seasq" data-d="30">30 يوماً</button><button type="button" class="btn no sm" data-a="seasx">أغلق الآن</button></div></form>`;
+  document.getElementById('sf2').onsubmit = async e => {
+    e.preventDefault(); const f = e.target;
+    const fr = f.f.value ? new Date(f.f.value).toISOString() : null, un = f.u.value ? new Date(f.u.value).toISOString() : null;
+    if (f.m.value === 'dates' && !fr && !un) return toast('حدّد تاريخ البداية أو النهاية');
+    if (fr && un && new Date(un) <= new Date(fr)) return toast('تاريخ النهاية يجب أن يكون بعد البداية');
+    saveSeason({apply_mode: f.m.value, apply_from: fr, apply_until: un, apply_msg: f.msg.value.trim() || null});
+  };
+}
+async function saveSeason(o){
+  const {error} = await sb.from('settings').update(o).eq('id', 1);
+  if (error) return toast('تعذّر الحفظ. تأكد من تنفيذ كود SQL');
+  await loadSettings(); toast('تم حفظ إعدادات التقديم ✓'); drawSeasonPanel();
+}
+async function drawHeadsPanel(){
+  const box = document.getElementById('heads-box'); if (!box) return;
+  await loadP();
+  const box2 = document.getElementById('heads-box'); if (!box2) return;
+  const cand = P.filter(p => p.status === 'approved' && p.role !== 'admin');
+  box2.innerHTML = `<div class="pan"><h3><i>${ic('users',24)}</i>رؤساء الأقسام</h3>
+  <p class="mut" style="line-height:2">يرى الرئيس طلبات قسمه ويحدّد المقابلات ويقبل المتقدمين ويرفضهم ويكتب الملاحظات، ولا يملك صلاحيات المشرف الأخرى. ولكل قسم رئيس واحد، وتغييره يلغي رئاسة السابق.</p>
+  ${COMMS.map(c => { const cur = P.find(p => p.head_of === c.k); return `<div class="fl">${esc(c.t)}</div><select data-hd="${c.k}"><option value="">— بدون رئيس —</option>${cand.map(p => `<option value="${p.id}"${cur && cur.id === p.id ? ' selected' : ''}>${esc(p.full_name)}</option>`).join('')}</select>`; }).join('')}</div>`;
+}
+const _ts = window.tSt;
+window.tSt = function(){
+  _ts();
+  const sub = document.querySelector('#ac .sub'); if (!sub) return;
+  sub.insertAdjacentHTML('afterend', '<div id="seas-box"></div><div id="heads-box"></div>');
+  drawSeasonPanel(); drawHeadsPanel();
+};
+
+// ===== 2 و 3) المتقدمون والمقابلات والملاحظات (للمشرف ولرئيس القسم) =====
+let AP2 = [], apF = 'pending', apC = '', apQ = '', apFixed = null;
+async function loadAp(){
+  const q = sb.from('profiles').select('*').order('created_at', {ascending: false});
+  const {data, error} = await (apFixed ? q.eq('committee', apFixed) : q);
+  if (error) return false;
+  AP2 = (data || []).filter(p => p.id !== me.id && p.role !== 'admin'); return true;
+}
+function drawAp(){
+  const chips = document.getElementById('apchips'), box = document.getElementById('apbox'); if (!chips || !box) return;
+  const base = AP2.filter(p => !apC || p.committee === apC), cnt = s => base.filter(p => p.status === s).length;
+  chips.innerHTML = [['pending', 'قيد المراجعة'], ['interview', 'مقابلة'], ['approved', 'الأعضاء'], ['rejected', 'مرفوضون']].map(([k, t]) => `<button data-apf="${k}" class="${apF === k ? 'on' : ''}">${t} (${cnt(k)})</button>`).join('');
+  const qq = apQ.trim().toLowerCase();
+  const l = base.filter(p => p.status === apF && (!qq || (p.full_name + ' ' + p.card_no + ' ' + (p.phone || '')).toLowerCase().includes(qq)));
+  box.innerHTML = l.map(p => `<div class="pan" style="padding:16px 18px"><div class="ar"><div class="who"><span class="av">${esc(ini(p.full_name))}</span><div><b>${esc(p.full_name)}</b>
+  <div class="mut" style="font-size:.85rem">${esc(p.specialization)}${p.year ? ' · ' + esc(p.year) : ''} · ${esc(cn(p.committee))}</div>
+  ${p.status === 'interview' && p.interview_at ? `<div style="color:#1d4ed8;font-size:.85rem;font-weight:600">📅 ${dt(p.interview_at)}${p.interview_place ? ' · ' + esc(p.interview_place) : ''}</div>` : ''}</div></div>
+  <button class="btn navy sm" data-a="apopen" data-id="${p.id}">فتح</button></div></div>`).join('') || '<div class="pan c mut">لا توجد نتائج.</div>';
+}
+async function renderApplicants(el, fixed){
+  apFixed = fixed || null; apC = fixed || '';
+  el.innerHTML = loader;
+  const ok = await loadAp(); if (!document.body.contains(el)) return;
+  if (!ok) { el.innerHTML = '<div class="pan c mut">تعذّر تحميل البيانات. تأكد من تنفيذ كود SQL.</div>'; return; }
+  el.innerHTML = `<div class="fc" id="apchips"></div><div class="pan"><div class="sr"><input id="apq" placeholder="ابحث بالاسم أو الرقم الجامعي أو الجوال…">${ic('search',20)}</div>
+  ${fixed ? '' : `<select id="apc"><option value="">كل الأقسام</option>${COMMS.map(c => `<option value="${c.k}">${esc(c.t)}</option>`).join('')}</select>`}</div><div id="apbox"></div>`;
+  apQ = ''; drawAp();
+}
+async function afterChange(){
+  if (document.getElementById('apbox')) { await loadAp(); drawAp(); }
+  else if (view === 'admin') adminTab();
+}
+async function appModal(id){
+  const p = AP2.find(x => x.id === id) || P.find(x => x.id === id); if (!p) return;
+  const {data: notes} = await sb.from('applicant_notes').select('*').eq('applicant_id', id).order('created_at');
+  const act = p.status !== 'approved', isInt = p.status === 'interview';
+  const invite = isInt && p.phone && p.interview_at ? `https://wa.me/${waNum(p.phone)}?text=${encodeURIComponent(`مرحباً ${p.full_name}،\nتمت دعوتك لمقابلة الانضمام إلى ${S.club_name}:\n📅 ${dt(p.interview_at)}${p.interview_place ? '\n📍 ' + p.interview_place : ''}\nنرجو تأكيد الحضور.`)}` : '';
+  const m = document.getElementById('modal');
+  m.innerHTML = `<div class="box" style="max-width:600px">${closeX}<h3 style="margin-bottom:6px">${esc(p.full_name)}</h3><span class="st2 s-${p.status}">${ST[p.status] || p.status}</span>
+  <dl class="dl"><dt>الرقم الجامعي</dt><dd>${esc(p.card_no)}</dd><dt>الجوال</dt><dd>${esc(p.phone || '—')}</dd><dt>البريد</dt><dd>${esc(p.email || '—')}</dd><dt>التخصص</dt><dd>${esc(p.specialization)}${p.year ? ' · ' + esc(p.year) : ''}</dd><dt>القسم المختار</dt><dd>${esc(cn(p.committee))}</dd><dt>تاريخ الطلب</dt><dd>${dt(p.created_at)}</dd></dl>
+  <b>لماذا يريد الانضمام؟</b><p class="mut" style="margin:6px 0 12px;line-height:2">${esc(p.motivation || '—')}</p>
+  ${p.certificate_url ? `<button class="btn line sm" data-a="cert" data-p="${esc(p.certificate_url)}">${ic('file',16)}شهادة الجامعة</button>` : ''}
+  ${act ? `<div class="pan" style="padding:14px;margin:14px 0"><b>📅 المقابلة</b><div class="g2"><div><div class="fl">الموعد</div><input type="datetime-local" id="iat" value="${toLocalInput(p.interview_at)}"></div><div><div class="fl">المكان</div><input id="ipl" maxlength="120" value="${esc(p.interview_place || '')}" placeholder="مثال: قاعة النادي"></div></div>
+  <div class="row" style="margin-top:10px"><button class="btn navy sm" data-a="ivset" data-id="${p.id}">${isInt ? 'تحديث موعد المقابلة' : 'حدّد المقابلة'}</button>${invite ? `<a class="btn ok sm" target="_blank" rel="noopener" href="${invite}">دعوة عبر واتساب</a>` : ''}</div></div>
+  <div class="row"><button class="btn ok sm" data-a="apst" data-id="${p.id}" data-s="approved">✔ قبول</button><button class="btn no sm" data-a="apst" data-id="${p.id}" data-s="rejected">✖ رفض</button>${p.status !== 'pending' ? `<button class="btn line sm" data-a="apst" data-id="${p.id}" data-s="pending">↩ إعادة للانتظار</button>` : ''}</div>` : ''}
+  <h4 style="margin:18px 0 6px">📝 ملاحظات داخلية <small class="mut">(يراها المشرفون ورئيس القسم فقط)</small></h4>
+  ${(notes || []).map(n => `<div class="apn"><b>${esc(n.author_name || 'مشرف')}</b> <small>${shortT(n.created_at)}</small>${(n.author_id === me.id || me.role === 'admin') ? ` <a href="#" data-a="ntdel" data-id="${n.id}" data-u="${p.id}">🗑</a>` : ''}<br>${esc(n.note)}</div>`).join('') || '<p class="mut" style="font-size:.9rem">لا توجد ملاحظات.</p>'}
+  <textarea id="ntx" maxlength="1000" placeholder="اكتب ملاحظة عن المتقدم…" style="min-height:70px;margin-top:8px"></textarea><button class="btn navy sm" style="margin-top:8px" data-a="ntadd" data-id="${p.id}">إضافة ملاحظة</button></div>`;
+  m.style.display = 'flex';
+}
+
+// ===== صفحة المتقدم الذي دُعي للمقابلة =====
+const _pp = window.pPending;
+window.pPending = function(){
+  if (me && me.status === 'interview') {
+    main.innerHTML = `<section class="dark ph" style="padding-bottom:90px"><span class="pill">${ic('flask',18)} ${esc(S.club_name)}</span><h1>تمت دعوتك لمقابلة 🎉</h1></section>
+    <div class="fcard c"><div style="font-size:3rem">📅</div><p style="margin:12px 0;line-height:2.1;font-weight:700">${me.interview_at ? dt(me.interview_at) : 'سيُحدَّد الموعد قريباً'}</p>
+    ${me.interview_place ? `<p style="line-height:2">📍 ${esc(me.interview_place)}</p>` : ''}<p class="mut" style="margin:10px 0 22px;line-height:2">سيتواصل معك أحد المشرفين على رقم جوالك لتأكيد التفاصيل. بعد المقابلة تصلك نتيجة طلبك هنا.</p>
+    <button class="btn navy" data-a="refresh">تحديث الحالة</button> <button class="btn line" data-a="out">خروج</button></div>`;
+    return;
+  }
+  _pp();
+};
+
+// ===== تبويب «المقابلات» للمشرف =====
+async function tIv(){
+  const ac = document.getElementById('ac'); if (!ac) return;
+  ac.innerHTML = '<h1>المقابلات والمتقدمون</h1><p class="sub">تابع كل متقدم: مراجعة، مقابلة، قبول أو رفض، مع ملاحظات داخلية</p><div id="aph"></div>';
+  await renderApplicants(document.getElementById('aph'), null);
+}
+const _pa = window.pAdmin;
+window.pAdmin = function(){
+  _pa();
+  const rq = document.querySelector('.tabs [data-tab="rq"]');
+  if (rq && !document.querySelector('.tabs [data-tab="iv"]')) rq.insertAdjacentHTML('afterend', `<a href="#admin" data-tab="iv" class="${tab === 'iv' ? 'on' : ''}">${ic('usercheck',20)}المقابلات</a>`);
+};
+const _at = window.adminTab;
+window.adminTab = async function(){
+  if (tab === 'iv') {
+    document.querySelectorAll('.tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
+    if (document.getElementById('ac')) await tIv();
+    return;
+  }
+  return _at.apply(this, arguments);
+};
+const _sp = window.showP;
+window.showP = function(id){
+  _sp(id);
+  const box = document.querySelector('#modal .box'); if (!box) return;
+  const rows = box.querySelectorAll('.ar'), row = rows[rows.length - 1];
+  if (row && !row.querySelector('[data-a="apopen"]')) row.insertAdjacentHTML('afterbegin', `<button class="btn navy sm" data-a="apopen" data-id="${id}">📋 مقابلة وملاحظات</button>`);
+};
+
+// ===== لوحة رئيس القسم =====
+function pHead(){
+  main.innerHTML = `<div class="chw" style="max-width:900px"><h2>👔 لوحة رئيس ${esc(cn(me.head_of))}</h2>
+  <p class="mut" style="line-height:2;margin:6px 0 14px">ترى هنا طلبات الانضمام وأعضاء قسمك فقط. تحدّد المقابلات، وتقبل أو ترفض المتقدمين، وتكتب ملاحظات يراها المشرفون ورئيس القسم فقط.</p><div id="aph"></div></div>`;
+  renderApplicants(document.getElementById('aph'), me.head_of);
+}
+const _r = window.render;
+window.render = async function(){
+  if (location.hash === '#head' && me && me.status === 'approved' && me.head_of) {
+    leaveChat(); const mn = document.getElementById('menu'); if (mn) mn.style.display = 'none';
+    view = 'head'; drawShell(); window.scrollTo(0, 0); return pHead();
+  }
+  return _r.apply(this, arguments);
+};
+const _dm = window.drawMenu;
+window.drawMenu = function(){
+  _dm();
+  const m = document.getElementById('menu');
+  if (m && me && me.status === 'approved' && me.head_of && !m.querySelector('[href="#head"]')) {
+    const link = `<a href="#head">👔 لوحة رئيس ${esc(cn(me.head_of))}</a>`, out = m.querySelector('[data-a="out"]');
+    if (out) out.insertAdjacentHTML('beforebegin', link); else m.insertAdjacentHTML('beforeend', link);
+  }
+};
+
+// ===== الأزرار والمدخلات =====
+document.addEventListener('click', async e => {
+  const fb = e.target.closest('[data-apf]'); if (fb) { apF = fb.dataset.apf; return drawAp(); }
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a, id = el.dataset.id;
+  if (a === 'apopen') { e.preventDefault(); return appModal(id); }
+  if (a === 'ivset') {
+    const v = document.getElementById('iat').value; if (!v) return toast('اختر موعد المقابلة');
+    const {error} = await sb.rpc('set_applicant_status', {p_uid: id, p_status: 'interview', p_at: new Date(v).toISOString(), p_place: document.getElementById('ipl').value.trim()});
+    if (error) return toast('تعذّر التنفيذ');
+    toast('تم تحديد المقابلة ✓'); await afterChange(); return appModal(id);
+  }
+  if (a === 'apst') {
+    const s = el.dataset.s;
+    if (s === 'rejected' && !confirm('رفض هذا الطلب؟')) return;
+    const {error} = await sb.rpc('set_applicant_status', {p_uid: id, p_status: s});
+    if (error) return toast('تعذّر التنفيذ');
+    toast(s === 'approved' ? 'تم قبول المتقدم ✓' : s === 'rejected' ? 'تم رفض الطلب' : 'أُعيد للانتظار');
+    document.getElementById('modal').style.display = 'none'; return afterChange();
+  }
+  if (a === 'ntadd') {
+    const t = document.getElementById('ntx').value.trim(); if (!t) return toast('اكتب الملاحظة أولاً');
+    const {error} = await sb.from('applicant_notes').insert({applicant_id: id, note: t});
+    if (error) return toast('تعذّر حفظ الملاحظة'); return appModal(id);
+  }
+  if (a === 'ntdel') { e.preventDefault(); if (!confirm('حذف الملاحظة؟')) return; await sb.from('applicant_notes').delete().eq('id', id); return appModal(el.dataset.u); }
+  if (a === 'seasq') { const n = +el.dataset.d, now = new Date(); return saveSeason({apply_mode: 'dates', apply_from: now.toISOString(), apply_until: new Date(now.getTime() + n * 864e5).toISOString()}); }
+  if (a === 'seasx') return saveSeason({apply_mode: 'closed'});
+});
+document.addEventListener('input', e => { if (e.target && e.target.id === 'apq') { apQ = e.target.value; drawAp(); } });
+document.addEventListener('change', async e => {
+  const t = e.target; if (!t || !t.matches) return;
+  if (t.id === 'apc') { apC = t.value; return drawAp(); }
+  if (t.matches('[data-hd]')) {
+    const key = t.dataset.hd, uid = t.value;
+    await sb.from('profiles').update({head_of: null}).eq('head_of', key);
+    if (uid) { const {error} = await sb.from('profiles').update({head_of: key}).eq('id', uid); if (error) toast('تعذّر التعيين'); else toast('تم تعيين الرئيس ✓'); }
+    else toast('أُزيل رئيس القسم');
+    return drawHeadsPanel();
+  }
+});
+})();
+</script>
 </body>
 </html>
