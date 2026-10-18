@@ -2414,5 +2414,192 @@ document.addEventListener('change', async e => {
 });
 })();
 </script>
+<style>
+.tk-todo{background:#fff3d6;color:#92600a}.tk-doing{background:#e0ecff;color:#1d4ed8}.tk-done{background:#d9f5ea;color:#0b7a5c}
+.tkc{margin-bottom:12px}
+</style>
+<script>
+(() => {
+const TKS = {todo: 'للتنفيذ', doing: 'قيد التنفيذ', done: 'منجزة'};
+const dtt = iso => new Date(iso).toLocaleString('ar-u-nu-latn', {dateStyle: 'medium', timeStyle: 'short'});
+const toLocalInput = iso => { if (!iso) return ''; const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const isLate = t => t.due_at && t.status !== 'done' && new Date(t.due_at) < new Date();
+const isMgr = c => !!me && me.status === 'approved' && (me.role === 'admin' || me.head_of === c);
+const canMgrAny = () => !!me && me.status === 'approved' && (me.role === 'admin' || !!me.head_of);
+const nm = id => esc((MB[id] || {}).full_name || 'عضو');
+const byDue = (a, b) => (a.due_at ? new Date(a.due_at).getTime() : 9e15) - (b.due_at ? new Date(b.due_at).getTime() : 9e15);
+
+// ===== عدّاد المهام في القائمة =====
+let TKC = {open: 0, late: 0}, tkAt = 0;
+async function refreshTk(force){
+  if (!me || me.status !== 'approved') { TKC = {open: 0, late: 0}; return; }
+  if (!force && Date.now() - tkAt < 60000) return;
+  tkAt = Date.now();
+  const a = await sb.from('task_assignees').select('task_id').eq('user_id', me.id);
+  const ids = (a.data || []).map(x => x.task_id);
+  let open = [];
+  if (ids.length) { const t = await sb.from('tasks').select('id,status,due_at').in('id', ids); open = (t.data || []).filter(x => x.status !== 'done'); }
+  TKC = {open: open.length, late: open.filter(isLate).length}; drawMenu();
+}
+const _dm = window.drawMenu;
+window.drawMenu = function(){
+  _dm();
+  const m = document.getElementById('menu');
+  if (m && me && me.status === 'approved' && !m.querySelector('[href="#tasks"]')) {
+    const link = `<a href="#tasks">✅ المهام${TKC.open ? ` (${TKC.open})` : ''}${TKC.late ? ' ⚠️' : ''}</a>`, out = m.querySelector('[data-a="out"]');
+    if (out) out.insertAdjacentHTML('beforebegin', link); else m.insertAdjacentHTML('beforeend', link);
+  }
+};
+
+// ===== بطاقة المهمة =====
+let reload = null, TKL = [];
+function taskCard(t, mgr){
+  const late = isLate(t), st = t.status, as = (t.task_assignees || []).map(x => nm(x.user_id)).join('، ') || '—', lk = safeUrl(t.link);
+  const btns = st === 'todo' ? [['doing', '▶ بدء'], ['done', '✔ تم']] : st === 'doing' ? [['done', '✔ تم'], ['todo', '↩ للتنفيذ']] : [['doing', '↩ إعادة فتح']];
+  return `<div class="pan tkc" style="padding:16px 18px;${late ? 'border-color:var(--no)' : ''}"><div class="ar"><b>${esc(t.title)}</b><span class="st2 tk-${st}">${TKS[st]}</span></div>
+  ${t.details ? `<p class="mut" style="margin:6px 0;line-height:1.9;white-space:pre-wrap">${esc(t.details)}</p>` : ''}
+  <div class="mut" style="font-size:.85rem;line-height:2">${esc(cn(t.committee))}${t.due_at ? ` · ⏰ ${dtt(t.due_at)}${late ? ' <b style="color:var(--no)">متأخرة</b>' : ''}` : ''}</div>
+  <div class="mut" style="font-size:.85rem;line-height:1.9">👥 ${as}</div>
+  <div class="row" style="margin-top:10px">${btns.map(([s, l]) => `<button class="btn ${s === 'done' ? 'ok' : 'line'} sm" data-a="tkst" data-id="${t.id}" data-s="${s}">${l}</button>`).join('')}${lk ? `<a class="btn line sm" href="${lk}" target="_blank" rel="noopener">🔗 الرابط</a>` : ''}
+  ${mgr ? `<button class="btn navy sm" data-a="tkedit" data-id="${t.id}">✎ تعديل</button><button class="btn no sm" data-a="tkdel" data-id="${t.id}">🗑</button>` : ''}</div></div>`;
+}
+
+// ===== مهامي =====
+async function renderMine(el){
+  reload = () => renderMine(el);
+  const a = await sb.from('task_assignees').select('task_id').eq('user_id', me.id), ids = (a.data || []).map(x => x.task_id);
+  let list = [];
+  if (ids.length) { const {data} = await sb.from('tasks').select('*, task_assignees(user_id)').in('id', ids); list = data || []; }
+  if (!document.body.contains(el)) return;
+  TKL = list;
+  const late = list.filter(isLate).sort(byDue), doing = list.filter(t => t.status === 'doing' && !isLate(t)).sort(byDue), todo = list.filter(t => t.status === 'todo' && !isLate(t)).sort(byDue);
+  const done = list.filter(t => t.status === 'done').sort((x, y) => new Date(y.done_at || 0) - new Date(x.done_at || 0)).slice(0, 10);
+  const sec = (title, arr) => arr.length ? `<h3 style="margin:16px 0 8px">${title} (${arr.length})</h3>${arr.map(t => taskCard(t, false)).join('')}` : '';
+  el.innerHTML = list.length ? sec('⚠️ متأخرة', late) + sec('قيد التنفيذ', doing) + sec('للتنفيذ', todo) + sec('منجزة مؤخراً', done)
+    : '<div class="pan c mut" style="line-height:2.2">لا توجد مهام مسندة إليك الآن 🎉<br>تظهر هنا المهام التي يكلّفك بها رئيس قسمك.</div>';
+}
+
+// ===== مهام القسم (لرئيس القسم وللمشرف) =====
+let tkF = 'open', tkFixed = null;
+async function renderMgr(el, fixed){
+  tkFixed = fixed || null; if (fixed) tkC = ''; reload = () => renderMgr(el, fixed);
+  const q = sb.from('tasks').select('*, task_assignees(user_id)').order('due_at', {ascending: true});
+  const {data, error} = await (fixed ? q.eq('committee', fixed) : q);
+  if (!document.body.contains(el)) return;
+  if (error) { el.innerHTML = '<div class="pan c mut">تعذّر تحميل المهام. تأكد من تنفيذ كود SQL.</div>'; return; }
+  TKL = data || [];
+  el.innerHTML = `<div class="ar" style="margin-bottom:10px"><div class="fc" id="tkchips" style="margin:0"></div><button class="btn gold sm" data-a="tknew">＋ مهمة جديدة</button></div>
+  ${fixed ? '' : `<select id="tkc" style="margin-bottom:12px"><option value="">كل الأقسام</option>${COMMS.map(c => `<option value="${c.k}" ${tkC === c.k ? 'selected' : ''}>${esc(c.t)}</option>`).join('')}</select>`}<div id="tklist"></div>`;
+  drawMgr();
+}
+let tkC = '';
+function drawMgr(){
+  const chips = document.getElementById('tkchips'), box = document.getElementById('tklist'); if (!chips || !box) return;
+  const base = TKL.filter(t => !tkC || t.committee === tkC);
+  const cnt = {open: base.filter(t => t.status !== 'done').length, late: base.filter(isLate).length, done: base.filter(t => t.status === 'done').length, all: base.length};
+  chips.innerHTML = [['open', 'مفتوحة'], ['late', 'متأخرة'], ['done', 'منجزة'], ['all', 'الكل']].map(([k, t]) => `<button data-tkf="${k}" class="${tkF === k ? 'on' : ''}">${t} (${cnt[k]})</button>`).join('');
+  const l = base.filter(t => tkF === 'all' || (tkF === 'open' && t.status !== 'done') || (tkF === 'late' && isLate(t)) || (tkF === 'done' && t.status === 'done')).sort(byDue);
+  box.innerHTML = l.map(t => taskCard(t, true)).join('') || '<div class="pan c mut">لا توجد مهام هنا.</div>';
+}
+
+// ===== نافذة إنشاء/تعديل مهمة =====
+function assigneeBoxes(c, sel){
+  const mem = MBL.filter(p => p.committee === c);
+  return mem.length ? mem.map(p => `<label class="pfr" style="display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer"><input type="checkbox" name="as" value="${p.id}" ${sel.includes(p.id) ? 'checked' : ''} style="width:auto"><span>${esc(p.full_name)}</span></label>`).join('')
+    : '<p class="mut" style="font-size:.9rem">لا يوجد أعضاء في هذا القسم بعد.</p>';
+}
+function taskModal(id){
+  const t = id ? TKL.find(x => String(x.id) === String(id)) : null;
+  const cur = t ? (t.task_assignees || []).map(x => x.user_id) : [];
+  const c0 = t ? t.committee : (tkFixed || tkC || (me.head_of || COMMS[0].k));
+  const m = document.getElementById('modal');
+  m.innerHTML = `<div class="box" style="max-width:560px">${closeX}<h3 style="margin-bottom:6px">${t ? '✎ تعديل المهمة' : '＋ مهمة جديدة'}</h3>
+  <form id="tkf"><div class="fl">عنوان المهمة</div><input name="t" required maxlength="120" value="${esc(t ? t.title : '')}">
+  <div class="fl">التفاصيل (اختياري)</div><textarea name="d" maxlength="1000" style="min-height:90px">${esc(t ? t.details || '' : '')}</textarea>
+  <div class="g2"><div><div class="fl">الموعد النهائي</div><input type="datetime-local" name="due" value="${toLocalInput(t && t.due_at)}"></div><div><div class="fl">رابط (اختياري)</div><input name="l" type="url" placeholder="https://…" value="${esc(t ? t.link || '' : '')}"></div></div>
+  ${tkFixed ? `<input type="hidden" name="c" value="${tkFixed}">` : `<div class="fl">القسم</div><select name="c">${COMMS.map(c => `<option value="${c.k}"${c.k === c0 ? ' selected' : ''}>${esc(c.t)}</option>`).join('')}</select>`}
+  <div class="fl">المكلَّفون</div><div id="asb" style="max-height:200px;overflow:auto">${assigneeBoxes(tkFixed || c0, cur)}</div>
+  <button class="btn navy block" style="margin-top:16px">${t ? 'حفظ التعديلات' : 'إنشاء المهمة'}</button></form></div>`;
+  m.style.display = 'flex';
+  const f = document.getElementById('tkf');
+  if (!tkFixed) f.c.onchange = () => { document.getElementById('asb').innerHTML = assigneeBoxes(f.c.value, []); };
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const title = f.t.value.trim(), link = f.l.value.trim(), c = tkFixed || f.c.value;
+    if (title.length < 2) return toast('اكتب عنوان المهمة');
+    if (link && !/^https?:\/\//i.test(link)) return toast('الرابط يجب أن يبدأ بـ http أو https');
+    const row = {committee: c, title, details: f.d.value.trim() || null, link: link || null, due_at: f.due.value ? new Date(f.due.value).toISOString() : null};
+    const want = [...f.querySelectorAll('input[name="as"]:checked')].map(x => x.value);
+    const b = f.querySelector('button.navy'); b.disabled = true;
+    let tid = id;
+    if (id) { const {error} = await sb.from('tasks').update(row).eq('id', id); if (error) { b.disabled = false; return toast('تعذّر الحفظ'); } }
+    else { const {data, error} = await sb.from('tasks').insert(row).select().single(); if (error || !data) { b.disabled = false; return toast('تعذّر الحفظ'); } tid = data.id; }
+    const had = id ? cur : [], add = want.filter(u => !had.includes(u)), rem = had.filter(u => !want.includes(u));
+    for (const u of rem) await sb.from('task_assignees').delete().eq('task_id', tid).eq('user_id', u);
+    if (add.length) { const {error} = await sb.from('task_assignees').insert(add.map(u => ({task_id: tid, user_id: u}))); if (error) toast('حُفظت المهمة لكن تعذّر تكليف بعض الأعضاء'); else toast(id ? 'تم التعديل ✓' : 'تم إنشاء المهمة ✓'); }
+    else toast(id ? 'تم التعديل ✓' : 'تم إنشاء المهمة ✓');
+    document.getElementById('modal').style.display = 'none'; if (reload) await reload(); refreshTk(true);
+  };
+}
+
+// ===== صفحة المهام =====
+let tkTab = 'mine';
+async function pTasks(){
+  const mgr = canMgrAny();
+  if (!mgr) tkTab = 'mine';
+  main.innerHTML = `<div class="chw" style="max-width:900px"><h2>✅ المهام</h2><div class="ct" style="margin:10px 0"><a href="#tasks" data-tk="mine" class="${tkTab === 'mine' ? 'on' : ''}">مهامي</a>${mgr ? `<a href="#tasks" data-tk="mgr" class="${tkTab === 'mgr' ? 'on' : ''}">مهام القسم</a>` : ''}</div><div id="tkbody">${loader}</div></div>`;
+  const el = document.getElementById('tkbody');
+  if (tkTab === 'mgr' && mgr) await renderMgr(el, me.role === 'admin' ? null : me.head_of); else await renderMine(el);
+}
+const _r = window.render;
+window.render = async function(){
+  if (location.hash === '#tasks' && me && me.status === 'approved') {
+    leaveChat(); const mn = document.getElementById('menu'); if (mn) mn.style.display = 'none';
+    view = 'tasks'; drawShell(); window.scrollTo(0, 0); refreshTk(true); return pTasks();
+  }
+  const r = await _r.apply(this, arguments); refreshTk(false); return r;
+};
+
+// ===== تبويب «المهام» في لوحة الإدارة =====
+const _pa = window.pAdmin;
+window.pAdmin = function(){
+  _pa();
+  const anchor = document.querySelector('.tabs [data-tab="iv"]') || document.querySelector('.tabs [data-tab="rq"]');
+  if (anchor && !document.querySelector('.tabs [data-tab="tk"]')) anchor.insertAdjacentHTML('afterend', `<a href="#admin" data-tab="tk" class="${tab === 'tk' ? 'on' : ''}">${ic('check',20)}المهام</a>`);
+};
+const _at = window.adminTab;
+window.adminTab = async function(){
+  if (tab === 'tk') {
+    document.querySelectorAll('.tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
+    const ac = document.getElementById('ac'); if (!ac) return;
+    ac.innerHTML = '<h1>مهام الأقسام</h1><p class="sub">كل مهام الأقسام الثلاثة في مكان واحد</p><div id="tkadm"></div>';
+    return renderMgr(document.getElementById('tkadm'), null);
+  }
+  return _at.apply(this, arguments);
+};
+
+// ===== الأزرار =====
+document.addEventListener('click', async e => {
+  const tb = e.target.closest('[data-tk]'); if (tb) { e.preventDefault(); tkTab = tb.dataset.tk; return pTasks(); }
+  const fb = e.target.closest('[data-tkf]'); if (fb) { tkF = fb.dataset.tkf; return drawMgr(); }
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a, id = el.dataset.id;
+  if (a === 'tknew') return taskModal(null);
+  if (a === 'tkedit') return taskModal(id);
+  if (a === 'tkst') {
+    const {error} = await sb.rpc('set_task_status', {p_id: +id, p_status: el.dataset.s});
+    if (error) return toast('تعذّر تغيير الحالة');
+    toast(el.dataset.s === 'done' ? 'أحسنت! أُنجزت المهمة ✓' : 'تم التحديث'); if (reload) await reload(); return refreshTk(true);
+  }
+  if (a === 'tkdel') {
+    if (!confirm('حذف هذه المهمة نهائياً؟')) return;
+    const {error} = await sb.from('tasks').delete().eq('id', id); if (error) return toast('تعذّر الحذف');
+    toast('تم الحذف'); if (reload) await reload(); refreshTk(true);
+  }
+});
+document.addEventListener('change', e => { if (e.target && e.target.id === 'tkc') { tkC = e.target.value; drawMgr(); } });
+})();
+</script>
 </body>
 </html>
