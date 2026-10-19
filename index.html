@@ -4568,5 +4568,1326 @@ document.addEventListener('click', async e => {
 });
 })();
 </script>
+<style>
+.g6sep{display:flex;align-items:center;gap:10px;margin:18px 0 12px;color:var(--mut);font-size:.85rem}
+.g6sep::before,.g6sep::after{content:"";flex:1;height:1px;background:var(--bd)}
+.btn.g6b{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;box-sizing:border-box}
+.btn.g6b svg{flex:none}
+.g6ok{background:#d9f5ea;color:#0b7a5c;border-radius:14px;padding:10px 14px;margin:8px 0 12px;line-height:1.8;overflow-wrap:anywhere}
+#g6card .note{margin:0 0 10px}
+</style>
+<script>
+(() => {
+// ================= الدخول بحساب جوجل (ربط حساب موجود) =================
+const KEY = 'lst_g_intent';
+const GSVG = '<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+const here = () => location.origin + location.pathname;
+const setIntent = v => { try { localStorage.setItem(KEY, v + ':' + Date.now()); } catch (e) {} };
+const clearIntent = () => { try { localStorage.removeItem(KEY); } catch (e) {} };
+const getIntent = () => { try { const v = localStorage.getItem(KEY); if (!v) return null; const [k, t] = v.split(':'); if (Date.now() - (+t || 0) > 180000) { localStorage.removeItem(KEY); return null; } return k; } catch (e) { return null; } };
+// خطأ عائد من جوجل/سوبابيس (يقرأ من العنوان قبل أن تنظّفه المكتبة إن أمكن)
+const URLERR = (() => { try { const s = ('&' + location.hash.slice(1) + '&' + location.search.slice(1)); const m = /[&?]error_description=([^&]+)/.exec(s); return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : null; } catch (e) { return null; } })();
+function gmsg(m){
+  m = String(m || '');
+  if (/already linked|already exists|identity_already_exists/i.test(m)) return 'حساب جوجل هذا مرتبط بعضو آخر';
+  if (/Database error saving new user|google_not_linked/i.test(m)) return 'حساب جوجل هذا غير مرتبط بأي عضو. ادخل برقمك الجامعي ثم اربطه من «ملفي الشخصي»';
+  if (/manual linking/i.test(m)) return 'فعّل خيار Allow manual linking في إعدادات Supabase';
+  if (/provider is not enabled|unsupported provider/i.test(m)) return 'فعّل مزوّد Google في إعدادات Supabase أولاً';
+  if (/access_denied|cancel/i.test(m)) return 'أُلغيت العملية';
+  return 'تعذّر إكمال العملية مع جوجل';
+}
+async function gLogin(btn){
+  setIntent('login'); btn.disabled = true;
+  let r; try { r = await sb.auth.signInWithOAuth({provider: 'google', options: {redirectTo: here(), queryParams: {prompt: 'select_account'}}}); } catch (e) { r = {error: e}; }
+  if (r && r.error) { clearIntent(); btn.disabled = false; toast(gmsg(r.error.message)); }
+}
+async function gLink(btn){
+  setIntent('link'); btn.disabled = true;
+  let r; try { r = await sb.auth.linkIdentity({provider: 'google', options: {redirectTo: here(), queryParams: {prompt: 'select_account'}}}); } catch (e) { r = {error: e}; }
+  if (r && r.error) { clearIntent(); btn.disabled = false; toast(gmsg(r.error.message)); }
+}
+let GID = null;
+async function identities(){
+  try { const {data, error} = await sb.auth.getUserIdentities(); if (error || !data) return null; return data.identities || []; } catch (e) { return null; }
+}
+async function fillCard(){
+  if (!document.getElementById('g6st')) return;
+  const ids = await identities(), el = document.getElementById('g6st'); if (!el) return;
+  if (!ids) { el.innerHTML = '<p class="note" style="margin:0">تعذّرت قراءة حالة الربط</p>'; return; }
+  GID = ids.find(i => i.provider === 'google') || null;
+  el.innerHTML = GID
+    ? `<div class="g6ok">✓ مرتبط بحساب جوجل: <b dir="ltr">${esc((GID.identity_data && GID.identity_data.email) || '')}</b></div><button type="button" class="btn line block" data-a="g6unlink">فك الربط</button>`
+    : `<button type="button" class="btn line block g6b" data-a="g6link">${GSVG}<span>ربط حساب جوجل</span></button>`;
+}
+function inject(){
+  if (me) {
+    const pwf = document.getElementById('pwf');
+    if (pwf && !document.getElementById('g6card')) {
+      pwf.insertAdjacentHTML('afterend', `<div class="fcard fc2" id="g6card"><div class="fl" style="margin-top:0">${ic('key', 20)}الدخول بحساب جوجل</div>
+        <p class="note">اربط حساب جوجل مرة واحدة لتدخل لاحقاً بضغطة واحدة. يبقى الدخول بالرقم الجامعي وكلمة المرور يعمل دائماً.</p><div id="g6st"><p class="note" style="margin:0">جارٍ التحميل…</p></div></div>`);
+      fillCard();
+    }
+  } else {
+    const lf = document.getElementById('lf');
+    if (lf && !document.getElementById('g6lb')) {
+      const b = lf.querySelector('button.gold') || lf.querySelector('button'); if (!b) return;
+      b.insertAdjacentHTML('afterend', `<div class="g6sep" id="g6lb">أو</div><button type="button" class="btn line block g6b" data-a="g6login">${GSVG}<span>الدخول بحساب جوجل</span></button><p class="note c" style="margin:10px 0 0">يعمل بعد ربط حسابك مرة واحدة من «ملفي الشخصي».</p>`);
+    }
+  }
+}
+let tm = 0;
+const main_ = document.getElementById('main');
+const kick = () => { if (!tm) tm = setTimeout(() => { tm = 0; try { inject(); } catch (e) { console.error(e); } }, 30); };
+if (main_) new MutationObserver(kick).observe(main_, {childList: true, subtree: true});
+kick();
+
+// ---- العودة من جوجل (تُعالَج مرة واحدة عند تحميل الصفحة، دون الاعتماد على ترتيب أول رسم) ----
+(async () => {
+  const it = getIntent(); if (!it) return;
+  clearIntent();
+  try {
+    const {data: {session}} = await sb.auth.getSession();
+    if (it === 'login') {
+      if (!session) { toast(URLERR ? gmsg(URLERR) : 'لم يكتمل الدخول بجوجل. إن لم يكن حسابك مرتبطاً فادخل برقمك الجامعي ثم اربطه من «ملفي الشخصي»'); if (location.hash !== '#login') nav('#login'); }
+    } else if (it === 'link' && session) {
+      const ids = await identities(), ok = !!(ids && ids.some(i => i.provider === 'google'));
+      toast(ok ? 'تم ربط حساب جوجل ✓' : (URLERR ? gmsg(URLERR) : 'لم يتم ربط حساب جوجل'));
+      if (location.hash !== '#me') nav('#me');
+    }
+  } catch (e) {}
+})();
+window.addEventListener('pageshow', e => { if (e.persisted) clearIntent(); });
+
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a;
+  if (a === 'g6login') return gLogin(el);
+  if (a === 'g6link') return gLink(el);
+  if (a === 'g6unlink') {
+    if (!GID || !confirm('فك ربط حساب جوجل؟ يمكنك الدخول بالرقم الجامعي دائماً.')) return;
+    el.disabled = true;
+    let r; try { r = await sb.auth.unlinkIdentity(GID); } catch (x) { r = {error: x}; }
+    if (r && r.error) { el.disabled = false; return toast(gmsg(r.error.message)); }
+    toast('تم فك الربط'); return fillCard();
+  }
+});
+})();
+</script>
+<script>
+window.__FR_DICT = (window.__FR_DICT || '') + `
+100bk2n|Tâche enregistrée, mais certains membres n'ont pas pu être assignés
+101w73f|Nom du club
+10272d6|Lien du direct
+10283z8|Connectez-vous en tant que membre pour lire les commentaires et participer
+105cq2o|Valide
+106nk2l|Comité préféré
+1087q6h|Tableau de bord administrateur
+10fdbed|Exécutez le code
+10hom23|Tâches remises
+10m12p4|Fait
+10mlz5t|Aucune photo dans cet album pour le moment
+10o2p6c|Refusé
+10qq7we|~Apparaît directement sur le site public après l'enregistrement
+10s9tv9|Équipe et partenaires
+10uyq04|Modifier l'album
+10w08nr|Cet album est introuvable
+10x7p4f|Aucun événement à venir actuellement
+10yb94x|heure{s}
+1120zgl|ici
+112ha2p|Ancien bureau
+114fgyi|Nomination aux postes
+11560dj|Brouillon
+118fykj|Envoyer
+119e8yi|À faire
+11amgz7|Générer un nouveau code invalide l'ancien
+11h7txq|Tâches du département
+11jbohi|Tâche créée
+11jjkrr|Aperçu
+11nmmty|Si votre compte n'est pas lié, connectez-vous avec votre numéro d'étudiant puis liez-le depuis
+11r8seg|Impossible de créer le groupe
+11sbafx|Créer l'album
+11ss54g|Tout changement de nom est enregistré et visible par les administrateurs
+11xnm57|Cette formation est un brouillon
+126xswu|Suivi du travail du club
+129k3mi|Membres du club
+12b0hvt|Supprimer définitivement l'événement ?
+12eak13|Mes certificats
+12oafup|Appuyez sur lecture
+12wd3v4|Certificat introuvable
+12wjmb9|Aucun nom
+12ztxwt|Pourquoi voulez-vous rejoindre le club ?
+134ajyq|Collez d'abord un lien YouTube valide
+1381cto|Bureau
+139rmmo|Écrire un commentaire
+13h2ey3|En envoyant la demande, vous acceptez que l'équipe du club vous contacte au sujet de votre demande d'adhésion
+13i47me|Rejoindre le groupe
+13j6an9|Description
+13k744k|Connectez-vous pour participer
+13kw1nu|Événements à venir
+13roqhe|Monter
+13rplaz|Numéro de téléphone invalide
+13t13u1|Envoi de la photo
+13td1yl|Désactivez la confirmation par e-mail dans les paramètres de
+13tvtxx|Nous construisons une expérience scientifique complète
+13udttj|Impossible de charger les membres
+13y1l4a|Moments de la vie du club
+13y6gd3|Demandes refusées
+1419klb|Activer le poste
+141fiif|Espace membres
+1476xjl|Logistique et équipements
+14ef1jm|Un café ?
+14gm2kl|Ajouter des photos
+14htmd1|Liste des membres
+14jd4ds|Introduction à la science des données
+14kwdk2|En savoir plus
+14l2lxh|Les membres de l'ancien bureau perdent immédiatement leurs droits, et leur ancienne discussion ne reste accessible qu'à eux
+14liyag|Aucune présentation pour le moment
+14ppt9j|Écrire au bureau
+14wulz4|Durée détectée
+150w7gh|Mdr
+155r149|Ajouter
+156d3co|Lier un compte Google
+15abb1|En cours
+15cdrhy|Tâche terminée
+15j4ka|Réessayez avec le même mot de passe
+15q2iic|Tous les albums
+15q9c0q|Mot de passe
+15yal83|Cet événement est introuvable
+15yxoa2|La curiosité d'abord
+1627ay9|~Il a peut-être été supprimé ou n'est pas publié
+162byw4|Pourquoi veut-il rejoindre le club ?
+165280m|photo{s}
+167k0z7|Modifier la formation
+16duk29|Nom complet
+16hqpz7|Enregistré
+16hs33u|La durée détermine le minimum à visionner
+16lvxza|Accepté
+16m26jy|Texte de l'annonce
+16mv5ri|Contactez-nous
+16ojgnf|Cette formation n'existe pas ou n'est pas encore publiée
+16po8cj|Date limite d'inscription à l'atelier d'intelligence artificielle
+16rgbt2|Tâches
+177bc2h|~Attendez
+179mpfy|, saisissez-la donc avec précision
+17b3p7f|Activez le fournisseur
+17bv6d0|Médias et design
+17cfzjl|L'organisateur n'a pas encore ouvert le code de présence ou sa durée a expiré
+17q6i3c|Instagram
+17tisdm|Lancement
+17tj7m3|Supprimer définitivement la formation avec ses leçons, ses séances et ses registres de présence ?
+17xt3ie|automatiquement
+182coot|Toutes les tâches des trois départements au même endroit
+184zlb|Ajouter un ancien bureau
+185d764|Connectez-vous et inscrivez-vous à la formation pour voir ses horaires
+18b73ik|choisissez ce qui correspond à vos compétences ou essayez un domaine entièrement nouveau
+18eo3pp|Rechercher par nom ou numéro de carte
+18hqzjh|5e année
+18igtsa|La direction du club atteste que
+18nye3l|Tout
+18o37a7|Démarrer la discussion
+18pvflz|Rechercher un événement
+18qz05e|Fermer le code
+18t0uuk|Échec de l'inscription
+18tupec|Journées portes ouvertes, ateliers et conférences
+18u54m8|Liens rapides
+18ueaw0|Publier la formation
+18v2gv6|Admin
+18vi6fr|Votre suivi
+18vy2v4|Modifier la séance
+18x035m|~La mise à jour peut prendre une minute
+18yumeo|caractères minimum
+18ywt3z|Durée de la vidéo
+191c33k|Université
+192xsd4|Archives photos des événements et activités du club
+194glg3|Type
+194hhup|Numéro WhatsApp
+194lq9f|~Comité
+19a2vqh|les événements sont ouverts à tous et certains nécessitent une inscription préalable
+19fphjx|du lot 5 d'abord
+19ftu3|Rejoignez-nous
+19kf3pi|Vous n'avez pas de compte ?
+19l12bm|Rechercher par nom
+19o5br7|Certificat délivré
+19p3i94|Code de présence fermé
+19qu358|Les bases du design avec
+19rq4uw|Ceci est un groupe privé
+19s8m3|Menu
+19uaa4f|Amphi
+19vewd2|Assignés
+1a22sn1|votre nom n'apparaît donc pas dans les listes de membres et vous ne pouvez pas être nommé à un poste
+1a5zml1|Durée minimale de présence
+1aa8ads|Formation masquée
+1abtk8t|~Suivez les leçons d'une formation et assistez à ses séances pour obtenir votre premier certificat
+1abundx|Inscrits
+1ack3sj|Leçons
+1acmfvx|Le nom et la photo du membre s'affichent sur la page du bureau, et les droits du poste lui sont attribués
+1adc2l9|minutes puis réessayez
+1ag1w63|Aucun inscrit pour le moment
+1akrhi7|Écrivez un titre de 2 à
+1am5w3|Expire le
+1apavd3|Nous ne nous contentons pas de théorie : nous construisons de vrais projets et organisons des événements sur le terrain, gérés par les membres eux-mêmes
+1asfpow|Voir les événements
+1ax5o5f|Refuser
+1ayr30y|Saisissez le code de vérification imprimé sur le certificat pour en vérifier l'authenticité
+1b0zqtr|Science
+1b21q5t|3e année
+1b7h9ym|Remettre les tâches
+1bcn0na|Écrire
+1bmgmig|WhatsApp
+1bmo9yb|~Contactez les organisateurs
+1btb9b1|Nouvelle publication
+1c4hye9|vous pourrez vous inscrire aux formations une fois son compte validé
+1c5fvw2|Gère la liste des membres et son export
+1cacwz7|Documents supprimés
+1cc1mp3|puis collez son lien ici
+1chx3a6|La durée minimale de présence ne doit pas dépasser la durée de la séance
+1cjc1o8|Ajouter un membre
+1cmt7xv|Échéance
+1crpjh0|Terminé
+1cuth3v|Impossible de charger la page
+1d1b9s2|Nouvelle annonce
+1d4irnu|Créer
+1d8vp8t|Vérifier l'authenticité d'un certificat
+1d935lm|Le lien doit commencer par
+1dbtki5|Logo
+1deuxxy|Heure
+1dhpdgs|Motivation
+1dikq0b|Adhésion
+1dlofa9|Aucun événement actuellement
+1dnvigm|octobre
+1dpjzf8|vous attend
+1dqnnel|du lot 4 d'abord
+1dqojm0|Département Design et Médias
+1duumsk|Lien YouTube invalide
+1dwe0m2|Annuler
+1dxd8oy|Nécessite le logiciel
+1dxukcv|Nous posons les questions audacieuses et en cherchons les réponses avec une méthode scientifique, en encourageant chaque membre à explorer ce qui éveille sa curiosité
+1e29c7i|Occupé actuellement par
+1e73p65|quittera le poste
+1e88ije|Votre message parvient aux membres du bureau dans leur boîte de réception, et leurs réponses arrivent dans la vôtre
+1e99rrk|~Vérifiez que le lien est public ou
+1eae5ek|Modifier la tâche
+1eagax9|Statut du certificat
+1edmbe1|membre{s} du bureau
+1ehqwmm|Code de présence
+1ej8eda|La taille du fichier dépasse
+1ekrsy3|Ce compte Google est lié à un autre membre
+1eldpe6|Terminées
+1elvya0|Cercles de discussion, articles de recherche et soutien aux projets de fin d'études innovants
+1erj4z0|Trésorier
+1ey2gwu|Aucun certificat avec ce code
+1eydh4d|~Responsable
+1eyno8y|Nouveau mot de passe
+1ezka0h|Une formation du club
+1ezywn1|Visible uniquement par ses membres ; le créateur ajoute lui-même les membres
+1f0g8jz|Inscrivez-vous d'abord à la formation
+1f2mhvl|Ouvrir le lien du direct
+1f41g6y|clé
+1fb3idj|Impossible de générer le certificat dans ce navigateur
+1fctux5|Lien Instagram
+1fnhdew|Ce compte Google n'est lié à aucun membre
+1fpamtz|Modifier le membre de l'équipe
+1fqs4wx|Aucun inscrit pour le moment
+1fr1l3w|Mis à jour
+1fsmimx|Commencez depuis la page
+1fuuave|Album créé
+1fvr0t4|Bureau du club
+1g0iopj|Remarque
+1g648sr|~Commencez d'abord un mandat
+1g6pixq|Site
+1g8m6wo|et un même membre peut cumuler plusieurs postes
+1gb8vy8|et validez d'abord votre compte
+1gf1di0|Suspendre
+1ggincd|Aucune annonce pour le moment
+1ggn0ze|utilisez le code de présence
+1gjtn5i|Demandes d'adhésion
+1gjxe84|Ouvrir le code de présence
+1gk9h0x|~Attestation universitaire et carte d'identité
+1gmj59e|Entretien
+1gwkkl|Déposez votre candidature
+1gzg5xi|Votre certificat a été délivré
+1h4811o|Vous êtes inscrit
+1h8ba1h|Enregistrement
+1h8z1jy|Dissocier
+1h8zm2v|Vous n'êtes inscrit à aucune formation pour le moment
+1hahjmk|À propos du club
+1hb1bhu|~Toute personne peut la vérifier sur la page
+1hb6s06|Cette leçon est terminée
+1hce4b8|Durée de la séance : de
+1hcggj2|Nouveau groupe
+1hclz19|~Non accepté
+1hcvyzo|Description
+1heckl0|Vos droits sont en lecture seule
+1hekzph|Enregistrer les modifications
+1hnf920|Publié
+1hp8cdh|Vérification impossible pour le moment, réessayez plus tard
+1i57bms|Poste libéré
+1i5g4bu|2e année
+1i9kzf5|La formation n'a pas encore de leçons ni de séances
+1ibyb9p|caractères minimum
+1iigobl|Ajouter aux archives
+1ijoj9i|Parlez-nous de votre passion, de vos compétences et de ce que vous souhaitez apporter ou apprendre au club
+1ilmbtz|Par défaut
+1in40mj|Aucune donnée pour le moment
+1iof0si|~Votre présence est comptabilisée automatiquement
+1izh3r|Impossible de détecter la durée automatiquement
+1izyf5q|À définir
+1j5oh9j|Télécharger
+1jcsw23|Nouveau titre
+1jfadrh|Gestion
+1jh8b3h|Impossible d'enregistrer les photos
+1jhw129|image ou
+1jl2rpa|Impossible de terminer l'opération avec Google
+1jlbahd|Connectez-vous avec votre numéro d'étudiant et votre mot de passe
+1jsne7l|En direct
+1jsty56|Cœurs et étoiles
+1jsx0nq|événements par an
+1jx65tk|Revoir
+1k0vqtb|Impossible de charger l'outil de suivi
+1k2di01|Informatique
+1k52dzl|Notre équipe et nos partenaires
+1k9b3z7|La connexion par numéro d'étudiant et mot de passe reste toujours disponible
+1kb4j2m|caractères ou plus
+1kgh73f|caractères ou plus, la capacité doit être un nombre positif et les liens valides
+1kgnl44|Ce compte est déjà enregistré, connectez-vous
+1ki796x|Vacant
+1kln8tl|Événements à venir
+1knd9b2|en date du
+1knybnk|Organisation partenaire
+1kpfv50|Connexion
+1ksqyfl|A suivi
+1kvi35|Feu
+1kw181j|et
+1kydwnj|Compte Google lié
+1l4jd55|Détails
+1la0ock|Informations de contact
+1lcysg2|Vérifier un certificat
+1lf8j7m|Échec de l'opération
+1lih1tq|Vous n'avez pas le droit de créer des formations
+1lk8v|à
+1lkkncm|Département organisateur
+1ln2p0p|Saisissez le titre de la leçon
+1lpork3|Échec de la suppression
+1lqqeyp|Copier le lien de vérification
+1lt7yt3|Indiquez l'heure de début
+1lvxmzd|Ce groupe n'est pas disponible
+1lwmeo2|Paramètres
+1lx2gvg|Génie électrique
+1m11c7v|Échec de l'envoi
+1m44q7h|Saisissez le code de vérification
+1mcczj5|Téléphone
+1mcnkhp|Changer le mot de passe
+1meg5jc|Échec de l'enregistrement, vérifiez les données
+1mffi3z|Supprimer définitivement l'attestation universitaire et la carte d'identité du stockage ? Assurez-vous de les avoir vérifiées d'abord
+1mlj4t3|Lien
+1mt8j0d|Seule l'annonce valide la plus récente est affichée
+1muaz6|~Exemple
+1mw5ucw|Ouvrez
+1n0dbwe|Un mandat est déjà en cours
+1n5x86g|Salut
+1n670e5|Je réfléchis
+1n6y4av|Mon profil
+1nk4qac|Aucun résultat
+1nlntyn|Abdallah Mohamed Salem
+1nlthbj|titulaire{s} du certificat
+1nr0t4q|Sticker
+1nrm1ey|membre{s}
+1ntkcyw|Obtenir votre certificat
+1nzfh4n|séance{s}
+1o20pxw|Code du certificat
+1o5isad|Partenaire
+1o798t6|manuellement
+1o7pad7|J'adore
+1odhsvf|Publiez un événement avec des photos ; les membres peuvent réagir et commenter
+1oh0ln9|Galerie photos
+`;
+</script>
+<script>
+window.__FR_DICT = (window.__FR_DICT || '') + `
+1oi8j72|Brouillons
+1ojieud|Choisir le domaine
+1olk4kw|Bientôt
+1onltfd|Non répertoriée
+1onygxm|Archives des bureaux précédents
+1osetvj|heures
+1ov4wlu|Illimité
+1oxql2i|Impossible de charger les formations
+1oy1vuq|Libérer
+1oy7feg|Copie de la carte d'identité nationale
+1oyvwt7|Vice-président
+1oz86ao|Dans la formation
+1ozsgw1|Bandeau affiché en haut de la page d'accueil pour tous les visiteurs
+1p5lzeg|Pas encore délivré
+1p6o3x6|Échec du téléversement des documents
+1pahx7e|Détails
+1paqdyl|Démarrer le premier mandat
+1pbhqpp|Tous les départements
+1pdbyi3|Certificat authentique
+1pdfkfp|suivez les nouveautés et inscrivez-vous
+1pdnx9m|Nommer
+1pe1l4e|Félicitations
+1ppfxdn|Le lien commence par
+1pqp0so|Aucun autre groupe
+1pshurl|Remplissez le formulaire et nous reviendrons vers vous sous une semaine
+1pt1jid|Tout afficher
+1py558g|Gestes
+1q13m94|Publier l'annonce
+1q2mpx4|Ingénierie de l'information
+1q5g4zb|poste facultatif
+1q87rdc|Membres
+1q8itw6|~Les membres ne la voient pas tant que vous ne la publiez pas
+1qacvfp|Durée entre
+1qb62la|ce membre le remplacera
+1qbb2qr|Impossible de charger les tâches
+1qlyk1f|Impossible de lire cette vidéo
+1qnawbo|Description de la formation et de son contenu
+1qxthvd|Votre présence est déjà enregistrée
+1r0epux|Aucun mandat n'a encore commencé
+1r0u5ag|Aucun mandat en cours
+1r0y0gg|Caméra
+1r1nyjy|Certificat obtenu
+1r75lof|Atelier
+1r7zs6i|Visionner
+1r8zvcs|Tableau de bord du bureau
+1rbdqrf|Impossible de changer le statut
+1rc8kd0|Voir le certificat
+1re9a6h|Date de la demande
+1rgv9dx|Ouvrir les postes
+1rni06f|Vous n'avez rien trouvé qui vous convienne ?
+1rpej7b|Écrire un message au groupe
+1rq99kq|E-mail
+1rrm2tc|Le bureau
+1rrxriy|Vu
+1rspb4k|Indiquez l'année du mandat dans le titre pour que les archives soient classées automatiquement
+1rxnary|Actualiser le statut
+1rz8nva|Suggestion, question ou remarque
+1s0r74j|Aucun membre dans ce département pour le moment
+1s3xdsq|Toutes les places sont prises
+1s5rrz0|Cette formation n'a pas de certificat
+1s7g216|Quitter
+1s8w5t7|Partenaires et soutiens
+1se0200|Remplissez le formulaire en moins de deux minutes
+1sgfg7a|Vous avez envoyé plusieurs messages récemment, réessayez dans un instant
+1si7il6|Rouvrir
+1skl46b|Liez votre compte Google une seule fois pour vous connecter ensuite en un clic
+1sl0erx|Formations du club
+1so2ot3|Organisation des événements
+1srxed2|Voir plus
+1stndka|inscrit{s}
+1szxgzn|Créer la tâche
+1t4h47e|Aucun participant
+1t8qg6h|Événement
+1t9vh1|~Suivez les leçons et assistez aux séances pour obtenir votre certificat
+1tcz4uq|leçon vidéo
+1te15qv|Vérifiez la saisie du code ou contactez l'administration du club
+1tg7woe|séances
+1th4yjh|Numéro d'étudiant et département
+1tjp9xl|Mes tâches
+1tqc0ol|Événements et annonces
+1tre6qh|Durée de validité du code
+1trtu6j|Opération annulée
+1ttge4c|Événement publié
+1ttlciu|Valider mon compte
+1tufzn6|Vous pouvez seulement définir son département
+1u11pyt|Annuler votre inscription à la formation ? Votre progression est conservée si vous revenez
+1u2f9c2|Téléversez l'attestation de l'université
+1u7u62p|Statut
+1udqzdu|Choisir le département
+1udt9am|Vous pouvez écrire directement au chef du département concerné depuis la page du membre
+1up89hp|Séances
+1uuy230|Date de l'événement
+1uy0ij2|Titre de l'événement
+1v168hx|Nouvel album
+1v1h2i3|Aucune demande
+1vbgoi|Contactez l'administration du club pour en connaître la raison
+1vbmh5v|Vérification des certificats
+1vd25oz|Rechercher par nom, numéro d'étudiant, téléphone
+1vgutel|demande{s} affichée{s}
+1vh6nh9|Télécharger l'image
+1vjxvnf|Photos
+1vne7f4|Siège
+1vqs0au|Trop d'erreurs
+1vswe06|Commencez le mandat depuis la page
+1vuojb1|secondes requises
+1vxr1jt|Certificat valide
+1w29m1|Ce certificat a été retiré et n'est plus valide
+1w3bsgn|Lieu
+1w85r2z|Pointer
+1warglz|Des noms uniquement, sans comptes
+1wffixu|La connexion avec Google n'a pas abouti
+1wkjthi|Membres du groupe
+1wl7822|Votre compte est en cours d'examen
+1wmiljv|Salle de conférences
+1wpvgka|Date limite
+1ws6gca|Actions
+1wt2h3h|~En ligne
+1wui1v8|Exporter
+1wvozcu|Discussion du bureau
+1wvwz4l|Chargement du lecteur
+1ww85dt|Impossible d'ouvrir le fichier
+1wx3ljs|Supprimer ce membre de la page de l'équipe ?
+1x8iliw|La présence est validée par le code de présence ou manuellement
+1x8x9aj|Écrivez un message de 2 à
+1xhrsij|Aucun événement
+1xie6|Membres acceptés
+1xjyjka|leçon{s}
+1xkj7ug|Terminez toutes les leçons et assistez à toutes les séances : votre certificat sera délivré automatiquement
+1xphg9m|du lot 4
+1xrkfld|Tâches ouvertes
+1xrpj9a|chiffres latins
+1xwp09j|Impossible d'enregistrer le suivi, vérifiez la connexion
+1xwywmz|Un impact durable
+1xz6464|Vérifier un certificat
+1xzxmln|Notre mission
+1y2csf5|Présent
+1y3p972|leçon{s} vidéo
+1y5qysd|Présentez-vous et partagez vos centres d'intérêt
+1y6jqt9|Vue d'ensemble
+1y6m804|Délivrer le certificat à ce membre sans vérifier les conditions ?
+1yamkkr|caractères minimum dans le motif d'adhésion
+1ye43v9|Actuellement
+1yibysi|~Réessayez ou demandez à l'organisateur de valider votre leçon
+1yjq054|Connexion avec Google
+1yle7s2|Leçons terminées
+1yodhfa|Votre demande est en cours d'examen
+1yvb37q|Inscrivez-vous maintenant
+1yxosi8|Définis par l'administrateur, ils ne peuvent pas être modifiés ici
+1yxr06e|chiffres que les participants saisissent sur la page de la formation
+1yzrlp8|affiché{s}
+22n3wh|Pharmacie
+24gswp|Durée de la séance
+25i9m6|a accompli avec succès toutes les exigences de
+272n0w|Mettez
+287ihx|Le lien du direct doit commencer par
+2ddkme|Année d'étude
+2e971a|Mandat
+2fummi|Cette action ne vous est pas autorisée
+2h1g27|Retirer
+2i9bor|,
+2l2i9q|Événements
+2l9a5n|Accepter
+2mx5e6|Gestion de la formation
+2q4oq3|Démarrer
+2qmqc5|Fonctionne après avoir lié votre compte une fois depuis
+2qq2oj|minute{s}
+2vk1gi|Aucune tâche ne vous est assignée pour le moment
+2xd0c6|Élément introuvable
+2ye2fi|Le direct n'est pas disponible pour le moment
+30w6oy|Votre présence a été enregistrée
+34wb8y|Si vous aviez déjà commencé l'inscription, réessayez avec le même mot de passe ou connectez-vous
+36fmff|Afficher
+3896e2|, il ne peut donc pas être nommé chef de département ni membre du bureau
+3d8jt0|Titre de la séance
+3p8n29|Impossible d'enregistrer les données
+3rhkdb|Délivrés automatiquement à ceux qui terminent les leçons et assistent aux séances
+3rvmye|Saisissez le titre de la tâche
+3uvapa|Vérifiez que vous avez exécuté le code
+3xgkxt|Supprimer définitivement le groupe et tous ses messages ?
+3ym8ad|chiffres
+40ue09|Suspendu
+484mw8|Groupes
+4a2oxk|vers l'innovation et la découverte
+4a9458|Détection de la durée
+4halfs|Pionniers de la Science et de la Technologie
+4kl6wp|Albums
+4m2hh1|Tout ce qui se passe au club
+4rftao|Études supérieures
+4vxpxt|Son département principal
+4wpsnj|Président du club, vice-président, trésorier
+4xqvj9|En retard
+4z249n|Postes
+5ceg|Département inconnu
+5ci42q|Texte du bouton
+5guucr|Terminées récemment
+5hgbsr|Aucun événement pour le moment
+5ib06q|sur
+5mivos|candidat{s}
+5nsnnb|Un seul pas vous sépare d'une communauté scientifique dynamique
+5nsxm3|Aucune demande pour le moment
+5xddmw|D'accord
+5xm0ja|Numéro d'étudiant
+5zhwvp|Confirmer le refus
+5zode0|Icône
+60tuzs|Comptabilisé :
+618i2i|Envoi des photos
+6chanh|Présentiel
+6g1bg|Spécialité
+6gqvks|Votre message a été envoyé à
+6ij3cw|Choisissez une image
+6jqswb|Image de couverture
+6k4tg|Impossible de lire l'état de la liaison
+6ktuqs|Échec de la modification
+6lnk8l|Publiez de nouveaux événements pour qu'ils apparaissent directement sur la page publique des événements
+6lzan|Visible par tous après publication ; les brouillons ne sont visibles que par les organisateurs
+6mous3|Planification et gestion des journées portes ouvertes, ateliers et concours scientifiques
+6q9bvz|~Apparaît en bas du site
+6rx2sq|Prix et classement
+6sqm7p|Université Abdelhamid Ibn Badis
+6w3rbf|~Les certificats déjà délivrés restent valables
+768svw|Brève description de l'événement et de ce qui attend les participants
+782kha|?
+79zfgq|Organisations partenaires
+7btdum|Votre progression dans la formation
+7fmmfw|Enregistrer les paramètres
+7h29tg|Génial
+7i9lbk|Première séance en direct
+7mx46t|Expirée
+7qy7kz|Paramètres enregistrés
+7sccow|Formations et certificats
+7ubbc0|~Actualisez la page pour afficher tous les boutons
+7zupsr|Message
+8522dl|Certificat
+8bkvyf|Discussion de groupe
+8d1lkl|Gérer les événements
+8drurm|Tâches des départements
+8dt1hz|Choisissez un membre pour l'inscrire, pointer sa présence ou valider ses leçons manuellement
+8f0ilv|Lien de la vidéo YouTube
+8fwunj|Technologie et programmation
+8jn1k2|~Données mises à jour en temps réel
+8p3af8|Visages
+8qq4v3|Ouvertes
+8r5ss1|Retirer ce membre ?
+8snxbv|Supprimer définitivement l'album et toutes ses photos ?
+8sxgjd|4e année
+8tmrz2|Découvrir des groupes
+8vcq2|Délivrer des certificats
+8w4cv5|Les membres du bureau seront annoncés prochainement
+8whzpp|Aucune tâche
+8x84a8|Concours ouverts, articles étudiants et initiatives au service de la société
+908xfc|Tous les comités
+914iw1|l'énergie des étudiants
+94j2ko|et écrivez à n'importe quel membre
+95wq8k|Lien
+98olqf|Choisissez le comité qui vous ressemble
+9akxc6|Code
+9fnr00|le visionnage n'est pas comptabilisé car vous n'êtes pas inscrit à la formation
+9galec|Pas encore de leçons vidéo
+9motlj|Modifier mon profil
+9ninbw|Annuler l'inscription
+9rgk0q|Un espace scientifique qui libère
+9x87dp|Événements à venir
+9y3pij|Aucun ancien bureau pour le moment
+a0eh9o|Secrétaire général
+a2i5eu|~Votre visionnage n'est comptabilisé que pendant la lecture
+a99uxy|Année
+a9josc|Commencer la demande d'adhésion
+ad8qvg|À propos de vous
+age6fs|Commencez le mandat du bureau depuis la page « Notre équipe » pour activer les postes
+aghp3j|Nom du groupe
+agsax8|Continuer ?
+ajghl9|Candidat
+alpgl|Apprendre par la pratique
+aq7z5s|Poste
+as04wl|Bâtiment principal
+au80e3|Aucune séance
+aucz12|Non commencé
+ayj10r|Photos des événements
+aytogw|Nouveau membre de l'équipe
+b1rjmp|Tous droits réservés
+b4ks4l|Vérifier
+b6di5o|Quitter le groupe ?
+b8eysb|Supprimer
+bbtvei|Bravo
+bck47h|Chargement
+bgr3be|perdra la direction de
+bgsf19|Rechercher par nom, numéro de carte ou spécialité
+bkmvfm|minute{s} requise{s}
+blwj6s|par code de présence
+bnw7ku|min
+bpbj1o|Connectez-vous pour rejoindre la formation et suivre les leçons
+bs6s0a|Dissocier le compte Google ? Vous pourrez toujours vous connecter avec votre numéro d'étudiant
+bss5xw|Gestion des événements et annonces
+bttelf|vérifiez qu'elle correspond à ce que vous avez saisi
+c5kbzq|Échec de la validation
+c6bgz7|Un code à
+c9y0tb|Aucun document enregistré
+cdb45p|jusqu'à
+cgulmn|Aucune tâche ici
+ch3bwl|Supprimé
+cicyft|Identité visuelle, conception des publications, photographie et gestion des plateformes du club
+ciwxdd|Échec de l'enregistrement
+cpjnx4|S'inscrire à la formation
+cv716u|Copié
+cvifc1|2 heures
+cx925j|Date d'inscription
+cy5758|Nomination effectuée
+cy5rd1|Ordre
+czmart|Échec du chargement
+d12jh|Heure de début
+d407nd|Nouvelle formation
+daltn|Développement de sites et d'applications, programmation compétitive et applications d'intelligence artificielle
+db3rj8|Ouvertes
+dcb13s|Carte d'identité
+dh0qee|Génie civil
+dhg0ex|Téléphone
+dk10o3|Annonce publiée
+dkm3gx|Aucun album publié pour le moment
+dl27jj|Certificat retiré
+dpbxn6|Affichée actuellement
+dw3nbc|Messages et membres
+dxnf64|conférencier
+dxwm69|Lien X
+dzj9nf|Ajouter un partenaire
+e7fjj7|Terminé
+`;
+</script>
+<script>
+window.__FR_DICT = (window.__FR_DICT || '') + `
+e86ouw|Expire le
+e8fqqm|Voir mon profil tel que les membres le voient
+ed2s1d|Rejoindre le club
+eh9c3v|Numéro de téléphone
+eio2ep|Nos réalisations dépassent les murs de l'université
+ej7d8t|Vidéo
+ejlex0|Notre équipe
+ekm4of|comme
+em1xef|Inscription annulée
+ep7tsr|Titre de la leçon
+eszyse|Choisissez un comité
+f11a80|Nouvel événement
+f46nvu|Modifications enregistrées
+f8m6a7|Inscription annulée
+f8rieb|Échec du téléversement de l'attestation, réessayez
+ffry0u|Leçon terminée
+fhtp37|Formation
+fnp8vl|~Vérifiez la connexion
+foclp8|Code incorrect
+frm64g|Groupe privé
+fwrwkq|tout autre lien
+fzlyez|La publier maintenant ?
+g01h6o|Titre de l'album
+g0l995|Aucune formation actuellement
+g2rey8|Toutes les formations
+g8dgk0|Le mandat du bureau n'a pas encore commencé, les postes du bureau sont donc désactivés
+g99kp|Adhésion
+ga3uz7|~Ouvre un quart d'heure avant l'horaire
+gbqnji|ou
+ge57u0|Date
+gi0q10|Rechercher un membre par nom ou département
+gjt1g5|Gestion des événements et publications
+gkthly|Connexion
+gkx6h3|Aperçu uniquement
+gnhtmm|Impossible de charger la galerie
+gucw36|dans les paramètres de
+guf2p7|Domaine
+guzv7b|Publiez des événements, gérez l'annonce épinglée et la galerie photos
+h2k2w4|Retirer
+h61wfy|Mot de passe modifié
+h9j9bx|les boutons de nomination au bureau ne sont donc pas affichés
+h9olr7|Aucune conversation pour le moment
+hbd2ck|et que l'intégration est autorisée
+hf873v|Numéro de téléphone
+hfc9kx|Acceptés
+hgfez5|Entrer dans le direct
+hhm0he|Président du club
+hjyr1p|minutes
+hltg0q|Attestation universitaire
+hmeq96|Échec de la publication
+hxktwu|Fermer le lecteur
+hxrk93|Préparation des salles et du matériel et soutien sur le terrain pour la réussite des événements
+hxumwy|Sans date d'expiration
+hyrx57|Valide
+i0kcug|Vous n'avez rejoint aucun groupe pour le moment
+i5dxlz|Recherche scientifique
+i5fwp|, jusqu'à
+iamflz|Supprimer définitivement cette tâche ?
+icrwb1|Impossible de téléverser l'image
+id7rmi|Membres acceptés
+idsscg|Total des candidats
+ieeedh|Inscrit le
+ijbi1o|Titre du certificat
+ikesi3|Membre
+im9rfi|N° du certificat
+imzmc8|Supprimer ce bureau des archives ?
+iqq2bs|Inscrivez-vous d'abord
+it1yhw|Confirmer
+it73dd|Supprimer la photo
+iy5ylj|Photo mise à jour
+izyf4k|Personnes assignées
+j1l1uq|~Vous
+j29bys|Privé
+j4ojng|Événements et publications
+j7w0n3|Aucun partenaire annoncé pour le moment
+jepo27|Accueil
+jjl9fn|Mostaganem
+jkyq2e|Adresse
+jljxky|Absent
+joeh9m|Modifier le partenaire
+joo0p2|Impossible de charger la formation
+jowfha|Mes formations
+jwr8jv|Affichez-le à l'écran ou donnez-le uniquement aux présents, et fermez-le dès la fin du pointage
+k1hs28|Téléversez une copie de la carte d'identité nationale
+k6zrlc|Déposez votre candidature : nous examinerons votre demande et vous proposerons le comité le plus proche de vos goûts
+k83lqa|Ce compte n'est pas un membre accepté
+ka8tp6|X (Twitter)
+kavcwz|Générer le code
+kkhdcw|Conditions d'obtention du certificat
+kl6v3c|Choisir
+koqakm|Supprimer le commentaire ?
+kqlwxq|Dernières demandes
+kyhnpw|Cinq comités spécialisés qui travaillent main dans la main
+l1rbs6|Validez d'abord votre compte
+l2rugq|Rechercher une formation
+l4psii|Titre du nouveau mandat
+l5xg8n|Médecine
+l79xyk|Admin
+l7uyu6|caractères
+leascy|Déconnexion
+leo97l|Messages privés
+lj5w|Aucun brouillon
+lpeci4|Uniquement pour vérifier mon identité, et à condition que seuls les administrateurs du club puissent les consulter
+lricre|Séances suivies
+ls6jil|Impossible de charger le bureau
+lv0bip|Gérer les demandes
+lw0faz|Discussion générale
+lymaxx|Copiez le lien :
+lzr1b9|Libérer le poste
+m1xukl|Écrivez
+m3aldc|Attestation de réussite de formation
+m3dzbo|Sciences et études
+m7b0rc|Candidats par département
+m9moa1|Connectez-vous pour écrire au bureau
+mbapmk|Les tâches que le chef de votre département vous confie apparaissent ici
+mdx9xt|Présent
+me4g63|~Pour les exceptions ou ceux qui n'ont pas de téléphone
+mghey8|Sponsors
+mh2ywm|Son site web
+mp6z9c|Connectez-vous et inscrivez-vous à la formation pour la suivre
+mqokbu|Supprimer cette annonce ?
+mrygrf|Action
+ms30lh|Envoyer la demande d'adhésion
+mt566y|Durée de la vidéo : de
+mtsnm3|Votre compte a été validé
+n14ilt|Certificat retiré
+n1pvdt|Impossible de rejoindre
+nbtnvk|Sans département
+nd2ffa|Terminé
+nfmpz7|Aucun résultat
+nld33z|Date de délivrance
+nm7hot|Vos données sont protégées et ne seront utilisées à aucune autre fin
+no67ev|La présence et les certificats seront ajoutés ultérieurement
+nt1gzf|Nombre de postes
+nw36t6|au minimum de chaque leçon vidéo
+nxoegq|demande{s}
+nye0v0|Le certificat est délivré automatiquement lorsque toutes les conditions sont remplies
+o2il7r|Créateur
+o3p9f4|Certificat
+o4xt1l|Valable pendant
+o6t0zj|Impossible de supprimer le mandat en cours
+o7da1e|Modifier le titre du mandat
+ofep9k|Titre de la tâche
+omlxj3|Code de vérification
+ooij9b|Retiré
+opqpo2|Vous pouvez suivre les événements à venir
+oq3knh|Mes groupes
+ory1vp|Mot de passe trop court
+os3r2a|Titre du mandat
+p0hc5v|Lié au compte Google
+p8ki60|Général
+pb1hix|Leçons vidéo, séances en direct et en présentiel
+pbrox0|Vous pourrez discuter et vous inscrire aux événements dès l'accord de l'administration
+pfavew|Direction des départements
+pgfysz|Ajouter un participant
+ph8rfg|Ajouté{s}
+pju01q|Nouveau partenaire ou soutien
+pk9z5u|Lien YouTube
+plla5d|~Ajoutez le premier événement depuis le formulaire ci-dessus
+pn5x29|Masquée
+pr4mqv|Tableau de bord Design
+ps2y38|Inscrits
+psuhej|Saisie manuelle
+pt8m8g|d'abord
+pw93zq|En cours
+pxyptp|~Le temps réel est comptabilisé ; il ne suffit pas de sauter à la fin
+py35sf|Postes actuels
+py9wnv|Supprimer ce partenaire ?
+q2q16q|Les visages qui font le club et les organisations qui soutiennent sa mission
+q2sy6a|Le visionnage ici ne sera pas comptabilisé
+q5eqvy|Sponsor officiel
+q6n4hg|Vérifiez les champs
+q6og2f|Écrire sur WhatsApp
+q7wzy|Détection automatique
+q84rip|Réessayez avec les mêmes informations et le même mot de passe
+q9g0u8|Choisir l'année
+qa7j3d|Touchez un élément pour changer son état manuellement
+qn89km|Descendre
+qp3nis|Présence à toutes les séances
+quq6or|Choisissez ce que vous voulez
+qwy6ru|Choisir la spécialité
+qzknro|Annonces
+r2cluc|leçons
+r3we4|Retour aux participants
+r4hkw5|Participants à
+r6p0l|Ajouté
+r85vfv|Mathématiques
+r92sfw|Mon compte
+rad7fa|Cette séance est en présentiel
+rctb2g|Certificat délivré automatiquement
+rei8sq|Vous ne remplissez pas encore toutes les conditions
+rf3y2v|J'autorise l'utilisation des deux documents
+rg3rlp|Leçons vidéo
+rgtbyv|Modifier
+rhg0ih|Masquer
+rj54ce|Recherchez un membre puis définissez son département, les départements qu'il dirige et ses postes au bureau
+rnc8v5|Journée portes ouvertes
+rt0ibd|restez à l'écoute
+rwc2kn|Lien YouTube du direct pour suivre la présence automatiquement, ou tout autre lien
+s0awqu|Complet
+s4wrwp|Publier l'événement
+s5p8sc|Membre actif
+s7ugwg|caractères
+scaoga|Votre place à
+sh4eww|Non acceptés
+sibu8a|En cours d'examen
+smdgvi|Triste
+srbkuj|Nombre
+stqro6|Saisissez le titre de la séance
+sty4st|minutes à
+svl91r|Choisir parmi les membres du club
+svrjk4|Commencez d'abord le mandat
+sxdoth|Trois piliers guident tout ce que nous faisons au sein du club, de la première réunion au dernier événement de la saison
+syf79r|Membre depuis
+sze1qh|Connectez-vous avec votre numéro d'étudiant puis liez-le depuis
+t4jai9|Impossible de charger les partenaires
+t4x85t|Votre certificat a été retiré
+t67xq6|saisissez-la manuellement
+t6h5x4|Aperçu rapide
+t8qhhi|Lien d'inscription
+t8ym8t|Émojis
+t92yp3|Nouveau message de
+t98csq|Partenaires
+t9x5vi|Valider
+tdd3ka|sera archivé, et un nouveau mandat commencera avec des postes vacants que vous attribuerez
+tfhmy0|Supprimer cette séance ? Le registre de présence sera effacé
+tfnevq|Nous sommes une communauté étudiante pluridisciplinaire qui organise des ateliers, des journées portes ouvertes et des concours scientifiques, et vous accompagne de la première idée de votre projet jusqu'au podium
+tj27am|Bonne nuit
+tl1xkn|Nos comités
+tmoo6l|Afficher
+tpm59n|N° de carte
+tql387|Idée
+tu5qx3|Affichage en lecture seule
+tv4g4y|Ne manquez pas la suite de notre agenda
+tw9wog|manuel
+tyaev4|Résumé de l'adhésion et des événements
+u8iywd|La présence est comptabilisée automatiquement selon la durée de suivi
+ua4es6|Tous les événements et annonces
+ubrktn|Mettez la vidéo sur YouTube en mode
+ucbq70|Quitter
+uczya4|Changer
+uggwjk|Acceptez l'utilisation des documents pour la vérification
+uip8y0|Gestion des postes
+ukgx8f|Titre de la formation
+ukj1ru|Demandes en cours d'examen
+umuus2|Compte Google non lié
+un1iwu|secondes à
+uwbnod|Messages
+uy43e6|Délivrer le certificat manuellement
+uzowoe|~Inscrit automatiquement à la formation
+v1ew0m|Divers
+v359gv|Ce certificat a été retiré par l'administration du club et n'est plus valable
+v3wd1z|Modifier la leçon
+v4f07q|Nouvelle tâche
+v5n7ny|Demandes
+vdu9wb|Pas encore de séances
+vjfzt2|facultatif
+vot4rf|Annonce épinglée
+vwrz81|Historique des changements de nom
+w69cye|Suivi interrompu
+w7jjyj|Échec de l'ajout
+w8h9mx|1re année
+wa13ya|Les candidatures sont ouvertes tout le semestre et les comités accueillent leurs nouveaux membres au début de chaque mois
+wb3ehi|occupe aussi
+wcbgs7|Mon profil
+wd823y|Votre certificat est prêt
+weob83|L'acceptation et le refus relèvent des ressources humaines ; la publication des événements, du département design
+whe6w2|en suivant le direct sur le site, avec le code de présence, ou par pointage de l'organisateur
+whfpre|Aucun certificat pour le moment
+wiq08z|Ce compte n'est pas accepté
+woce0l|Présence minimale
+wpcq9u|Informations sur le club et canaux de contact
+wpn2l5|À venir
+wr4aso|Faculté des sciences
+ww75vd|Enregistrer
+ww7vr|Aucun membre dans le bureau actuellement
+wwe3he|En cours
+wwukbt|Motif d'adhésion
+x0w735|Formation publiée
+x2w0nh|Ce numéro d'étudiant est déjà enregistré
+x33v6j|Confirmer la remise des tâches ? Cette action est irréversible
+x3hyu3|Saisissez au moins un nom
+x6lsnm|photo{s} ajoutée{s}, échec d'envoi pour
+x8e5ds|Terminé
+xaf0d4|Postes du bureau
+xcjf1z|Écrire un message à tous
+xdce2y|Participants
+xj1nup|Voir l'image du certificat
+xl02ac|Départements scientifiques
+xlqvy9|S'inscrire à l'événement
+xodmw8|Supprimer les documents
+xpephe|Échec de la création
+xpy6ez|Un membre peut diriger plusieurs départements et occuper plusieurs postes au bureau en même temps
+xrygya|Supprimer cette photo ?
+xzppa7|Nom
+y0hy6n|~Votre présence est comptabilisée pendant le suivi du direct
+y2i90q|Chaque nom doit comporter entre 2 et
+y7vkgo|Département
+y93ymv|Poste inconnu
+ye91fv|tâche{s}
+yizunx|Modifié
+ylif7r|sur place
+yostnp|Merci
+ypof1u|Demandes, tâches et événements
+ytdw6q|Publier
+yzab6r|Terminées
+z14tgk|E-mail
+z3kgv3|Liaison supprimée
+z4dyam|Activez l'option
+z579jv|Supprimer cette leçon ? La progression des membres sera effacée
+z6wkou|du lot 3
+z82e7k|Votre compte d'administrateur n'est pas officiellement accepté
+z9fqe8|Formateur
+za8zn8|image lisible ou
+zac02u|Retirer ce certificat ? La vérification indiquera qu'il a été retiré
+zd8pr1|Photo
+zdskg7|au format international
+zf7th4|Informations sur le club
+zfaq1d|Numéro d'étudiant ou mot de passe incorrect
+zgujw5|de suivi dans le direct
+zpb0cy|suspension ?
+zqri7j|Photos et vidéo de la formation
+zr87gq|Rejoindre le club
+zu3uy9|Réactiver le certificat
+zybhqm|Votre demande a été refusée
+`;
+</script>
+<style>
+.lg6{border:1px solid var(--bd);background:#fff;color:var(--navy);border-radius:99px;padding:0 13px;height:38px;min-width:46px;font:inherit;font-weight:700;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+html.fr body{line-height:1.7}
+html.fr #menu a,html.fr #menu button,html.fr .cards,html.fr .call,html.fr th,html.fr td,html.fr .cmts,html.fr .sec.rt,html.fr .b5{text-align:left}
+html.fr .msg{justify-content:flex-start}
+html.fr .msg.me{justify-content:flex-end}
+html.fr svg.frflip{transform:scaleX(-1)}
+html.fr #pinbar{padding:10px 16px 10px 46px}
+@media(max-width:480px){html.fr .bt b{font-size:.92rem;line-height:1.25}html.fr .brand{gap:10px}}
+</style>
+<script>
+(() => {
+// ================= واجهة بالفرنسية (Français) =================
+const LS = 'lst_lang';
+let LANG = 'ar'; try { LANG = localStorage.getItem(LS) === 'fr' ? 'fr' : 'ar'; } catch (e) {}
+const FR = LANG === 'fr';
+const A = '؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿';
+const HAS = new RegExp('[' + A + ']');
+const RUN = new RegExp('[' + A + ']+(?:[  ]+[' + A + ']+)*', 'g');
+
+// أداة فحص روابط الصور: إن لم تكن مرئية للكتل الأخرى نعرّفها هنا (لا أثر لها إن كانت موجودة)
+if (typeof okImg === 'undefined') window.okImg = u => /^https:\/\/[A-Za-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/media\/[A-Za-z0-9._\/-]+$/.test(u || '') ? esc(u) : '';
+
+// ---- زر اللغة (يعمل في الوضعين) ----
+let tm = 0;
+const kick = () => { if (!tm) tm = setTimeout(() => { tm = 0; try { addToggle(); } catch (e) { console.error(e); } }, 30); };
+function addToggle(){
+  const g = document.querySelector('#hd .ar');
+  if (g && !g.querySelector('.lg6')) g.insertAdjacentHTML('afterbegin', FR
+    ? '<button type="button" class="lg6" data-a="lang6" data-nofr="1" aria-label="العربية">عربي</button>'
+    : '<button type="button" class="lg6" data-a="lang6" aria-label="Français">FR</button>');
+  const m = document.getElementById('menu');
+  if (m && m.children.length && !m.querySelector('[data-a="lang6"]')) m.insertAdjacentHTML('beforeend', FR
+    ? '<button type="button" data-a="lang6" data-nofr="1">🌐 العربية</button>'
+    : '<button type="button" data-a="lang6">🌐 Français</button>');
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-a="lang6"]'); if (!b) return;
+  e.preventDefault();
+  try { localStorage.setItem(LS, FR ? 'ar' : 'fr'); } catch (x) {}
+  location.reload();
+});
+
+if (!FR) {
+  const mo0 = new MutationObserver(kick);
+  mo0.observe(document.body, {childList: true, subtree: true});
+  kick();
+  return;
+}
+
+// ================= الوضع الفرنسي =================
+const RAW = String(window.__FR_DICT || '');
+const D = Object.create(null);
+const H = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36); };
+RAW.split('\n').forEach(l => { const i = l.indexOf('|'); if (i > 0) D[l.slice(0, i)] = l.slice(i + 1); });
+
+const MISS = new Map();
+window.__frmiss = MISS;
+const NODE = {'▶ شاهد': '▶ Regarder', 'ساعة': '1 heure', '✎ العنوان': '✎ Titre'};
+const pl = n => (+n > 1 ? 's' : '');
+const T1 = k => { const f = D[H(k)]; return f === undefined ? k : f; };
+const PATS = [
+  [/أُضيفت\s+(\d+)\s+صورة وتعذّر رفع\s+(\d+)/g, (m, a, b) => a + ' photo' + pl(a) + ' ajoutée' + pl(a) + ', ' + b + ' non envoyée' + pl(b)],
+  [/أُضيفت\s+(\d+)\s+صورة/g, (m, a) => a + ' photo' + pl(a) + ' ajoutée' + pl(a)],
+  [/الرقم الجامعي:\s*(\d+)\s+إلى\s+(\d+)\s+حرفاً\/رقماً إنجليزياً/g, (m, a, b) => "Numéro d'étudiant : " + a + ' à ' + b + ' caractères (lettres ou chiffres latins)'],
+  [/اكتب\s+(\d+)\s+حرفاً على الأقل في سبب الانضمام/g, (m, a) => 'Écrivez au moins ' + a + " caractères dans le motif d'adhésion"],
+  [/(عنوان الدورة|عنوان الشهادة)\s+(\d+)\s+أحرف فأكثر/g, (m, k, n) => T1(k) + ' : ' + n + ' caractères minimum'],
+  [/الرمز\s+(\d+)\s+أرقام/g, (m, n) => 'Le code doit comporter ' + n + ' chiffres'],
+  [/\(حتى\s+(\d+)\s+صور\)/g, (m, n) => "(jusqu'à " + n + ' photos)'],
+  [/في الدورة\s+(\d+)\s+درساً مصوّراً\s+—\s+سجّل الدخول وانضم للدورة لمشاهدتها/g, (m, n) => 'La formation compte ' + n + ' leçon' + pl(n) + ' vidéo — connectez-vous et inscrivez-vous pour la suivre'],
+  [/في الدورة\s+(\d+)\s+لقاءات\s+—\s+سجّل الدخول وانضم للدورة لرؤية مواعيدها/g, (m, n) => 'La formation compte ' + n + ' séance' + pl(n) + ' — connectez-vous et inscrivez-vous pour voir ses horaires'],
+  [/يُولَّد رمز من\s+(\d+)\s+أرقام يكتبه الحاضرون في صفحة الدورة/g, (m, n) => 'Un code à ' + n + ' chiffres est généré ; les participants le saisissent sur la page de la formation'],
+  [/تحقّق من الحقول:\s*العنوان/g, () => 'Vérifiez les champs : titre'],
+  [/^إخلاء مقعد\s+(.+?)\s*؟$/, (m, t) => 'Libérer le poste : ' + trCore(t) + ' ?'],
+];
+// تقسيم مقطع عربي إلى أجزاء معروفة (مثل «رئيس» + اسم القسم)؛ يُترجَم فقط إن غُطّيت كل كلماته
+const TILE = new Map();
+function tile(run){
+  if (TILE.has(run)) return TILE.get(run);
+  const w = run.split(' '), memo = [];
+  const go = i => {
+    if (i === w.length) return [];
+    if (memo[i] !== undefined) return memo[i];
+    for (let j = Math.min(w.length, i + 14); j > i; j--) {
+      const f = D[H(w.slice(i, j).join(' '))];
+      if (f !== undefined) { const r = go(j); if (r) return memo[i] = [f].concat(r); }
+    }
+    return memo[i] = null;
+  };
+  const r = w.length > 1 ? go(0) : null, out = r ? r.map((x, i) => i ? x.replace(/^~/, '') : x).join(' ') : null;
+  TILE.set(run, out); return out;
+}
+function runFr(raw, before, after){
+  const run = raw.replace(/[  ]+/g, ' ');
+  let f = D[H(run)];
+  if (f === undefined) f = tile(run);
+  if (f === undefined || f === null) {
+    // جملة استفهام ديناميكية تنتهي بـ «؟»: نترجم ما قبلها ثم نضيف علامة الاستفهام
+    const q = /^(.*\S)\s*؟$/.exec(run);
+    if (q) { let g = D[H(q[1])]; if (g === undefined) g = tile(q[1]); if (g) f = g + ' ?'; }
+  }
+  if (f === undefined || f === null) { MISS.set(run, (MISS.get(run) || 0) + 1); return raw; }
+  if (f.charAt(0) === '~') { f = f.slice(1); const q = /(\S)\s*$/.exec(before); if (q && '(—–'.indexOf(q[1]) >= 0) f = f.charAt(0).toLowerCase() + f.slice(1); }
+  if (f.indexOf('{s}') >= 0) { const m = /(\d+)[\s ]*$/.exec(before); f = f.split('{s}').join(m && +m[1] > 1 ? 's' : ''); }
+  if (after && ':!?;'.indexOf(after.charAt(0)) >= 0) f += ' ';
+  return f;
+}
+function trCore(core){
+  if (NODE[core]) return NODE[core];
+  for (let i = 0; i < PATS.length; i++) core = core.replace(PATS[i][0], PATS[i][1]);
+  return core.replace(RUN, (r, off, str) => runFr(r, str.slice(0, off), str.slice(off + r.length)));
+}
+const CACHE = new Map();
+function tr(s){
+  if (typeof s !== 'string' || !s || !HAS.test(s)) return s;
+  let c = CACHE.get(s); if (c !== undefined) return c;
+  const m = /^(\s*)([\s\S]*?)(\s*)$/.exec(s);
+  c = m[1] + trCore(m[2]) + m[3];
+  if (CACHE.size > 4000) CACHE.clear();
+  CACHE.set(s, c); return c;
+}
+window.__frtr = tr;
+
+// ---- ترجمة الشجرة ----
+const SKIP = /^(SCRIPT|STYLE|TEXTAREA|NOSCRIPT)$/;
+const ATTRS = ['placeholder', 'title', 'aria-label', 'alt'];
+const CTX = {'الموقع': el => (el.classList && el.classList.contains('fl') ? 'Lieu' : null)};
+function fixText(n){
+  const v = n.nodeValue; if (!v) return;
+  if (v === '→') { n.nodeValue = '←'; return; }
+  if (!HAS.test(v)) return;
+  const p = n.parentNode;
+  if (p && p.nodeType === 1 && (SKIP.test(p.nodeName) || (p.closest && p.closest('[data-nofr]')))) return;
+  const c = CTX[v.trim()], x = c && p && p.nodeType === 1 ? c(p) : null;
+  const t = x ? v.replace(v.trim(), x) : tr(v); if (t !== v) n.nodeValue = t;
+}
+function fixAttrs(e){
+  for (let i = 0; i < ATTRS.length; i++) {
+    const v = e.getAttribute(ATTRS[i]);
+    if (v && HAS.test(v)) { const t = tr(v); if (t !== v) e.setAttribute(ATTRS[i], t); }
+  }
+}
+const ARROW = 'm12 19-7-7 7-7M19 12H5';
+function walk(n){
+  if (n.nodeType === 3) return fixText(n);
+  if (n.nodeType !== 1) return;
+  if (n.hasAttribute('data-nofr')) return;
+  fixAttrs(n);
+  if (SKIP.test(n.nodeName)) return;
+  if (n.nodeName === 'svg') { const f = n.firstElementChild; if (f && f.getAttribute('d') === ARROW) n.classList.add('frflip'); }
+  for (let c = n.firstChild; c; c = c.nextSibling) walk(c);
+}
+
+// ---- إعداد الصفحة ----
+const de = document.documentElement;
+de.setAttribute('lang', 'fr'); de.setAttribute('dir', 'ltr'); de.classList.add('fr');
+walk(de);
+new MutationObserver(ms => {
+  for (const m of ms) {
+    if (m.type === 'childList') { for (const n of m.addedNodes) walk(n); }
+    else if (m.type === 'characterData') fixText(m.target);
+    else if (m.target.nodeType === 1) fixAttrs(m.target);
+  }
+  kick();
+}).observe(de, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS});
+kick();
+
+// ---- حوارات المتصفح ----
+['alert', 'confirm', 'prompt'].forEach(k => { const o = window[k]; window[k] = function(m){ const a = Array.prototype.slice.call(arguments); a[0] = tr(String(m === undefined ? '' : m)); return o.apply(window, a); }; });
+
+// ---- التواريخ والأرقام ----
+const loc = l => (typeof l === 'string' && /^ar/i.test(l)) ? 'fr-FR' : l;
+['toLocaleDateString', 'toLocaleTimeString', 'toLocaleString'].forEach(k => {
+  const o = Date.prototype[k]; Date.prototype[k] = function(l){ const a = Array.prototype.slice.call(arguments); a[0] = loc(l); return o.apply(this, a); };
+});
+{ const o = Number.prototype.toLocaleString; Number.prototype.toLocaleString = function(l){ const a = Array.prototype.slice.call(arguments); a[0] = loc(l); return o.apply(this, a); }; }
+
+// ---- رسم الشهادة (Canvas) ----
+if (window.CanvasRenderingContext2D) {
+  const P = CanvasRenderingContext2D.prototype;
+  ['fillText', 'strokeText'].forEach(k => {
+    const o = P[k];
+    P[k] = function(t){
+      const a = Array.prototype.slice.call(arguments); a[0] = tr(String(t));
+      if (HAS.test(a[0])) return o.apply(this, a);
+      const d = this.direction; this.direction = 'ltr';
+      try { return o.apply(this, a); } finally { this.direction = d; }
+    };
+  });
+  const om = P.measureText; P.measureText = function(t){ return om.call(this, tr(String(t))); };
+}
+
+// إن رُسمت الصفحة قبل تركيب هذه الإضافة (تواريخ بالعربية مثلاً) فأعد رسمها مرة واحدة
+setTimeout(() => { try { if (main && main.children.length && location.hash !== '#frcheck') window.render(); } catch (e) {} }, 0);
+
+// ---- ملفات التصدير (CSV وWord) ----
+{
+  const OB = window.Blob;
+  const fixDoc = t => t.replace(/direction:\s*rtl/g, 'direction:ltr').replace(/dir="rtl"/g, 'dir="ltr"').replace(/text-align:\s*right/g, 'text-align:left');
+  window.Blob = function(parts, opt){
+    if (Array.isArray(parts) && opt && /csv|msword/.test(opt.type || '')) parts = parts.map(p => typeof p === 'string' ? fixDoc(tr(p)) : p);
+    return new OB(parts, opt);
+  };
+  window.Blob.prototype = OB.prototype;
+}
+
+// ---- صفحة فحص النصوص غير المترجمة: #frcheck ----
+const _r = window.render;
+window.render = async function(){
+  if ((location.hash || '') !== '#frcheck') return _r.apply(this, arguments);
+  try { leaveChat(); } catch (e) {}
+  const mn = document.getElementById('menu'); if (mn) mn.style.display = 'none';
+  const md = document.getElementById('modal'); if (md) md.style.display = 'none';
+  view = 'frcheck'; drawShell(); window.scrollTo(0, 0);
+  const list = Array.from(MISS.entries()).sort((a, b) => b[1] - a[1]).map(e => e[1] + '×  ' + e[0]).join('\n');
+  main.innerHTML = '<section class="sec" style="max-width:760px"><h2>Textes non traduits (' + MISS.size + ')</h2>'
+    + '<p class="note">Parcourez le site puis revenez ici : ce sont les textes arabes restés sans traduction. Les noms et contenus saisis par les membres y figurent aussi, c\'est normal.</p>'
+    + '<textarea id="frmiss" readonly dir="rtl" style="width:100%;min-height:55vh;font-size:.85rem"></textarea>'
+    + '<button type="button" class="btn gold block" style="margin-top:12px" data-a="frcopy">Copier la liste</button></section>';
+  document.getElementById('frmiss').value = list;
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-a="frcopy"]'); if (!b) return;
+  const t = document.getElementById('frmiss'); if (!t) return;
+  t.select();
+  try { if (navigator.clipboard) navigator.clipboard.writeText(t.value); else document.execCommand('copy'); toast('Liste copiée'); } catch (x) {}
+});
+})();
+</script>
 </body>
 </html>
