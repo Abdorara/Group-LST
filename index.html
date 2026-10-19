@@ -3757,5 +3757,816 @@ document.addEventListener('click', async e => {
 });
 })();
 </script>
+<style>
+.b5{text-align:right;max-width:760px}
+.b5h{font-size:1.45rem;margin:0}.b5h small{font-size:.85rem;font-weight:500;margin-inline-start:6px}
+.b5g{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.b5c{display:flex;flex-direction:column;background:#fff;border:1px solid var(--bd);border-radius:26px;overflow:hidden;color:var(--navy);box-shadow:0 8px 24px rgba(11,20,48,.06);transition:.15s;min-width:0}
+a.b5c:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(11,20,48,.1)}
+.b5c>img,.b5ph{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--blue)}
+.b5ph{display:flex;align-items:center;justify-content:center;color:#7d93c7}
+.b5cb{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px}
+.b5cb h3{margin:0;font-size:1.15rem;line-height:1.6}
+.b5tags{display:flex;gap:6px;flex-wrap:wrap}
+.b5t{background:var(--blue);color:var(--navy);font-size:.72rem;font-weight:700;border-radius:99px;padding:2px 12px;line-height:1.9}
+.b5t.dr{background:#fff3d6;color:#92600a}.b5t.ok{background:#d9f5ea;color:#0b7a5c}.b5t.bl{background:var(--cream);color:var(--goldtx)}
+.b5meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--mut);font-size:.82rem;margin-top:4px}
+.b5cover{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:24px;display:block;margin-bottom:14px;cursor:zoom-in;background:var(--blue)}
+.b5warn{background:#fff3d6;color:#92600a;border-radius:16px;padding:10px 14px;margin:0 0 12px}
+.b5mg h3{font-size:1.1rem;margin-bottom:12px}
+.b5bt{display:flex;gap:8px;flex-wrap:wrap}
+.b5req{display:flex;flex-direction:column;gap:4px;background:var(--cream);color:#6b5210;border-radius:20px;padding:14px 16px;line-height:1.9;font-size:.9rem;margin-bottom:6px}
+.b5req b{font-size:1rem}
+.b5cnt{display:inline-block;background:var(--blue);border-radius:99px;padding:4px 18px;font-weight:700}
+.b5pc{font-size:1.5rem;font-weight:700;color:var(--goldtx)}
+.b5bar{height:10px;border-radius:99px;background:#e6ecf7;overflow:hidden;flex:1}.b5bar.big{height:14px;margin-top:8px}
+.b5bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#f0cf68);border-radius:99px;transition:width .4s}
+.b5cert{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;background:linear-gradient(135deg,#fff7dc,#f8efd2);border:1px solid #ecd9a0;border-radius:20px;padding:14px 16px}
+.b5cert small{display:block;color:var(--goldtx);font-size:.8rem}
+.b5ls{position:relative;background:#fff;border:1px solid var(--bd);border-radius:22px;padding:14px 16px;margin-bottom:10px;min-width:0}
+.b5lh{display:flex;align-items:center;gap:12px;min-width:0}
+.b5n{width:34px;height:34px;flex:none;border-radius:50%;background:var(--blue);color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+.b5lt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.6}.b5lt b{overflow-wrap:anywhere}.b5lt small{font-size:.8rem}
+.b5ro{display:flex;align-items:center;gap:10px;margin-top:10px}
+.b5st{flex:none;font-size:.78rem;font-weight:700;background:var(--blue);color:var(--navy);border-radius:99px;padding:3px 12px;white-space:nowrap}
+.b5st.ok{background:#d9f5ea;color:#0b7a5c}.b5st.live{background:#fde2e8;color:#be123c}
+.b5mgr,.b5mgr2{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:8px;border-top:1px dashed var(--bd);padding-top:8px}
+.b5mgr .ib:disabled{opacity:.3;cursor:default}
+.b5act{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.b5code{display:flex;gap:8px;align-items:center;flex:1;min-width:210px}.b5code input{padding:9px 14px;border-radius:14px;text-align:center;letter-spacing:.3em;font-weight:700}
+.b5kc{background:var(--navy);color:var(--gold);font-weight:700;letter-spacing:.2em;border-radius:12px;padding:3px 14px;font-size:1.1rem}
+.b5big{font-size:2.6rem;letter-spacing:.35em;font-weight:700;text-align:center;background:var(--navy);color:var(--gold);border-radius:22px;padding:14px 8px 14px 0;margin-top:14px;direction:ltr}
+.b5pl{position:relative;aspect-ratio:16/9;background:#000;border-radius:18px;overflow:hidden;margin-top:12px}
+.b5pl iframe,.b5pl #b5yt{position:absolute;inset:0;width:100%;height:100%;border:0}
+.b5th{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.b5th span{position:relative;width:76px;height:76px;border-radius:14px;overflow:hidden}
+.b5th img{width:100%;height:100%;object-fit:cover}
+.b5th button{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:1rem;line-height:1;cursor:pointer;padding:0}
+.b5rl{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.b5pr{display:flex;align-items:center;gap:10px;border:1px solid var(--bd);border-radius:16px;padding:10px 12px;min-width:0;margin-bottom:8px}.b5rl .b5pr{margin-bottom:0}
+.b5pn2{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.6}.b5pn2 b{overflow-wrap:anywhere}.b5pn2 small{font-size:.78rem}
+.b5certimg{width:100%;height:auto;border:1px solid var(--bd);border-radius:14px;display:block}
+.b5vok{border-color:#9be3c8;background:#f1fcf7}.b5vbad{border-color:#f5b5c4;background:#fff5f7}
+#modal .box:has(.b5certimg){max-width:760px}
+</style>
+<script>
+(() => {
+// ================= الدورات: دروس مصوّرة + لقاءات مباشرة/حضورية + شهادات =================
+const ok = () => !!me && me.status === 'approved';
+const isAdm = () => !!me && me.role === 'admin';
+const pad = n => String(n).padStart(2, '0');
+const fdur = s => { s = Math.max(0, Math.round(+s || 0)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return h ? `${h}:${pad(m)}:${pad(x)}` : `${m}:${pad(x)}`; };
+const dtt = iso => new Date(iso).toLocaleString('ar-u-nu-latn', {dateStyle: 'medium', timeStyle: 'short'});
+const dday = iso => new Date(iso).toLocaleDateString('ar-u-nu-latn', {year: 'numeric', month: 'long', day: 'numeric'});
+const toLocalInput = iso => { const d = new Date(iso); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const box5 = html => { const m = $('#modal'); m.innerHTML = `<div class="box">${closeX}${html}</div>`; m.style.display = 'flex'; return m; };
+const hero5 = (icon, pill, h1, sub) => `<section class="dark ph"><span class="pill">${ic(icon, 18)} ${pill}</span><h1>${h1}</h1><p>${sub}</p></section>`;
+// ---- رفع صورة (خلفية بيضاء، JPEG، حتى 1280px) إلى مجلد العضو في الحاوية media ----
+const toBlob = (file, max) => new Promise((res, rej) => {
+  const im = new Image(), u = URL.createObjectURL(file);
+  im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k));
+    const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(new Error('img')), 'image/jpeg', .85); };
+  im.onerror = () => rej(new Error('img')); im.src = u; });
+async function upImg(file, max){
+  const blob = await toBlob(file, max), path = `${me.id}/${crypto.randomUUID()}.jpg`;
+  const up = await sb.storage.from('media').upload(path, blob, {contentType: 'image/jpeg'});
+  if (up.error) throw up.error;
+  return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+}
+const verifyUrl = code => location.origin + location.pathname + '#verify/' + code;
+const need85 = l => Math.ceil(l.duration_secs * 0.85);
+
+// ---- روابط يوتيوب ----
+function ytId(u){
+  u = String(u || '').trim(); if (!u) return null;
+  if (/^[A-Za-z0-9_-]{11}$/.test(u)) return u;
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  let m = null;
+  try {
+    const x = new URL(u), h = x.hostname.replace(/^(www|m)\./, '');
+    if (h === 'youtu.be') m = x.pathname.slice(1).split('/')[0];
+    else if (/(^|\.)youtube(-nocookie)?\.com$/.test(h)) {
+      m = x.searchParams.get('v');
+      if (!m) { const p = x.pathname.split('/').filter(Boolean); if (['embed', 'live', 'shorts', 'v'].includes(p[0])) m = p[1]; }
+    }
+  } catch (e) {}
+  return m && /^[A-Za-z0-9_-]{11}$/.test(m) ? m : null;
+}
+function parseDur(t){
+  t = String(t || '').trim(); if (!t) return 0;
+  if (/^\d+$/.test(t)) return +t * 60;
+  const p = t.split(':').map(Number);
+  if (p.length > 3 || p.some(x => !isFinite(x) || x < 0)) return 0;
+  return p.reduce((a, x) => a * 60 + x, 0);
+}
+
+// ---- رسائل الأخطاء ----
+const E5 = {'not enrolled': 'سجّل في الدورة أولاً', 'course full': 'اكتمل عدد المقاعد', 'not allowed': 'غير مسموح لك بهذا الإجراء',
+  'not found': 'العنصر غير موجود (ربما حُذف أو لم يُنشر)', 'outside window': 'البث غير متاح الآن (يفتح قبل الموعد بربع ساعة)',
+  'not live': 'هذا اللقاء حضوري — استخدم رمز الحضور', 'bad minutes': 'المدة بين 1 و600 دقيقة', 'not an approved member': 'هذا الحساب ليس عضواً مقبولاً',
+  'row-level security': 'غير مسموح لك بهذا الإجراء', 'check constraint': 'تحقّق من الحقول: العنوان 3 أحرف فأكثر، والسعة رقم موجب، والروابط صحيحة',
+  'permission denied': 'غير مسموح لك بهذا الإجراء'};
+const emsg = (e, d) => {
+  const m = (e && e.message) || '';
+  if (/does not exist|schema cache|Could not find/i.test(m)) return 'نفّذ كود SQL الخاص بالدفعة الخامسة أولاً';
+  for (const k in E5) if (m.includes(k)) return E5[k];
+  return d === undefined ? 'تعذّر التنفيذ' : d;
+};
+
+// ---- الصلاحيات ----
+let PM = {all: false, heads: [], at: 0, uid: null};
+async function loadPerms(){
+  if (!ok()) { PM = {all: false, heads: [], at: Date.now(), uid: null}; return PM; }
+  if (PM.at && PM.uid === me.id && Date.now() - PM.at < 60000) return PM;
+  try { const {data, error} = await sb.rpc('course_perms'); if (!error && data) PM = {all: !!data.all, heads: data.heads || [], at: Date.now(), uid: me.id}; } catch (e) {}
+  return PM;
+}
+const canMake = () => ok() && (PM.all || PM.heads.length > 0);
+const canMgr = c => ok() && !!c && (PM.all || PM.heads.includes(c.committee));
+const depts = () => PM.all ? ['hr', 'ext', 'design'] : PM.heads.slice();
+
+// ---- يوتيوب ----
+let ytP = null;
+function loadYT(){
+  if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+  if (ytP) return ytP;
+  ytP = new Promise((res, rej) => {
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { try { prev && prev(); } catch (e) {} res(window.YT); };
+    const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.onerror = () => { ytP = null; rej(new Error('yt')); };
+    document.head.appendChild(s);
+    setTimeout(() => { if (!(window.YT && window.YT.Player)) { ytP = null; rej(new Error('yt timeout')); } }, 12000);
+  });
+  return ytP;
+}
+async function ytDuration(id){
+  const YT = await loadYT();
+  return new Promise((res, rej) => {
+    const host = document.createElement('div'); host.style.cssText = 'position:fixed;left:-9999px;top:0;width:200px;height:120px;overflow:hidden';
+    const el = document.createElement('div'); host.appendChild(el); document.body.appendChild(host);
+    let done = false, p = null, tries = 0;
+    const fin = (v, e) => { if (done) return; done = true; try { p && p.destroy(); } catch (x) {} host.remove(); e ? rej(e) : res(v); };
+    const poll = () => { let d = 0; try { d = Math.round(p.getDuration()); } catch (x) {} if (d > 0) return fin(d); if (++tries > 8) return fin(0, new Error('no duration')); setTimeout(poll, 600); };
+    p = new YT.Player(el, {videoId: id, width: 200, height: 120, events: {onReady: poll, onError: () => fin(0, new Error('err'))}});
+    setTimeout(() => fin(0, new Error('timeout')), 12000);
+  });
+}
+const plainFrame = id => `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?rel=0&playsinline=1" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy" title="فيديو"></iframe>`;
+
+// ---- حالة الصفحة ----
+let RT = 0, CL = {courses: [], counts: {}, mine: new Set(), certs: [], err: null}, F5 = {t: 'all', q: ''}, CS = null, PL = null;
+
+// =============== قائمة الدورات ===============
+async function loadList(){
+  const calls = [sb.from('courses').select('*').order('created_at', {ascending: false}), sb.rpc('course_counts')];
+  if (ok()) calls.push(sb.from('course_enrollments').select('course_id').eq('user_id', me.id), sb.from('course_certificates').select('*').eq('user_id', me.id).order('issued_at', {ascending: false}));
+  let r; try { r = await Promise.all(calls); } catch (e) { CL.err = e; return false; }
+  if (r[0].error) { CL.err = r[0].error; return false; }
+  CL.err = null; CL.courses = r[0].data || [];
+  CL.counts = {}; (r[1].data || []).forEach(x => CL.counts[x.course_id] = x);
+  CL.mine = new Set(ok() && r[2] && !r[2].error ? (r[2].data || []).map(x => x.course_id) : []);
+  CL.certs = ok() && r[3] && !r[3].error ? (r[3].data || []) : [];
+  return true;
+}
+async function pCourses(){
+  const t = ++RT;
+  if (F5.uid !== (me ? me.id : null)) F5 = {t: 'all', q: '', uid: me ? me.id : null};
+  main.innerHTML = hero5('graduation', 'الدورات والشهادات', 'دورات النادي', 'دروس مصوّرة ولقاءات مباشرة وحضورية — أكمل الدروس واحضر اللقاءات لتحصل على شهادتك.') +
+    `<div class="sec b5" style="padding-top:30px"><div id="b5top"></div><div id="b5list">${loader}</div></div>`;
+  const [good] = await Promise.all([loadList(), loadPerms()]);
+  if (t !== RT || !$('#b5list')) return;
+  if (!good) { $('#b5list').innerHTML = `<div class="pan c"><p class="mut" style="margin:0">${esc(emsg(CL.err, 'تعذّر تحميل الدورات'))}</p></div>`; return; }
+  drawList();
+}
+function drawList(){
+  const top = $('#b5top'), box = $('#b5list'); if (!top || !box) return;
+  const tabs = [['all', 'كل الدورات']]; if (ok()) tabs.push(['mine', 'دوراتي'], ['certs', 'شهاداتي' + (CL.certs.length ? ` (${CL.certs.length})` : '')]);
+  const drafts = canMake() && CL.courses.some(c => !c.published); if (drafts) tabs.push(['draft', 'المسودات']);
+  if (!tabs.some(x => x[0] === F5.t)) F5.t = 'all';
+  top.innerHTML = `<div class="ar" style="margin-bottom:10px;flex-wrap:wrap"><div class="fc" style="margin:0">${tabs.map(([k, v]) => `<button data-a="b5tab" data-v="${k}" class="${F5.t === k ? 'on' : ''}">${v}</button>`).join('')}</div>
+    ${canMake() ? '<button class="btn gold sm" data-a="b5new">＋ دورة جديدة</button>' : ''}</div>
+    ${F5.t !== 'certs' ? `<div class="sr"><input id="b5q" placeholder="ابحث عن دورة…" value="${esc(F5.q)}" autocomplete="off">${ic('search', 20)}</div>` : ''}
+    <p class="note" style="margin:0 0 12px"><a href="#verify" style="text-decoration:underline">التحقق من صحة شهادة</a></p>`;
+  const qi = $('#b5q'); if (qi) qi.oninput = () => { F5.q = qi.value; drawCards(); };
+  drawCards();
+}
+function drawCards(){
+  const box = $('#b5list'); if (!box) return;
+  if (F5.t === 'certs') { box.innerHTML = CL.certs.length ? `<div class="b5g">${CL.certs.map(certCard).join('')}</div>` : '<div class="pan c"><p class="mut" style="margin:0">لا شهادات بعد — أكمل دروس دورة واحضر لقاءاتها لتحصل على أول شهادة.</p></div>'; return; }
+  const q = F5.q.trim().toLowerCase();
+  let l = CL.courses.filter(c => (F5.t === 'draft' ? !c.published : F5.t === 'mine' ? CL.mine.has(c.id) : true) && (!q || (c.title + ' ' + (c.instructor || '') + ' ' + (c.summary || '')).toLowerCase().includes(q)));
+  box.innerHTML = l.length ? `<div class="b5g">${l.map(courseCard).join('')}</div>` : `<div class="pan c"><p class="mut" style="margin:0">${F5.t === 'mine' ? 'لم تسجّل في أي دورة بعد.' : F5.t === 'draft' ? 'لا مسودات.' : 'لا دورات حالياً — تابعونا قريباً.'}</p></div>`;
+}
+function courseCard(c){
+  const k = CL.counts[c.id] || {}, mine = CL.mine.has(c.id), cert = CL.certs.find(x => x.course_id === c.id && !x.revoked_at), img = okImg(c.cover_url);
+  return `<a class="b5c" href="#course/${c.id}">${img ? `<img src="${img}" alt="" loading="lazy">` : `<div class="b5ph">${ic('graduation', 44)}</div>`}
+  <div class="b5cb"><div class="b5tags"><span class="b5t">${esc(cn(c.committee))}</span>${!c.published ? '<span class="b5t dr">مسودة</span>' : ''}${cert ? '<span class="b5t ok">🎓 حصلت على الشهادة</span>' : mine ? '<span class="b5t bl">مسجّل</span>' : ''}</div>
+  <h3>${esc(c.title)}</h3>${c.instructor ? `<p class="mut" style="margin:0">${esc(c.instructor)}</p>` : ''}
+  ${c.published ? `<div class="b5meta"><span>▶ ${k.lessons || 0} درس</span><span>📅 ${k.sessions || 0} لقاء</span><span>👥 ${k.enrolled || 0} مسجّل</span></div>` : ''}</div></a>`;
+}
+function certCard(f){
+  return `<div class="b5c"><div class="b5cb"><div class="b5tags">${f.revoked_at ? '<span class="b5t dr">مسحوبة</span>' : '<span class="b5t ok">🎓 شهادة سارية</span>'}</div>
+  <h3>${esc(f.course_title)}</h3><p class="mut" style="margin:0">${esc(dday(f.issued_at))} · ${esc(f.serial)}</p>
+  <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn gold sm" data-a="b5cert" data-id="${esc(f.id)}">عرض الشهادة</button><button class="btn line sm" data-a="b5copy" data-code="${esc(f.code)}">نسخ رابط التحقق</button></div></div></div>`;
+}
+
+// =============== صفحة الدورة ===============
+async function loadCourse(id){
+  let r; try { r = await sb.from('courses').select('*').eq('id', id).maybeSingle(); } catch (e) { return {err: e}; }
+  if (r.error) return {err: r.error};
+  if (!r.data) return {nf: true};
+  const c = r.data, S = {c, lessons: [], sessions: [], enrolled: false, prog: {}, att: {}, cert: null, codes: {}, count: 0};
+  const q = [sb.rpc('course_counts')];
+  if (ok()) q.push(
+    sb.from('course_lessons').select('*').eq('course_id', c.id).order('position', {ascending: true}).order('id', {ascending: true}),
+    sb.from('course_sessions').select('*').eq('course_id', c.id).order('starts_at', {ascending: true}),
+    sb.from('course_enrollments').select('course_id').eq('course_id', c.id).eq('user_id', me.id).maybeSingle(),
+    sb.from('course_lesson_progress').select('lesson_id,covered,completed_at,manual').eq('course_id', c.id).eq('user_id', me.id),
+    sb.from('course_attendance').select('session_id,secs,attended_at,method').eq('course_id', c.id).eq('user_id', me.id),
+    sb.from('course_certificates').select('*').eq('course_id', c.id).eq('user_id', me.id).maybeSingle());
+  if (canMgr(c)) q.push(sb.from('course_session_codes').select('*'));
+  let x; try { x = await Promise.all(q); } catch (e) { return {err: e}; }
+  const cnt = (x[0].data || []).find(y => y.course_id === c.id); S.count = cnt ? +cnt.enrolled : 0; S.nL = cnt ? +cnt.lessons : 0; S.nS = cnt ? +cnt.sessions : 0;
+  if (ok()) {
+    S.lessons = x[1].data || []; S.sessions = x[2].data || []; S.enrolled = !!x[3].data;
+    (x[4].data || []).forEach(p => S.prog[p.lesson_id] = p); (x[5].data || []).forEach(a => S.att[a.session_id] = a);
+    S.cert = x[6].data || null;
+    if (x[7] && !x[7].error) (x[7].data || []).forEach(k => S.codes[k.session_id] = k);
+  }
+  return S;
+}
+async function pCourse(id){
+  const t = ++RT;
+  main.innerHTML = `<div class="sec b5" style="padding-top:60px">${loader}</div>`;
+  await loadPerms(); if (t !== RT) return;
+  const S = await loadCourse(id);
+  if (t !== RT) return;
+  if (S.err) { main.innerHTML = `<div class="sec b5"><div class="pan c"><p class="mut" style="margin:0">${esc(emsg(S.err, 'تعذّر تحميل الدورة'))}</p><a class="btn line sm" href="#courses" style="margin-top:12px">كل الدورات</a></div></div>`; return; }
+  if (S.nf) { main.innerHTML = `<div class="sec b5"><div class="pan c"><p class="mut" style="margin:0">هذه الدورة غير موجودة أو لم تُنشر بعد.</p><a class="btn line sm" href="#courses" style="margin-top:12px">كل الدورات</a></div></div>`; return; }
+  CS = S; drawCourse();
+}
+const done = p => !!(p && p.completed_at);
+function stats(){
+  const L = CS.lessons, Ss = CS.sessions, dl = L.filter(l => done(CS.prog[l.id])).length, ds = Ss.filter(s => CS.att[s.id] && CS.att[s.id].attended_at).length;
+  return {nl: L.length, ns: Ss.length, dl, ds, all: L.length + Ss.length > 0 && dl === L.length && ds === Ss.length};
+}
+function drawCourse(){
+  const c = CS.c, mg = canMgr(c), img = okImg(c.cover_url);
+  const gal = (c.images || []).map(okImg).filter(Boolean);
+  main.innerHTML = hero5('graduation', esc(cn(c.committee)), esc(c.title), esc(c.instructor ? 'المدرّب: ' + c.instructor : 'دورة من دورات النادي')) +
+  `<div class="sec b5" style="padding-top:26px">
+    <a href="#courses" class="note" style="display:inline-block;margin:0 0 12px">‹ كل الدورات</a>
+    ${!c.published ? '<div class="note b5warn">هذه الدورة مسودة — لا يراها الأعضاء حتى تنشرها.</div>' : ''}
+    ${img ? `<img class="b5cover" src="${img}" alt="" data-a="img" data-u="${img}">` : ''}
+    ${c.summary ? `<div class="pan"><p style="margin:0;white-space:pre-wrap;line-height:2">${esc(c.summary)}</p></div>` : ''}
+    ${gal.length ? `<div class="gal g${Math.min(gal.length, 4)}">${gal.map(u => `<img src="${u}" alt="" loading="lazy" data-a="img" data-u="${u}">`).join('')}</div>` : ''}
+    ${mg ? `<div class="pan b5mg"><h3>إدارة الدورة</h3><div class="b5bt">
+        <button class="btn line sm" data-a="b5edit">✎ تعديل</button>
+        <button class="btn ${c.published ? 'line' : 'gold'} sm" data-a="b5pub">${c.published ? '👁 إخفاء' : '🚀 نشر'}</button>
+        <button class="btn navy sm" data-a="b5ros">👥 المشاركون</button>
+        <button class="btn line sm" data-a="b5lnew">＋ درس</button>
+        <button class="btn line sm" data-a="b5snew">＋ لقاء</button>
+        <button class="btn no sm" data-a="b5del">🗑 حذف</button></div></div>` : ''}
+    <div id="b5sum"></div>
+    <div class="ar" style="margin:26px 0 10px"><h2 class="b5h" id="b5lh"></h2></div><div id="b5les"></div>
+    <div class="ar" style="margin:30px 0 10px"><h2 class="b5h" id="b5sh"></h2></div><div id="b5ses"></div>
+  </div>`;
+  drawSummary(); drawLessons(); drawSessions();
+}
+function reqNote(c){
+  return c.cert_enabled ? `<div class="b5req"><b>🎓 شروط الشهادة</b><span>• مشاهدة 85% على الأقل من كل درس مصوّر (يُحسب الوقت الفعلي، ولا يكفي القفز إلى النهاية)</span><span>• حضور كل اللقاءات: بمتابعة البث داخل الموقع، أو برمز الحضور، أو بتحضير المنظّم لك</span></div>` : '<p class="note" style="margin:0">هذه الدورة بلا شهادة.</p>';
+}
+function drawSummary(){
+  const el = $('#b5sum'); if (!el || !CS) return;
+  const c = CS.c, st = stats(), cert = CS.cert;
+  let h = '';
+  if (!me) h = `<div class="pan c"><p style="margin:0 0 12px">سجّل الدخول لتنضم إلى الدورة وتتابع الدروس.</p><a class="btn gold sm" href="#login">دخول</a> <a class="btn line sm" href="#join">انضم للنادي</a></div>` + reqNote(c);
+  else if (!ok()) h = `<div class="pan c"><p class="mut" style="margin:0">حسابك قيد المراجعة — يمكنك التسجيل في الدورات بعد اعتماده.</p></div>` + reqNote(c);
+  else if (!CS.enrolled) {
+    const full = c.capacity && CS.count >= c.capacity;
+    h = `<div class="pan c"><div class="b5cnt">👥 ${CS.count} مسجّل${c.capacity ? ' من ' + c.capacity : ''}</div>${full ? '<p class="mut" style="margin:10px 0 0">اكتمل عدد المقاعد.</p>' : '<button class="btn gold block" data-a="b5enr" style="margin-top:12px">＋ سجّل في الدورة</button>'}</div>` + reqNote(c);
+  } else {
+    const tot = st.nl + st.ns, dn = st.dl + st.ds, pct = tot ? Math.round(dn * 100 / tot) : 0;
+    h = `<div class="pan"><div class="ar"><b>تقدّمك في الدورة</b><span class="b5pc">${pct}%</span></div>
+      <div class="b5bar big"><i style="width:${pct}%"></i></div>
+      <p class="note" style="margin:8px 0 0">${st.dl} من ${st.nl} دروس · ${st.ns ? `${st.ds} من ${st.ns} لقاءات` : 'لا لقاءات'}</p>
+      ${cert && !cert.revoked_at ? `<div class="b5cert"><div>🎓 <b>مبروك! شهادتك جاهزة</b><small>رقم الشهادة ${esc(cert.serial)}</small></div><button class="btn gold sm" data-a="b5cert" data-id="${esc(cert.id)}">عرض الشهادة</button></div>`
+        : cert && cert.revoked_at ? '<p class="note b5warn">شهادتك مسحوبة — تواصل مع المنظّمين.</p>'
+        : !c.cert_enabled ? '<p class="note">هذه الدورة بلا شهادة.</p>'
+        : st.all ? '<button class="btn gold block" data-a="b5claim" style="margin-top:12px">🎓 احصل على شهادتك</button>'
+        : tot ? '<p class="note" style="margin:10px 0 0">أكمل كل الدروس واحضر كل اللقاءات لتُصدَر شهادتك تلقائياً.</p>' : ''}
+      <div style="margin-top:10px"><button class="btn line sm" data-a="b5leave">إلغاء التسجيل</button></div></div>` + (cert && !cert.revoked_at ? '' : reqNote(c));
+  }
+  el.innerHTML = h;
+}
+
+// ---- الدروس ----
+function drawLessons(){
+  const el = $('#b5les'), hd = $('#b5lh'); if (!el || !CS) return;
+  const c = CS.c, L = CS.lessons, mg = canMgr(c), tot = L.reduce((a, l) => a + l.duration_secs, 0);
+  hd.innerHTML = `الدروس المصوّرة <small class="mut">${ok() ? L.length : (CS.nL || 0)} · ${fdur(tot)}</small>`;
+  if (!ok()) { el.innerHTML = `<div class="pan c"><p class="mut" style="margin:0">${CS.nL ? `في الدورة ${CS.nL} درساً مصوّراً — ` : ''}سجّل الدخول وانضم للدورة لمشاهدتها.</p></div>`; return; }
+  if (!L.length) { el.innerHTML = `<div class="pan c"><p class="mut" style="margin:0">لا دروس مصوّرة بعد.</p></div>`; return; }
+  el.innerHTML = L.map((l, i) => {
+    const p = CS.prog[l.id], dn = done(p), pct = dn ? 100 : p ? Math.min(100, Math.round(p.covered * 100 / need85(l))) : 0;
+    return `<div class="b5ls" id="ls${l.id}"><div class="b5lh"><span class="b5n">${i + 1}</span>
+      <div class="b5lt"><b>${esc(l.title)}</b><small class="mut">⏱ ${fdur(l.duration_secs)}${l.note ? ' · ' + esc(l.note) : ''}</small></div>
+      ${CS.enrolled || mg ? `<button class="btn ${dn ? 'line' : 'gold'} sm" data-a="b5play" data-id="${l.id}">${CS.enrolled ? (dn ? '↻ إعادة' : '▶ شاهد') : '▶ معاينة'}</button>` : '<span class="mut" style="font-size:.8rem">سجّل أولاً</span>'}</div>
+      ${CS.enrolled ? `<div class="b5ro"><div class="b5bar" id="lb${l.id}"><i style="width:${pct}%"></i></div><span class="b5st ${dn ? 'ok' : ''}" id="lst${l.id}">${dn ? '✓ مكتمل' + (p.manual ? ' (يدوي)' : '') : pct + '%'}</span></div>` : ''}
+      ${mg ? `<div class="b5mgr"><button class="ib" data-a="b5lup" data-id="${l.id}" title="أعلى" ${i === 0 ? 'disabled' : ''}>▲</button><button class="ib" data-a="b5ldn" data-id="${l.id}" title="أسفل" ${i === L.length - 1 ? 'disabled' : ''}>▼</button><button class="ib" data-a="b5ledit" data-id="${l.id}" title="تعديل">✎</button><button class="ib" data-a="b5ldel" data-id="${l.id}" title="حذف">🗑</button></div>` : ''}
+      <div id="lp${l.id}"></div></div>`;
+  }).join('');
+}
+
+// ---- اللقاءات ----
+const sWin = s => { const st = +new Date(s.starts_at), en = st + s.duration_min * 60000, n = Date.now(); return {st, en, soon: n < st - 15 * 60000, open: n >= st - 15 * 60000 && n <= en + 60 * 60000, now: n >= st && n <= en, past: n > en}; };
+const MET = {auto: 'تلقائياً', code: 'برمز الحضور', manual: 'يدوياً'};
+function sessionState(s){
+  const w = sWin(s), a = CS.att[s.id];
+  if (a && a.attended_at) return `<span class="b5st ok" id="sst${s.id}">✓ حضرت${a.method ? ' (' + MET[a.method] + ')' : ''}</span>`;
+  return `<span class="b5st ${w.now ? 'live' : ''}" id="sst${s.id}">${w.now ? '🔴 جارٍ الآن' : w.past ? 'انتهى' : 'قريباً'}</span>`;
+}
+function openCode(s){ const k = CS.codes[s.id]; return k && new Date(k.open_until) > new Date() ? k : null; }
+function drawSessions(){
+  const el = $('#b5ses'), hd = $('#b5sh'); if (!el || !CS) return;
+  const c = CS.c, S = CS.sessions, mg = canMgr(c);
+  hd.innerHTML = `اللقاءات <small class="mut">${ok() ? S.length : (CS.nS || 0)}</small>`;
+  if (!ok()) { el.innerHTML = `<div class="pan c"><p class="mut" style="margin:0">${CS.nS ? `في الدورة ${CS.nS} لقاءات — ` : ''}سجّل الدخول وانضم للدورة لرؤية مواعيدها.</p></div>`; return; }
+  if (!S.length) { el.innerHTML = `<div class="pan c"><p class="mut" style="margin:0">لا لقاءات بعد.</p></div>`; return; }
+  el.innerHTML = S.map(s => {
+    const w = sWin(s), a = CS.att[s.id], att = !!(a && a.attended_at), yt = s.live_url ? ytId(s.live_url) : null, lu = s.live_url ? safeUrl(s.live_url) : '', k = mg ? openCode(s) : null;
+    let act = '';
+    if (CS.enrolled && !att) {
+      if (s.kind === 'live' && w.open) act += yt ? `<button class="btn gold sm" data-a="b5live" data-id="${s.id}">▶ ادخل البث (يُحتسب حضورك تلقائياً)</button>` : lu ? `<a class="btn gold sm" href="${lu}" target="_blank" rel="noopener noreferrer">افتح رابط البث ↗</a>` : '';
+      if (!w.soon) act += `<div class="b5code"><input id="cd${s.id}" inputmode="numeric" maxlength="6" placeholder="رمز الحضور" autocomplete="off"><button class="btn navy sm" data-a="b5code" data-id="${s.id}">تأكيد</button></div>`;
+    }
+    return `<div class="b5ls" id="ss${s.id}"><div class="b5lh"><span class="b5n">${s.kind === 'live' ? '🔴' : '🏫'}</span>
+      <div class="b5lt"><b>${esc(s.title)}</b><small class="mut">${s.kind === 'live' ? 'بث مباشر' : 'حضوري'} · ${esc(dtt(s.starts_at))} · ${s.duration_min} د${s.location ? ' · ' + esc(s.location) : ''}</small></div>${CS.enrolled ? sessionState(s) : ''}</div>
+      ${s.note ? `<p class="note" style="margin:6px 0 0">${esc(s.note)}</p>` : ''}
+      <p class="note" style="margin:6px 0 0">الحدّ الأدنى للحضور: ${s.need_min} دقيقة${s.kind === 'live' && yt ? ' من المتابعة داخل البث' : ''}</p>
+      ${act ? `<div class="b5act">${act}</div>` : ''}
+      <div id="sp${s.id}"></div>
+      ${mg ? `<div class="b5mgr2"><button class="btn line sm" data-a="b5kopen" data-id="${s.id}">🔑 فتح رمز الحضور</button>${k ? `<span class="b5kc" id="kc${s.id}">${esc(k.code)}</span><button class="btn line sm" data-a="b5kclose" data-id="${s.id}">إغلاق الرمز</button>` : ''}
+        <button class="ib" data-a="b5sedit" data-id="${s.id}" title="تعديل">✎</button><button class="ib" data-a="b5sdel" data-id="${s.id}" title="حذف">🗑</button></div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// =============== المشغّل والمتابعة ===============
+function closePlayer(){
+  if (!PL) return;
+  clearInterval(PL.tm); try { PL.player && PL.player.destroy(); } catch (e) {}
+  if (PL.host && PL.host.isConnected) PL.host.innerHTML = '';
+  PL = null;
+}
+const pnote = t => { const n = $('#b5pn'); if (n) n.textContent = t; };
+async function startPlayer(kind, id, vid, host, tracked){
+  closePlayer();
+  host.innerHTML = `<div class="b5pl"><div id="b5yt"></div></div><div class="note" id="b5pn" style="margin:8px 0 0"></div><button class="btn line sm" data-a="b5stop" style="margin-top:8px">إغلاق المشغّل</button>`;
+  const pl = PL = {kind, id, host, tm: null, busy: false, errs: 0, player: null, base: false};
+  if (!tracked) { $('#b5yt').outerHTML = plainFrame(vid); pnote('معاينة فقط — لا تُحتسب المشاهدة لأنك غير مسجّل في الدورة.'); return; }
+  pnote('جارٍ تحميل المشغّل…');
+  try {
+    const YT = await loadYT(); if (PL !== pl || !$('#b5yt')) return;
+    pl.player = new YT.Player('b5yt', {videoId: vid, width: '100%', height: '100%', playerVars: {rel: 0, playsinline: 1, modestbranding: 1},
+      events: {onReady: () => pnote(kind === 'l' ? 'اضغط تشغيل — تُحتسب مشاهدتك أثناء التشغيل فقط.' : 'اضغط تشغيل — يُحتسب حضورك أثناء متابعة البث.'), onStateChange: ev => onState(pl, ev.data), onError: () => pnote('تعذّر تشغيل هذا الفيديو — تأكّد أن الرابط عام أو "غير مدرج" وأن التضمين مسموح.')}});
+  } catch (e) {
+    if (PL !== pl) return; const h = $('#b5yt'); if (h) h.outerHTML = plainFrame(vid);
+    pnote('تعذّر تحميل أداة المتابعة (تحقق من الاتصال). المشاهدة هنا لن تُحتسب — أعد المحاولة أو اطلب من المنظّم اعتماد درسك.');
+  }
+}
+function onState(pl, st){
+  if (PL !== pl || !window.YT) return;
+  const Y = window.YT.PlayerState;
+  if (st === Y.PLAYING) {
+    if (!pl.base) { pl.base = true; doBeat(pl); }
+    if (!pl.tm) pl.tm = setInterval(() => doBeat(pl), pl.kind === 'l' ? 10000 : 15000);
+  } else if (st === Y.PAUSED || st === Y.ENDED) {
+    if (pl.tm) { clearInterval(pl.tm); pl.tm = null; }
+    if (pl.kind === 'l') doBeat(pl);
+  }
+}
+async function doBeat(pl){
+  if (PL !== pl || pl.busy) return;
+  pl.busy = true; let r;
+  try {
+    if (pl.kind === 'l') {
+      let pos = 0, rate = 1; try { pos = Math.floor(pl.player.getCurrentTime()) || 0; rate = pl.player.getPlaybackRate() || 1; } catch (e) {}
+      r = await sb.rpc('lesson_beat', {p_lesson: pl.id, p_pos: pos, p_rate: rate});
+    } else r = await sb.rpc('session_beat', {p_session: pl.id});
+  } catch (e) { r = {error: e}; }
+  pl.busy = false; if (PL !== pl) return;
+  if (r.error) {
+    pl.errs++; const m = (r.error.message || ''), fatal = /outside|not enrolled|not allowed|not live|not found|does not exist/.test(m);
+    if (pl.errs === 1 || fatal) toast(emsg(r.error, 'تعذّر تسجيل المتابعة، تأكّد من الاتصال'));
+    if (fatal || pl.errs >= 3) { clearInterval(pl.tm); pl.tm = null; pnote('توقّفت المتابعة — ' + emsg(r.error, 'تحقق من الاتصال') + '.'); }
+    return;
+  }
+  pl.errs = 0; applyBeat(pl, r.data || {});
+}
+async function applyBeat(pl, d){
+  if (!CS) return;
+  if (pl.kind === 'l') {
+    const l = CS.lessons.find(x => x.id === pl.id); if (!l) return;
+    const was = done(CS.prog[l.id]), n = need85(l), dn = !!d.done;
+    CS.prog[l.id] = {lesson_id: l.id, covered: d.covered || 0, completed_at: dn ? (was ? CS.prog[l.id].completed_at : new Date().toISOString()) : null, manual: false};
+    const pct = dn ? 100 : Math.min(100, Math.round((d.covered || 0) * 100 / n)), b = $('#lb' + l.id + ' i'), s = $('#lst' + l.id);
+    if (b) b.style.width = pct + '%'; if (s) { s.textContent = dn ? '✓ مكتمل' : pct + '%'; s.classList.toggle('ok', dn); }
+    pnote(dn ? 'اكتمل هذا الدرس ✓' : `تم احتساب ${Math.min(d.covered || 0, n)} من ${n} ثانية مطلوبة (${pct}%).`);
+    if (dn && !was) { toast('اكتمل الدرس ✓'); drawSummary(); }
+  } else {
+    const s = CS.sessions.find(x => x.id === pl.id); if (!s) return;
+    const was = !!(CS.att[s.id] && CS.att[s.id].attended_at), dn = !!d.done;
+    CS.att[s.id] = {session_id: s.id, secs: d.secs || 0, attended_at: dn ? (was ? CS.att[s.id].attended_at : new Date().toISOString()) : null, method: dn ? 'auto' : null};
+    const st = $('#sst' + s.id); if (st && dn) { st.className = 'b5st ok'; st.textContent = '✓ حضرت (تلقائياً)'; const ac = document.querySelector('#ss' + s.id + ' .b5act'); if (ac) ac.remove(); }
+    pnote(dn ? 'تم تسجيل حضورك ✓' : `متابعتك: ${Math.floor((d.secs || 0) / 60)} من ${s.need_min} دقيقة مطلوبة.`);
+    if (dn && !was) { toast('تم تسجيل حضورك ✓'); drawSummary(); }
+  }
+  if (d.cert) { toast('🎓 مبروك! صدرت شهادتك'); await refreshCert(); drawSummary(); }
+}
+async function refreshCert(){
+  if (!CS || !ok()) return;
+  const r = await sb.from('course_certificates').select('*').eq('course_id', CS.c.id).eq('user_id', me.id).maybeSingle();
+  if (!r.error) CS.cert = r.data || null;
+}
+async function openLesson(id){
+  const l = CS.lessons.find(x => x.id === id), host = $('#lp' + id); if (!l || !host) return;
+  if (PL && PL.kind === 'l' && PL.id === id) return closePlayer();
+  startPlayer('l', id, l.yt_id, host, CS.enrolled);
+}
+async function openLive(id){
+  const s = CS.sessions.find(x => x.id === id), host = $('#sp' + id), v = s && ytId(s.live_url); if (!s || !host || !v) return;
+  if (PL && PL.kind === 's' && PL.id === id) return closePlayer();
+  startPlayer('s', id, v, host, CS.enrolled);
+}
+
+// =============== نماذج الإدارة ===============
+const fieldErr = e => emsg(e, 'تعذّر الحفظ');
+function courseModal(c){
+  const ds = depts(); if (!ds.length) return toast('لا تملك صلاحية إنشاء دورات');
+  const v = c || {}; let cover = v.cover_url || null, imgs = (v.images || []).slice();
+  box5(`<h3 style="margin-bottom:8px">${c ? '✎ تعديل الدورة' : '＋ دورة جديدة'}</h3><form id="b5f" autocomplete="off">
+   <div class="fl">عنوان الدورة</div><input name="title" required maxlength="120" value="${esc(v.title || '')}" placeholder="مثال: أساسيات التصميم بـ Photoshop">
+   <div class="fl">القسم المنظِّم</div><select name="committee">${ds.map(k => `<option value="${k}" ${k === v.committee ? 'selected' : ''}>${esc(cn(k))}</option>`).join('')}</select>
+   <div class="fl">المدرّب / المحاضر</div><input name="instructor" maxlength="80" value="${esc(v.instructor || '')}">
+   <div class="fl">وصف الدورة ومحتواها</div><textarea name="summary" maxlength="3000" rows="5">${esc(v.summary || '')}</textarea>
+   <div class="g2"><div><div class="fl">عدد المقاعد (اختياري)</div><input name="capacity" type="number" min="1" max="5000" value="${v.capacity || ''}" placeholder="بلا حد"></div>
+   <div><div class="fl">عنوان الشهادة (اختياري)</div><input name="cert_title" maxlength="120" value="${esc(v.cert_title || '')}" placeholder="افتراضياً: عنوان الدورة"></div></div>
+   <label class="opt" style="margin-top:14px"><span class="rd"></span><div><b>إصدار شهادات</b><small>تُصدَر تلقائياً لمن يكمل الدروس ويحضر اللقاءات</small></div><input type="checkbox" name="cert_enabled" ${v.cert_enabled === false ? '' : 'checked'}></label>
+   <div class="fl">صورة الغلاف</div><div id="b5cv"></div><input type="file" id="b5cvf" accept="image/*">
+   <div class="fl">صور وفيديو الدورة (حتى 8 صور)</div><div id="b5gl" class="b5th"></div><input type="file" id="b5glf" accept="image/*" multiple>
+   <label class="opt" style="margin-top:14px"><span class="rd"></span><div><b>نشر الدورة</b><small>تظهر للجميع بعد النشر؛ المسودات يراها المنظّمون فقط</small></div><input type="checkbox" name="published" ${v.published ? 'checked' : ''}></label>
+   <button class="btn gold block" style="margin-top:16px">حفظ</button></form>`);
+  const drawImgs = () => {
+    $('#b5cv').innerHTML = cover && okImg(cover) ? `<div class="b5th"><span><img src="${okImg(cover)}" alt=""><button type="button" data-a="b5rmc">×</button></span></div>` : '';
+    $('#b5gl').innerHTML = imgs.map((u, i) => okImg(u) ? `<span><img src="${okImg(u)}" alt=""><button type="button" data-a="b5rmg" data-i="${i}">×</button></span>` : '').join('');
+  };
+  drawImgs();
+  const f = $('#b5f');
+  f.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b) return; if (b.dataset.a === 'b5rmc') { cover = null; drawImgs(); e.stopPropagation(); } if (b.dataset.a === 'b5rmg') { imgs.splice(+b.dataset.i, 1); drawImgs(); e.stopPropagation(); } });
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const b = f.querySelector('button.gold'); b.disabled = true; const t = b.textContent; b.textContent = 'جارٍ الحفظ…';
+    try {
+      const title = f.title.value.trim(); if (title.length < 3) throw new Error('عنوان الدورة 3 أحرف فأكثر');
+      const cf = $('#b5cvf').files[0]; if (cf) cover = await upImg(cf, 1280);
+      const gf = [...$('#b5glf').files].slice(0, Math.max(0, 8 - imgs.length)); for (const x of gf) imgs.push(await upImg(x, 1280));
+      const cap = f.capacity.value.trim();
+      const row = {title, committee: f.committee.value, instructor: f.instructor.value.trim() || null, summary: f.summary.value.trim() || null, capacity: cap ? Math.max(1, parseInt(cap, 10) || 1) : null,
+        cert_enabled: f.cert_enabled.checked, cert_title: f.cert_title.value.trim() || null, cover_url: cover || null, images: imgs, published: f.published.checked};
+      if (row.cert_title && row.cert_title.length < 3) throw new Error('عنوان الشهادة 3 أحرف فأكثر');
+      let r;
+      if (c) r = await sb.from('courses').update(row).eq('id', c.id);
+      else r = await sb.from('courses').insert(row).select().single();
+      if (r.error) throw r.error;
+      $('#modal').style.display = 'none'; toast('تم الحفظ ✓');
+      if (c) return pCourse(c.id);
+      return nav('#course/' + r.data.id);
+    } catch (x) { b.disabled = false; b.textContent = t; toast(x && x.message && !/[a-z]{4,}/i.test(x.message) ? x.message : fieldErr(x)); }
+  };
+}
+function lessonModal(l){
+  const v = l || {};
+  box5(`<h3 style="margin-bottom:8px">${l ? '✎ تعديل الدرس' : '＋ درس مصوّر'}</h3>
+   <p class="note" style="margin:0 0 6px">ارفع الفيديو إلى يوتيوب بوضع <b>"غير مدرج" (Unlisted)</b> ثم الصق رابطه هنا.</p>
+   <form id="b5f" autocomplete="off"><div class="fl">عنوان الدرس</div><input name="title" required maxlength="120" value="${esc(v.title || '')}">
+   <div class="fl">رابط الفيديو على يوتيوب</div><input name="url" required dir="ltr" placeholder="https://youtu.be/…" value="${v.yt_id ? 'https://youtu.be/' + esc(v.yt_id) : ''}">
+   <div class="fl">مدة الفيديو</div><div class="ar" style="gap:8px"><input name="dur" dir="ltr" placeholder="مثال: 12:30 أو 45 (دقيقة)" value="${v.duration_secs ? fdur(v.duration_secs) : ''}" style="flex:1"><button type="button" class="btn line sm" id="b5dd">اكتشاف تلقائي</button></div>
+   <p class="note" style="margin:6px 0 0" id="b5dn">المدة تحدّد الحدّ الأدنى للمشاهدة (85%)، فاكتبها بدقة.</p>
+   <div class="fl">ملاحظة (اختياري)</div><input name="note" maxlength="1000" value="${esc(v.note || '')}" placeholder="مثال: يحتاج برنامج Photoshop">
+   <button class="btn gold block" style="margin-top:16px">حفظ</button></form>`);
+  const f = $('#b5f'), autod = async force => {
+    const id = ytId(f.url.value); if (!id) return $('#b5dn').textContent = 'الصق رابط يوتيوب صحيحاً أولاً.';
+    $('#b5dn').textContent = 'جارٍ اكتشاف المدة…';
+    try {
+      const d = await ytDuration(id); if (!$('#b5dn')) return;
+      if (force || !f.dur.value.trim()) { f.dur.value = fdur(d); $('#b5dn').textContent = 'المدة المكتشفة: ' + fdur(d) + ' ✓'; }
+      else $('#b5dn').textContent = 'المدة المكتشفة ' + fdur(d) + ' — تأكد أنها تطابق ما كتبته.';
+    } catch (e) { const n = $('#b5dn'); if (n) n.textContent = 'تعذّر اكتشاف المدة تلقائياً — اكتبها يدوياً.'; }
+  };
+  $('#b5dd').onclick = () => autod(true);
+  f.url.onchange = () => { if (!f.dur.value.trim()) autod(false); };
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const id = ytId(f.url.value), d = parseDur(f.dur.value), title = f.title.value.trim();
+    if (title.length < 2) return toast('اكتب عنوان الدرس');
+    if (!id) return toast('رابط يوتيوب غير صالح');
+    if (d < 10 || d > 21600) return toast('مدة الفيديو من 10 ثوانٍ إلى 6 ساعات');
+    const row = {title, yt_id: id, duration_secs: d, note: f.note.value.trim() || null};
+    const b = f.querySelector('button.gold'); b.disabled = true;
+    const r = l ? await sb.from('course_lessons').update(row).eq('id', l.id) : await sb.from('course_lessons').insert(Object.assign({course_id: CS.c.id, position: CS.lessons.length + 1}, row));
+    if (r.error) { b.disabled = false; return toast(fieldErr(r.error)); }
+    $('#modal').style.display = 'none'; toast('تم الحفظ ✓'); pCourse(CS.c.id);
+  };
+}
+function sessionModal(s){
+  const v = s || {kind: 'live', duration_min: 60, need_min: 15};
+  box5(`<h3 style="margin-bottom:8px">${s ? '✎ تعديل اللقاء' : '＋ لقاء'}</h3><form id="b5f" autocomplete="off">
+   <div class="fl">عنوان اللقاء</div><input name="title" required maxlength="120" value="${esc(v.title || '')}" placeholder="مثال: اللقاء المباشر الأول">
+   <div class="fl">النوع</div><select name="kind"><option value="live" ${v.kind === 'live' ? 'selected' : ''}>بث مباشر (أونلاين)</option><option value="offline" ${v.kind === 'offline' ? 'selected' : ''}>حضوري (في مكان)</option></select>
+   <div class="fl">موعد البدء</div><input name="at" type="datetime-local" required value="${v.starts_at ? toLocalInput(v.starts_at) : ''}">
+   <div class="g2"><div><div class="fl">مدة اللقاء (دقيقة)</div><input name="dur" type="number" min="5" max="720" required value="${v.duration_min}"></div>
+   <div><div class="fl">أقل مدة للحضور (دقيقة)</div><input name="need" type="number" min="1" max="720" required value="${v.need_min}"></div></div>
+   <div id="b5lv"><div class="fl">رابط البث</div><input name="url" dir="ltr" placeholder="رابط يوتيوب مباشر ليُتابَع الحضور تلقائياً، أو أي رابط (Meet/Zoom…)" value="${esc(v.live_url || '')}">
+   <p class="note" style="margin:6px 0 0">رابط يوتيوب → يُحتسب الحضور تلقائياً من مدة المتابعة. أي رابط آخر → يُثبَّت الحضور برمز الحضور أو يدوياً.</p></div>
+   <div id="b5lc"><div class="fl">المكان</div><input name="loc" maxlength="200" value="${esc(v.location || '')}" placeholder="مثال: المدرج 3 – كلية العلوم"></div>
+   <div class="fl">ملاحظة (اختياري)</div><input name="note" maxlength="1000" value="${esc(v.note || '')}">
+   <button class="btn gold block" style="margin-top:16px">حفظ</button></form>`);
+  const f = $('#b5f'), sync = () => { $('#b5lv').style.display = f.kind.value === 'live' ? '' : 'none'; $('#b5lc').style.display = f.kind.value === 'live' ? 'none' : ''; };
+  f.kind.onchange = sync; sync();
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const title = f.title.value.trim(), dur = parseInt(f.dur.value, 10), need = parseInt(f.need.value, 10), at = new Date(f.at.value), url = f.url.value.trim();
+    if (title.length < 2) return toast('اكتب عنوان اللقاء');
+    if (isNaN(+at)) return toast('حدّد موعد البدء');
+    if (!(dur >= 5 && dur <= 720)) return toast('مدة اللقاء من 5 دقائق إلى 12 ساعة');
+    if (!(need >= 1 && need <= dur)) return toast('أقل مدة للحضور يجب ألا تتجاوز مدة اللقاء');
+    if (f.kind.value === 'live' && url && !/^https:\/\/\S{4,}$/.test(url)) return toast('رابط البث يجب أن يبدأ بـ https://');
+    const row = {title, kind: f.kind.value, starts_at: at.toISOString(), duration_min: dur, need_min: need, live_url: f.kind.value === 'live' ? (url || null) : null, location: f.kind.value === 'offline' ? (f.loc.value.trim() || null) : null, note: f.note.value.trim() || null};
+    const b = f.querySelector('button.gold'); b.disabled = true;
+    const r = s ? await sb.from('course_sessions').update(row).eq('id', s.id) : await sb.from('course_sessions').insert(Object.assign({course_id: CS.c.id}, row));
+    if (r.error) { b.disabled = false; return toast(fieldErr(r.error)); }
+    $('#modal').style.display = 'none'; toast('تم الحفظ ✓'); pCourse(CS.c.id);
+  };
+}
+function codeModal(s){
+  box5(`<h3 style="margin-bottom:6px">🔑 رمز الحضور</h3><p class="mut" style="margin:0 0 10px;line-height:1.9">يُولَّد رمز من 6 أرقام يكتبه الحاضرون في صفحة الدورة. اعرضه على الشاشة أو أعطه للحاضرين فقط، وأغلقه فور انتهاء التحضير.</p>
+   <div class="fl">مدة صلاحية الرمز</div><select id="b5km">${[[10, '10 دقائق'], [15, '15 دقيقة'], [30, '30 دقيقة'], [60, 'ساعة'], [120, 'ساعتان']].map(([m, t]) => `<option value="${m}" ${m === 15 ? 'selected' : ''}>${t}</option>`).join('')}</select>
+   <div id="b5kr"></div><button class="btn gold block" id="b5kb" style="margin-top:14px">توليد الرمز</button>`);
+  $('#b5kb').onclick = async () => {
+    const m = +$('#b5km').value, b = $('#b5kb'); b.disabled = true;
+    const {data, error} = await sb.rpc('session_code_open', {p_session: s.id, p_minutes: m});
+    b.disabled = false; if (error) return toast(emsg(error));
+    CS.codes[s.id] = {session_id: s.id, code: data, open_until: new Date(Date.now() + m * 60000).toISOString()};
+    $('#b5kr').innerHTML = `<div class="b5big">${esc(data)}</div><p class="note c" style="margin:6px 0 0">صالح لمدة ${m} دقيقة. توليد رمز جديد يُبطل القديم.</p>`; drawSessions();
+  };
+}
+
+// =============== المشاركون والتحضير ===============
+let ROS = {rows: [], names: {}};
+async function rosterModal(){
+  const c = CS.c; box5(`<h3 style="margin-bottom:6px">👥 المشاركون</h3>${loader}`);
+  const {data, error} = await sb.rpc('course_roster', {p_course: c.id});
+  if (error) { box5(`<h3>👥 المشاركون</h3><p class="mut">${esc(emsg(error))}</p>`); return; }
+  ROS.rows = data || []; ROS.rows.forEach(r => ROS.names[r.user_id] = r.full_name);
+  drawRoster();
+}
+function drawRoster(q){
+  const c = CS.c, nl = CS.lessons.length, ns = CS.sessions.length, qq = (q || '').trim().toLowerCase();
+  const rows = ROS.rows.filter(r => !qq || ((r.full_name || '') + ' ' + (r.card_no || '')).toLowerCase().includes(qq));
+  const certN = ROS.rows.filter(r => r.cert_code && !r.cert_revoked).length;
+  const m = $('#modal'); m.innerHTML = `<div class="box">${closeX}<h3 style="margin-bottom:4px">👥 المشاركون في «${esc(c.title)}»</h3>
+   <p class="note" style="margin:0 0 10px">${ROS.rows.length} مسجّل · ${certN} حاصل على الشهادة</p>
+   <div class="b5bt" style="margin-bottom:10px"><button class="btn line sm" data-a="b5rosadd">＋ إضافة مشارك</button><button class="btn line sm" data-a="b5csv">⬇ تنزيل CSV</button></div>
+   <div class="sr"><input id="b5rq" placeholder="ابحث بالاسم أو رقم البطاقة…" value="${esc(q || '')}">${ic('search', 20)}</div>
+   <div class="b5rl">${rows.map(r => `<div class="b5pr"><div class="b5pn2"><b>${esc(r.full_name)}</b><small class="mut">${esc(r.card_no || '')} · دروس ${r.lessons_done}/${nl} · لقاءات ${r.sessions_done}/${ns}</small></div>
+      <span class="b5st ${r.cert_code && !r.cert_revoked ? 'ok' : ''}">${r.cert_code ? (r.cert_revoked ? 'مسحوبة' : '🎓') : '—'}</span><button class="btn line sm" data-a="b5person" data-id="${esc(r.user_id)}">تفاصيل</button></div>`).join('') || '<p class="mut c">لا مشاركين.</p>'}</div></div>`;
+  m.style.display = 'flex';
+  const qi = $('#b5rq'); qi.oninput = () => { const v = qi.value; drawRoster(v); const n = $('#b5rq'); n.focus(); n.setSelectionRange(v.length, v.length); };
+}
+async function addPersonModal(){
+  box5(`<h3 style="margin-bottom:6px">＋ إضافة مشارك</h3><p class="note" style="margin:0 0 8px">اختر عضواً لتسجيله وتحضيره أو إكمال دروسه يدوياً (يُسجَّل في الدورة تلقائياً).</p><div class="sr"><input id="b5aq" placeholder="ابحث بالاسم…" autocomplete="off">${ic('search', 20)}</div><div class="b5rl" id="b5al">${loader}</div>`);
+  const r = await sb.from('public_profiles').select('id,full_name,committee').order('full_name');
+  const all = (r.data || []).filter(p => !ROS.rows.some(x => x.user_id === p.id));
+  const draw = () => { const q = $('#b5aq').value.trim().toLowerCase(); const l = all.filter(p => !q || p.full_name.toLowerCase().includes(q)).slice(0, 40);
+    $('#b5al').innerHTML = l.map(p => `<div class="b5pr"><div class="b5pn2"><b>${esc(p.full_name)}</b></div><button class="btn line sm" data-a="b5person" data-id="${esc(p.id)}" data-n="${esc(p.full_name)}">اختيار</button></div>`).join('') || '<p class="mut c">لا نتائج.</p>'; };
+  $('#b5aq').oninput = draw; draw();
+}
+async function personModal(uid, nm){
+  const c = CS.c; if (nm) ROS.names[uid] = nm; const name = ROS.names[uid] || 'عضو';
+  box5(`<h3 style="margin-bottom:6px">${esc(name)}</h3>${loader}`);
+  const [p, a, f] = await Promise.all([
+    sb.from('course_lesson_progress').select('lesson_id,covered,completed_at,manual').eq('course_id', c.id).eq('user_id', uid),
+    sb.from('course_attendance').select('session_id,secs,attended_at,method').eq('course_id', c.id).eq('user_id', uid),
+    sb.from('course_certificates').select('*').eq('course_id', c.id).eq('user_id', uid).maybeSingle()]);
+  const P = {}, A = {}; (p.data || []).forEach(x => P[x.lesson_id] = x); (a.data || []).forEach(x => A[x.session_id] = x);
+  const cert = f.data || null;
+  box5(`<h3 style="margin-bottom:4px">${esc(name)}</h3><p class="note" style="margin:0 0 10px">اضغط على عنصر لتبديل حالته يدوياً (للاستثناءات أو من لا يملك هاتفاً). يُصدَر الشهادة تلقائياً عند اكتمال كل المتطلبات.</p>
+   ${CS.lessons.length ? '<div class="fl" style="margin-top:6px">الدروس</div>' : ''}
+   ${CS.lessons.map(l => { const x = P[l.id], dn = done(x); return `<div class="b5pr"><div class="b5pn2"><b>${esc(l.title)}</b><small class="mut">${dn ? (x.manual ? 'مكتمل (يدوي)' : 'مكتمل') : x ? 'شاهد ' + Math.round(x.covered * 100 / need85(l)) + '%' : 'لم يبدأ'}</small></div>
+     <button class="btn ${dn ? 'no' : 'gold'} sm" data-a="b5lm" data-l="${l.id}" data-u="${esc(uid)}" data-v="${dn ? 0 : 1}">${dn ? 'إلغاء' : 'اعتماد'}</button></div>`; }).join('')}
+   ${CS.sessions.length ? '<div class="fl">اللقاءات</div>' : ''}
+   ${CS.sessions.map(s => { const x = A[s.id], at = !!(x && x.attended_at); return `<div class="b5pr"><div class="b5pn2"><b>${esc(s.title)}</b><small class="mut">${at ? 'حضر' + (x.method ? ' (' + MET[x.method] + ')' : '') : x && x.secs ? 'تابع ' + Math.floor(x.secs / 60) + ' د' : 'لم يحضر'} · ${esc(dtt(s.starts_at))}</small></div>
+     <button class="btn ${at ? 'no' : 'gold'} sm" data-a="b5sm" data-s="${s.id}" data-u="${esc(uid)}" data-v="${at ? 0 : 1}">${at ? 'إلغاء' : 'تحضير'}</button></div>`; }).join('')}
+   <div class="fl">الشهادة</div>
+   ${cert ? `<div class="b5pr"><div class="b5pn2"><b>${cert.revoked_at ? 'مسحوبة' : 'سارية'}</b><small class="mut">${esc(cert.serial)}</small></div><button class="btn line sm" data-a="b5cert" data-id="${esc(cert.id)}">عرض</button>${cert.revoked_at ? '' : `<button class="btn no sm" data-a="b5cr" data-id="${esc(cert.id)}" data-u="${esc(uid)}">سحب</button>`}</div>` : '<p class="note" style="margin:0">لم تُصدَر بعد.</p>'}
+   ${!cert || cert.revoked_at ? `<button class="btn navy block" style="margin-top:10px" data-a="b5ci" data-u="${esc(uid)}">${cert ? 'إعادة تفعيل الشهادة' : 'إصدار الشهادة يدوياً'}</button>` : ''}
+   <button class="btn line block" style="margin-top:10px" data-a="b5ros">‹ رجوع إلى المشاركين</button>`);
+}
+
+// =============== الشهادة (رسم على canvas) ===============
+function wrapLines(x, text, maxW){
+  const w = String(text).split(/\s+/), out = []; let cur = '';
+  for (const t of w) { const tr = cur ? cur + ' ' + t : t; if (x.measureText(tr).width > maxW && cur) { out.push(cur); cur = t; } else cur = tr; }
+  if (cur) out.push(cur); return out;
+}
+async function drawCert(d, withLogo){
+  const W = 1754, H = 1240, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d'), fam = getComputedStyle(document.body).fontFamily || 'sans-serif';
+  try { await Promise.all([document.fonts.load('700 48px ' + fam), document.fonts.load('400 30px ' + fam)]); } catch (e) {}
+  x.direction = 'rtl'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  const font = (sz, w) => x.font = `${w || 400} ${sz}px ${fam}`;
+  x.fillStyle = '#fffdf6'; x.fillRect(0, 0, W, H);
+  x.strokeStyle = '#0b1430'; x.lineWidth = 12; x.strokeRect(36, 36, W - 72, H - 72);
+  x.strokeStyle = '#d4a72c'; x.lineWidth = 4; x.strokeRect(62, 62, W - 124, H - 124);
+  x.fillStyle = '#d4a72c'; [[62, 62], [W - 62, 62], [62, H - 62], [W - 62, H - 62]].forEach(([a, b]) => { x.beginPath(); x.arc(a, b, 16, 0, 7); x.fill(); });
+  let ly = 150;
+  if (withLogo) {
+    const im = document.querySelector('#hd .lg img');
+    if (im && im.complete && im.naturalWidth > 0) { x.save(); x.beginPath(); x.arc(W / 2, ly, 62, 0, 7); x.clip(); x.fillStyle = '#fff'; x.fillRect(W / 2 - 62, ly - 62, 124, 124); x.drawImage(im, W / 2 - 62, ly - 62, 124, 124); x.restore(); x.strokeStyle = '#d4a72c'; x.lineWidth = 4; x.beginPath(); x.arc(W / 2, ly, 62, 0, 7); x.stroke(); }
+  }
+  x.fillStyle = '#0b1430'; font(56, 700); x.fillText((typeof S !== 'undefined' && S && S.club_name) || 'رواد العلوم والتكنولوجيا', W / 2, 262);
+  x.fillStyle = '#5f6f8f'; font(30); x.fillText((typeof S !== 'undefined' && S && S.university) || 'جامعة عبد الحميد ابن باديس – مستغانم', W / 2, 318);
+  x.fillStyle = '#8a6a12'; font(92, 700); x.fillText('شهادة إتمام دورة', W / 2, 440);
+  x.strokeStyle = '#d4a72c'; x.lineWidth = 3; x.beginPath(); x.moveTo(W / 2 - 220, 500); x.lineTo(W / 2 + 220, 500); x.stroke();
+  x.fillStyle = '#334155'; font(38); x.fillText('تشهد إدارة النادي بأن', W / 2, 562);
+  x.fillStyle = '#0b1430'; let nsz = 100; font(nsz, 700); while (x.measureText(d.member_name).width > W - 360 && nsz > 40) { nsz -= 4; font(nsz, 700); } x.fillText(d.member_name, W / 2, 660);
+  x.strokeStyle = '#d4a72c'; x.lineWidth = 2; x.beginPath(); x.moveTo(W / 2 - 340, 722); x.lineTo(W / 2 + 340, 722); x.stroke();
+  x.fillStyle = '#334155'; font(38); x.fillText('قد أتمّ بنجاح جميع متطلبات', W / 2, 786);
+  x.fillStyle = '#0f1a3a'; let tsz = 68; font(tsz, 700); let ls = wrapLines(x, d.course_title, W - 360);
+  while (ls.length > 2 && tsz > 36) { tsz -= 4; font(tsz, 700); ls = wrapLines(x, d.course_title, W - 360); }
+  ls.slice(0, 2).forEach((t, i, a) => x.fillText(t, W / 2, 862 + (i - (a.length - 1) / 2) * (tsz + 14)));
+  x.fillStyle = '#334155'; font(34); x.fillText('وذلك بتاريخ ' + dday(d.issued_at), W / 2, 968);
+  const sig = (cx, name, role) => { x.strokeStyle = '#0b1430'; x.lineWidth = 2; x.beginPath(); x.moveTo(cx - 190, 1088); x.lineTo(cx + 190, 1088); x.stroke(); x.fillStyle = '#0b1430'; font(36, 700); if (name) x.fillText(name, cx, 1050); x.fillStyle = '#5f6f8f'; font(30); x.fillText(role, cx, 1124); };
+  sig(W * 0.24, d.president_name, 'رئيس النادي'); sig(W * 0.76, d.secretary_name, 'الكاتب العام');
+  x.fillStyle = '#d4a72c'; x.beginPath(); x.arc(W / 2, 1068, 58, 0, 7); x.fill(); x.strokeStyle = '#fffdf6'; x.lineWidth = 3; x.beginPath(); x.arc(W / 2, 1068, 47, 0, 7); x.stroke();
+  x.fillStyle = '#0b1430'; font(36, 700); x.direction = 'ltr'; x.fillText('LST', W / 2, 1068); x.direction = 'rtl';
+  x.fillStyle = '#5f6f8f'; font(24); x.direction = 'ltr'; x.fillText(`${d.serial}  ·  ${verifyUrl(d.code)}`, W / 2, 1156); x.direction = 'rtl';
+  return cv;
+}
+async function certModal(d){
+  box5(`<h3 style="margin-bottom:8px">🎓 الشهادة</h3>${loader}`);
+  let url = '';
+  try { let cv = await drawCert(d, true); try { url = cv.toDataURL('image/png'); } catch (e) { cv = await drawCert(d, false); url = cv.toDataURL('image/png'); } }
+  catch (e) { return box5(`<h3>🎓 الشهادة</h3><p class="mut">تعذّر رسم الشهادة على هذا المتصفح.</p>`); }
+  box5(`<h3 style="margin-bottom:8px">🎓 ${esc(d.course_title)}</h3>
+   ${d.revoked ? '<div class="note b5warn" style="margin-bottom:8px">هذه الشهادة مسحوبة وغير سارية.</div>' : ''}
+   <img class="b5certimg" src="${url}" alt="الشهادة">
+   <div class="b5bt" style="margin-top:12px">${d.revoked ? '' : `<a class="btn gold sm" download="شهادة-${esc(d.serial)}.png" href="${url}">⬇ تنزيل الصورة</a>`}
+   <button class="btn line sm" data-a="b5copy" data-code="${esc(d.code)}">نسخ رابط التحقق</button></div>
+   <p class="note" style="margin:10px 0 0">رمز التحقق: <b dir="ltr">${esc(d.code)}</b> — يستطيع أي شخص التحقق منها في صفحة <a href="#verify/${esc(d.code)}" style="text-decoration:underline">التحقق من الشهادات</a>.</p>`);
+}
+async function showCertRow(id){
+  let f = (CL.certs || []).find(x => x.id === id) || (CS && CS.cert && CS.cert.id === id ? CS.cert : null);
+  if (!f) { const r = await sb.from('course_certificates').select('*').eq('id', id).maybeSingle(); f = r.data; }
+  if (!f) return toast('الشهادة غير موجودة');
+  return certModal({member_name: f.member_name, course_title: f.course_title, serial: f.serial, code: f.code, issued_at: f.issued_at, president_name: f.president_name, secretary_name: f.secretary_name, revoked: !!f.revoked_at});
+}
+
+// =============== التحقق العام من الشهادات ===============
+async function pVerify(code){
+  const t = ++RT; code = decodeURIComponent(code || '');
+  main.innerHTML = hero5('badge', 'التحقق من الشهادات', 'تحقّق من شهادة', 'اكتب رمز التحقق المطبوع على الشهادة للتأكد من صحتها.') +
+   `<div class="sec b5" style="padding-top:30px"><form class="pan" id="b5vf"><div class="fl" style="margin-top:0">رمز التحقق</div><input name="c" dir="ltr" placeholder="XXXXXXXXXXXX" value="${esc(code)}" autocomplete="off" style="text-transform:uppercase"><button class="btn gold block" style="margin-top:12px">تحقّق</button></form><div id="b5vr"></div></div>`;
+  $('#b5vf').onsubmit = e => { e.preventDefault(); const v = e.target.c.value.trim(); if (!v) return toast('اكتب رمز التحقق'); const h = '#verify/' + encodeURIComponent(v); if (location.hash === h) pVerify(v); else location.hash = h; };
+  if (!code) return;
+  const box = $('#b5vr'); box.innerHTML = loader;
+  const {data, error} = await sb.rpc('certificate_get', {p_code: code});
+  if (t !== RT || !$('#b5vr')) return;
+  if (error) { box.innerHTML = `<div class="pan c"><p class="mut" style="margin:0">${esc(emsg(error, 'تعذّر التحقق الآن، حاول لاحقاً'))}</p></div>`; return; }
+  const f = (data || [])[0];
+  if (!f) { box.innerHTML = '<div class="pan c b5vbad"><b>✖ لا توجد شهادة بهذا الرمز</b><p class="mut" style="margin:6px 0 0">تحقّق من كتابة الرمز، أو تواصل مع إدارة النادي.</p></div>'; return; }
+  const clean = code.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  box.innerHTML = `<div class="pan ${f.revoked ? 'b5vbad' : 'b5vok'}"><h3 style="margin-bottom:10px">${f.revoked ? '⚠ شهادة مسحوبة' : '✔ شهادة صحيحة'}</h3>
+   <dl class="dl"><dt>الاسم</dt><dd>${esc(f.member_name)}</dd><dt>الدورة</dt><dd>${esc(f.course_title)}</dd><dt>رقم الشهادة</dt><dd dir="ltr" style="text-align:right">${esc(f.serial)}</dd><dt>تاريخ الإصدار</dt><dd>${esc(dday(f.issued_at))}</dd>
+   ${f.president_name ? `<dt>رئيس النادي</dt><dd>${esc(f.president_name)}</dd>` : ''}${f.secretary_name ? `<dt>الكاتب العام</dt><dd>${esc(f.secretary_name)}</dd>` : ''}</dl>
+   ${f.revoked ? '<p class="note" style="margin:0">سُحبت هذه الشهادة من إدارة النادي ولا يُعتدّ بها.</p>' : `<button class="btn line sm" data-a="b5vcert">عرض صورة الشهادة</button>`}</div>`;
+  VER = {member_name: f.member_name, course_title: f.course_title, serial: f.serial, code: clean, issued_at: f.issued_at, president_name: f.president_name, secretary_name: f.secretary_name, revoked: !!f.revoked};
+}
+let VER = null;
+
+// =============== التوجيه والقوائم ===============
+const _r = window.render;
+window.render = async function(){
+  const [v0, arg] = (location.hash || '#home').slice(1).split('/');
+  closePlayer();
+  if (v0 === 'courses' || v0 === 'course' || v0 === 'verify') {
+    if (v0 === 'course' && !/^\d+$/.test(arg || '')) return nav('#courses');
+    try { leaveChat(); } catch (e) {}
+    const mn = $('#menu'); if (mn) mn.style.display = 'none'; const md = $('#modal'); if (md) md.style.display = 'none';
+    view = v0; drawShell(); window.scrollTo(0, 0); const pb = $('#pinbar'); if (pb) pb.hidden = true;
+    return v0 === 'courses' ? pCourses() : v0 === 'course' ? pCourse(+arg) : pVerify(arg);
+  }
+  return _r.apply(this, arguments);
+};
+const _dm = window.drawMenu;
+window.drawMenu = function(){
+  _dm.apply(this, arguments);
+  const m = $('#menu'); if (!m || m.querySelector('[data-b5]')) return;
+  const after = m.querySelector('[href="#events"]');
+  const html = '<a data-b5="1" href="#courses">🎓 الدورات والشهادات</a>';
+  if (after) after.insertAdjacentHTML('afterend', html); else m.insertAdjacentHTML('afterbegin', html);
+};
+const _ds5 = window.drawShell;
+window.drawShell = function(){
+  _ds5.apply(this, arguments);
+  const ul = document.querySelector('#ft ul');
+  if (ul && !ul.querySelector('[data-b5]')) ul.insertAdjacentHTML('beforeend', '<li data-b5="1"><a href="#courses">الدورات والشهادات</a></li><li data-b5="1"><a href="#verify">التحقق من شهادة</a></li>');
+};
+
+// =============== الأزرار ===============
+function csvCell(v){ v = String(v ?? ''); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; }
+function csvDownload(rows, name){
+  const txt = '\ufeff' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], {type: 'text/csv;charset=utf-8'})); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+const copyText = async t => { try { await navigator.clipboard.writeText(t); toast('تم النسخ ✓'); } catch (e) { window.prompt('انسخ الرابط:', t); } };
+const keepScroll = async fn => { const y = window.scrollY; await fn(); window.scrollTo(0, y); };
+async function reloadCourse(){ const y = window.scrollY; await pCourse(CS.c.id); window.scrollTo(0, y); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target && /^cd\d+$/.test(e.target.id || '')) { e.preventDefault(); const b = document.querySelector(`[data-a="b5code"][data-id="${e.target.id.slice(2)}"]`); if (b) b.click(); }
+});
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a, id = el.dataset.id;
+  if (!a.startsWith('b5')) return;
+  if (a === 'b5tab') { F5.t = el.dataset.v; return drawList(); }
+  if (a === 'b5new') return courseModal(null);
+  if (a === 'b5edit') return courseModal(CS.c);
+  if (a === 'b5pub') {
+    const v = !CS.c.published; if (v && !CS.lessons.length && !CS.sessions.length && !confirm('الدورة بلا دروس ولا لقاءات بعد. هل تنشرها الآن؟')) return;
+    const {error} = await sb.from('courses').update({published: v}).eq('id', CS.c.id); if (error) return toast(emsg(error)); toast(v ? 'تم نشر الدورة ✓' : 'أُخفيت الدورة'); return reloadCourse();
+  }
+  if (a === 'b5del') { if (!confirm('حذف الدورة نهائياً مع دروسها ولقاءاتها وسجلات الحضور؟ (الشهادات الصادرة تبقى صالحة)')) return; const {error} = await sb.from('courses').delete().eq('id', CS.c.id); if (error) return toast(emsg(error)); toast('تم الحذف'); return nav('#courses'); }
+  if (a === 'b5enr') { el.disabled = true; const {error} = await sb.rpc('course_enroll', {p_course: CS.c.id}); if (error) { el.disabled = false; return toast(emsg(error)); } toast('تم تسجيلك ✓'); return reloadCourse(); }
+  if (a === 'b5leave') { if (!confirm('إلغاء تسجيلك في الدورة؟ يبقى تقدّمك محفوظاً إن عدت.')) return; const {error} = await sb.from('course_enrollments').delete().eq('course_id', CS.c.id).eq('user_id', me.id); if (error) return toast(emsg(error)); toast('أُلغي التسجيل'); return reloadCourse(); }
+  if (a === 'b5claim') { const {data, error} = await sb.rpc('course_claim_cert', {p_course: CS.c.id}); if (error) return toast(emsg(error)); if (!data) return toast('لم تستوفِ كل الشروط بعد'); toast('🎓 صدرت شهادتك'); await refreshCert(); return drawSummary(); }
+  if (a === 'b5play') return openLesson(+id);
+  if (a === 'b5live') return openLive(+id);
+  if (a === 'b5stop') return closePlayer();
+  if (a === 'b5code') {
+    const inp = $('#cd' + id); const code = inp ? inp.value.trim() : ''; if (!/^\d{6}$/.test(code)) return toast('الرمز 6 أرقام');
+    el.disabled = true; const {data, error} = await sb.rpc('session_checkin', {p_session: +id, p_code: code}); el.disabled = false;
+    if (error) return toast(emsg(error));
+    const d = data || {};
+    if (!d.ok) return toast(d.reason === 'locked' ? 'أخطأت عدة مرات — انتظر 10 دقائق ثم حاول' : d.reason === 'closed' ? 'لم يفتح المنظّم رمز الحضور بعد أو انتهت مدته' : 'الرمز غير صحيح');
+    CS.att[+id] = {session_id: +id, secs: 0, attended_at: new Date().toISOString(), method: 'code'};
+    toast(d.already ? 'حضورك مسجّل مسبقاً' : 'تم تسجيل حضورك ✓');
+    if (d.cert) { toast('🎓 مبروك! صدرت شهادتك'); await refreshCert(); }
+    closePlayer(); drawSessions(); return drawSummary();
+  }
+  if (a === 'b5lnew') return lessonModal(null);
+  if (a === 'b5ledit') return lessonModal(CS.lessons.find(x => x.id === +id));
+  if (a === 'b5ldel') { if (!confirm('حذف هذا الدرس؟ سيُمحى تقدّم الأعضاء فيه.')) return; const {error} = await sb.from('course_lessons').delete().eq('id', id); if (error) return toast(emsg(error)); return reloadCourse(); }
+  if (a === 'b5lup' || a === 'b5ldn') {
+    const arr = CS.lessons.slice(), i = arr.findIndex(x => x.id === +id), j = a === 'b5lup' ? i - 1 : i + 1; if (i < 0 || j < 0 || j >= arr.length) return;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    for (let k = 0; k < arr.length; k++) if (arr[k].position !== k + 1) { const {error} = await sb.from('course_lessons').update({position: k + 1}).eq('id', arr[k].id); if (error) return toast(emsg(error)); }
+    return reloadCourse();
+  }
+  if (a === 'b5snew') return sessionModal(null);
+  if (a === 'b5sedit') return sessionModal(CS.sessions.find(x => x.id === +id));
+  if (a === 'b5sdel') { if (!confirm('حذف هذا اللقاء؟ سيُمحى سجل الحضور فيه.')) return; const {error} = await sb.from('course_sessions').delete().eq('id', id); if (error) return toast(emsg(error)); return reloadCourse(); }
+  if (a === 'b5kopen') return codeModal(CS.sessions.find(x => x.id === +id));
+  if (a === 'b5kclose') { const {error} = await sb.rpc('session_code_close', {p_session: +id}); if (error) return toast(emsg(error)); delete CS.codes[+id]; toast('أُغلق رمز الحضور'); return drawSessions(); }
+  if (a === 'b5ros') return rosterModal();
+  if (a === 'b5rosadd') return addPersonModal();
+  if (a === 'b5person') return personModal(id, el.dataset.n);
+  if (a === 'b5lm' || a === 'b5sm') {
+    el.disabled = true; const u = el.dataset.u, on = el.dataset.v === '1';
+    const r = a === 'b5lm' ? await sb.rpc('lesson_mark', {p_lesson: +el.dataset.l, p_user: u, p_done: on}) : await sb.rpc('session_mark', {p_session: +el.dataset.s, p_user: u, p_present: on});
+    if (r.error) { el.disabled = false; return toast(emsg(r.error)); }
+    if (r.data && r.data.cert) toast('🎓 صدرت الشهادة تلقائياً'); else toast('تم ✓');
+    if (me && u === me.id) reloadCourse();
+    return personModal(u);
+  }
+  if (a === 'b5ci') { if (!confirm('إصدار الشهادة لهذا العضو دون التحقق من استيفاء الشروط؟')) return; const u = el.dataset.u; const {data, error} = await sb.rpc('certificate_issue', {p_course: CS.c.id, p_user: u}); if (error) return toast(emsg(error)); toast('أُصدرت الشهادة ✓'); return personModal(u); }
+  if (a === 'b5cr') { if (!confirm('سحب هذه الشهادة؟ سيظهر في التحقق أنها مسحوبة.')) return; const {error} = await sb.rpc('certificate_revoke', {p_cert: id}); if (error) return toast(emsg(error)); toast('سُحبت الشهادة'); return personModal(el.dataset.u); }
+  if (a === 'b5csv') {
+    const rows = [['الاسم', 'رقم البطاقة', 'تاريخ التسجيل', 'الدروس المنجزة', 'اللقاءات المحضورة', 'رمز الشهادة', 'حالة الشهادة']];
+    ROS.rows.forEach(r => rows.push([r.full_name, r.card_no || '', r.enrolled_at ? new Date(r.enrolled_at).toISOString().slice(0, 10) : '', `${r.lessons_done}/${CS.lessons.length}`, `${r.sessions_done}/${CS.sessions.length}`, r.cert_code || '', r.cert_code ? (r.cert_revoked ? 'مسحوبة' : 'سارية') : '']));
+    return csvDownload(rows, 'participants-course-' + CS.c.id + '.csv');
+  }
+  if (a === 'b5cert') return showCertRow(id);
+  if (a === 'b5vcert') return VER && certModal(VER);
+  if (a === 'b5copy') return copyText(verifyUrl(el.dataset.code));
+});
+})();
+</script>
 </body>
 </html>
