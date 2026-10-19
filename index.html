@@ -5889,5 +5889,17 @@ document.addEventListener('click', e => {
 });
 })();
 </script>
+<script>
+(() => {
+// روابط الخصوصية والشروط في تذييل الموقع (مطلوبة لنشر تطبيق جوجل)
+const add = () => {
+  const ul = document.querySelector('#ft ul');
+  if (ul && !ul.querySelector('[data-lg7]')) ul.insertAdjacentHTML('beforeend', '<li data-lg7="1"><a href="/privacy.html" data-nofr>الخصوصية · Confidentialité</a></li><li data-lg7="1"><a href="/terms.html" data-nofr>الشروط · Conditions</a></li>');
+};
+const _ds7 = window.drawShell;
+window.drawShell = function(){ _ds7.apply(this, arguments); add(); };
+add();
+})();
+</script>
 </body>
 </html>
