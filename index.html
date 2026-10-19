@@ -5901,5 +5901,100 @@ window.drawShell = function(){ _ds7.apply(this, arguments); add(); };
 add();
 })();
 </script>
+<style>
+.pdw{position:relative;display:inline-flex;flex-shrink:0;line-height:0;vertical-align:middle}
+.pdt{display:none;position:absolute;bottom:1px;inset-inline-end:1px;width:26%;min-width:10px;max-width:20px;aspect-ratio:1;border-radius:50%;background:#22c55e;border:2px solid #fff;box-sizing:border-box}
+.pdw.on>.pdt{display:block}
+.pa .pdw>.pdt{bottom:8px;inset-inline-end:8px;border-width:3px}
+.pst7{font-size:.82rem;font-weight:700;color:var(--mut)}
+.pst7.on{color:#0b7a5c}
+.pst7::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#b6bfd3;margin-inline-end:6px}
+.pst7.on::before{background:#22c55e}
+.p7row{display:flex;align-items:center;gap:12px;cursor:pointer;font-weight:700}
+.p7row input{width:20px;height:20px;accent-color:#22c55e;flex:none}
+</style>
+<script>
+(() => {
+// ================= حالة الاتصال: متصل الآن / غير متصل =================
+const FR = (() => { try { return localStorage.getItem('lst_lang') === 'fr'; } catch (e) { return false; } })();
+const L = FR
+  ? {on: 'En ligne', off: 'Hors ligne', title: 'Statut de connexion', note: 'Les membres voient un point vert à côté de votre nom quand vous êtes connecté. Si vous le masquez, vous ne verrez pas non plus le statut des autres.', show: 'Afficher mon statut', t1: 'Statut affiché', t0: 'Statut masqué'}
+  : {on: 'متصل الآن', off: 'غير متصل', title: 'حالة الاتصال', note: 'يرى الأعضاء نقطة خضراء بجانب اسمك وأنت متصل بالموقع. إن أخفيتها فلن تظهر حالتك ولن ترى حالة الآخرين.', show: 'إظهار حالة الاتصال', t1: 'تم إظهار حالتك', t0: 'تم إخفاء حالتك'};
+const HID = 'lst_hide_online', CHN = 'lst-online-v1';
+const hidden = () => { try { return localStorage.getItem(HID) === '1'; } catch (e) { return false; } };
+let ch = null, ONLINE = new Set();
+
+function paint(){
+  document.querySelectorAll('.pdw[data-uid]').forEach(w => w.classList.toggle('on', !!ch && ONLINE.has(w.dataset.uid)));
+  document.querySelectorAll('[data-pst][data-uid]').forEach(e => {
+    const on = !!ch && ONLINE.has(e.dataset.uid);
+    e.style.display = ch ? '' : 'none'; e.classList.toggle('on', on); e.textContent = on ? L.on : L.off;
+  });
+}
+function start(){
+  if (ch || hidden() || typeof me === 'undefined' || !me || me.status !== 'approved' || typeof sb === 'undefined' || !sb.channel) return;
+  let c;
+  try {
+    c = sb.channel(CHN, {config: {presence: {key: me.id}}});
+    c.on('presence', {event: 'sync'}, () => { if (ch !== c) return; try { ONLINE = new Set(Object.keys(c.presenceState())); } catch (e) {} kick(); });
+    ch = c;
+    c.subscribe(st => { if (ch === c && st === 'SUBSCRIBED' && !document.hidden) { try { c.track({t: Date.now()}); } catch (e) {} } });
+  } catch (e) { console.error(e); ch = null; }
+}
+function stop(){
+  if (ch) { const c = ch; ch = null; try { sb.removeChannel(c); } catch (e) {} }
+  ONLINE = new Set(); paint();
+}
+const uidOf = h => { const m = /^#(?:u|dm)\/([0-9A-Za-z-]+)/.exec(h || ''); return m ? m[1] : null; };
+function wrap(v, uid){
+  if (!v || !v.parentNode || v.parentNode.classList.contains('pdw')) return;
+  const w = document.createElement('span'); w.className = 'pdw'; w.dataset.uid = uid;
+  v.parentNode.insertBefore(w, v); w.appendChild(v);
+  const d = document.createElement('i'); d.className = 'pdt'; w.appendChild(d);
+}
+function decorate(){
+  const m = document.getElementById('main'); if (!m) return;
+  if (!ch) { paint(); return; }
+  m.querySelectorAll('a[href^="#u/"], a[href^="#dm/"]').forEach(a => { const id = uidOf(a.getAttribute('href')); if (id) a.querySelectorAll('.ava').forEach(v => wrap(v, id)); });
+  const hm = /^#u\/([0-9A-Za-z-]+)/.exec(location.hash);
+  if (hm) {
+    const pa = m.querySelector('.pf .pa');
+    if (pa) {
+      pa.querySelectorAll('.ava').forEach(v => wrap(v, hm[1]));
+      const h1 = m.querySelector('.pf .pc h1');
+      if (h1 && !m.querySelector('.pf [data-pst]')) h1.insertAdjacentHTML('afterend', '<div class="pst7" data-pst data-uid="' + hm[1] + '" data-nofr="1"></div>');
+    }
+  }
+  m.querySelectorAll('.dh a.who[href^="#u/"]').forEach(a => {
+    const id = uidOf(a.getAttribute('href')), sm = a.querySelector('small');
+    if (id && sm && !a.querySelector('[data-pst]')) sm.insertAdjacentHTML('afterend', '<small class="pst7" data-pst data-uid="' + id + '" data-nofr="1" style="display:block"></small>');
+  });
+  paint();
+}
+function inject(){
+  const pwf = document.getElementById('pwf');
+  if (pwf && !document.getElementById('p7card'))
+    pwf.insertAdjacentHTML('beforebegin', '<div class="fcard fc2" id="p7card" data-nofr="1"><div class="fl" style="margin-top:0">🟢 ' + L.title + '</div><p class="note" style="margin:0 0 12px">' + L.note + '</p><label class="p7row"><input type="checkbox" id="p7chk"' + (hidden() ? '' : ' checked') + '> ' + L.show + '</label></div>');
+}
+let tm = 0;
+const kick = () => { if (!tm) tm = setTimeout(() => { tm = 0; try { if (!ch) start(); inject(); decorate(); } catch (e) { console.error(e); } }, 30); };
+const main_ = document.getElementById('main');
+if (main_) new MutationObserver(kick).observe(main_, {childList: true, subtree: true});
+
+const _s = window.startRT; if (typeof _s === 'function') window.startRT = function(){ const r = _s.apply(this, arguments); start(); return r; };
+const _t = window.stopRT; if (typeof _t === 'function') window.stopRT = function(){ stop(); return _t.apply(this, arguments); };
+
+document.addEventListener('change', e => {
+  if (!e.target || e.target.id !== 'p7chk') return;
+  const show = e.target.checked;
+  try { localStorage.setItem(HID, show ? '0' : '1'); } catch (x) {}
+  if (show) start(); else stop();
+  kick(); toast(show ? L.t1 : L.t0);
+});
+document.addEventListener('visibilitychange', () => { if (!ch) return; try { document.hidden ? ch.untrack() : ch.track({t: Date.now()}); } catch (e) {} });
+window.addEventListener('pagehide', () => { try { if (ch) ch.untrack(); } catch (e) {} });
+kick();
+})();
+</script>
 </body>
 </html>
