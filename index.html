@@ -3117,6 +3117,36 @@ a.ofn:hover{text-decoration:underline}
 .rlp{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .rlp span{color:var(--mut);font-size:.8rem}.rlp b{font-size:.95rem;line-height:1.6;overflow-wrap:anywhere}.rlp.vac b{color:var(--mut);font-weight:500}
 .rla{width:44px;height:44px;flex:none;border-radius:50%;object-fit:cover;background:#dbe5fb;color:#27418f;font-weight:700;display:flex;align-items:center;justify-content:center}
+<style>
+.ofh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.ofg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.ofc{background:#fff;border:1px solid var(--bd);border-radius:26px;padding:20px 12px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 8px 24px rgba(11,20,48,.05)}
+.ofc.vac{background:var(--bg);border-style:dashed;box-shadow:none;color:var(--mut)}
+.ofp{width:96px;height:96px;border-radius:50%;object-fit:cover;background:#dbe5fb;color:#27418f;font-weight:700;font-size:1.9rem;display:flex;align-items:center;justify-content:center;margin-bottom:6px;border:3px solid var(--cream)}
+.ofc.vac .ofp{background:#eef1f7;color:#9aa7c4;border:3px dashed var(--bd)}
+.ofn{font-weight:700;font-size:1.02rem;line-height:1.6;color:var(--navy)}
+a.ofn:hover{text-decoration:underline}
+.ofs{color:var(--goldtx);font-weight:700;font-size:.9rem;line-height:1.7}
+.ofc .row{display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.ofb{display:inline-block;margin-inline-start:6px;background:var(--cream);color:var(--goldtx);border:1px solid #ecd9a0;border-radius:99px;padding:0 9px;font-size:.66rem;font-weight:700;line-height:1.8;vertical-align:middle;white-space:nowrap}
+.ofb.big{font-size:.85rem;padding:3px 16px;margin:6px 0 0}
+.ofa{margin-top:22px;border:1px solid var(--bd);border-radius:22px;padding:12px 16px;background:#fff}
+.ofa summary{cursor:pointer;font-weight:700;padding:6px 0}
+.ofo{border-top:1px solid var(--bd);padding:12px 0}
+.ofl{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:6px;line-height:1.9}
+.ofl small{color:var(--goldtx);font-weight:700;margin-inline-end:4px}
+.bst{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px}
+.bsc{background:#fff;border:1px solid var(--bd);border-radius:22px;padding:16px 12px;text-align:center;color:var(--navy);display:flex;flex-direction:column;gap:2px;box-shadow:0 8px 24px rgba(11,20,48,.05)}
+.bsc b{font-size:1.8rem;line-height:1.2}.bsc span{color:var(--mut);font-size:.88rem}
+.rlg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.rlp{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.rlp span{color:var(--mut);font-size:.8rem}.rlp b{font-size:.95rem;line-height:1.6;overflow-wrap:anywhere}.rlp.vac b{color:var(--mut);font-weight:500}
+.rla{width:44px;height:44px;flex:none;border-radius:50%;object-fit:cover;background:#dbe5fb;color:#27418f;font-weight:700;display:flex;align-items:center;justify-content:center}
+.rlkg{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.rlk{display:flex;align-items:flex-start;gap:12px;background:#fff;border:1px solid var(--bd);border-radius:14px;padding:11px 14px;cursor:pointer;min-width:0}
+.rlk input{width:22px;height:22px;flex:none;margin:2px 0 0;padding:0;accent-color:#27418f}
+.rlk span{display:flex;flex-direction:column;gap:2px;min-width:0}.rlk small{font-size:.8rem;line-height:1.6}
+.rlk:has(input:checked){border-color:#27418f;background:#eef3ff}.rlk:has(input:disabled){opacity:.55;cursor:default}
 </style>
 <script>
 (() => {
@@ -3129,10 +3159,24 @@ const ok = () => !!me && me.status === 'approved';
 const adm = () => ok() && me.role === 'admin';
 const isAdm = () => !!me && me.role === 'admin';
 const PST = {pending: 'قيد المراجعة', interview: 'مقابلة', rejected: 'مرفوض', banned: 'موقوف', approved: 'مقبول'};
-const headD = () => ok() && me.head_of === 'design';
-const canDesign = () => ok() && (me.role === 'admin' || me.head_of === 'design' || me.committee === 'design');
+const HORD = ['hr', 'ext', 'design'];
+// رئاسات الأقسام: جدول head_roles (يمكن للعضو رئاسة أكثر من قسم) + العمود القديم head_of للتوافق
+let HD = {at: 0, rows: [], err: false}, hdP = null;
+function loadHeads(force){
+  if (!force && HD.at && Date.now() - HD.at < 60000) return Promise.resolve(HD);
+  if (hdP) return hdP;
+  hdP = (async () => {
+    try { const r = await sb.from('head_roles').select('committee,user_id'); HD.err = !!r.error; if (!r.error) HD.rows = r.data || []; } catch (e) { HD.err = true; }
+    HD.at = Date.now(); hdP = null; return HD;
+  })();
+  return hdP;
+}
+const myHeads = () => { if (!ok()) return []; const s = new Set(HD.rows.filter(r => r.user_id === me.id).map(r => r.committee)); if (me.head_of) s.add(me.head_of); return HORD.filter(x => s.has(x)); };
+const isHead = c => myHeads().includes(c);
+const headD = () => isHead('design');
+const canDesign = () => ok() && (me.role === 'admin' || isHead('design') || me.committee === 'design');
 const canPin = () => adm() || headD();
-const canPartners = () => adm() || (ok() && me.head_of === 'ext');
+const canPartners = () => adm() || isHead('ext');
 const hero = (icon, pill, h1, sub) => `<section class="dark ph"><span class="pill">${ic(icon, 18)} ${pill}</span><h1>${h1}</h1><p>${sub}</p></section>`;
 const fdate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('ar-u-nu-latn', {year: 'numeric', month: 'long', day: 'numeric'}) : '';
 const dtt = iso => new Date(iso).toLocaleString('ar-u-nu-latn', {dateStyle: 'medium', timeStyle: 'short'});
@@ -3140,7 +3184,7 @@ const SPH = /^https:\/\/[A-Za-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/publi
 const okPhoto = u => SPH.test(u || '') ? esc(u) : '';
 const nameOf = id => (typeof MB !== 'undefined' && MB && MB[id] && MB[id].full_name) || 'عضو';
 const ERR = {'not found or current': 'لا يمكن حذف العهدة الجارية', 'not allowed': 'غير مسموح لك بهذا الإجراء', 'no term': 'لا توجد عهدة جارية — ابدأ عهدة أولاً', 'term exists': 'توجد عهدة جارية بالفعل',
-  'not an approved member': 'هذا الحساب ليس عضواً مقبولاً', 'already seated': 'هذا العضو يشغل مقعداً آخر في المكتب', 'bad title': 'اكتب عنواناً من حرفين إلى 40 حرفاً',
+  'not an approved member': 'هذا الحساب ليس عضواً مقبولاً', 'bad title': 'اكتب عنواناً من حرفين إلى 40 حرفاً',
   'rate limit': 'أرسلت عدة رسائل مؤخراً، حاول بعد قليل', 'no office': 'لا يوجد أعضاء في المكتب حالياً', 'bad text': 'اكتب رسالة من حرفين إلى 1000 حرف',
   'no names': 'اكتب اسماً واحداً على الأقل', 'bad dept': 'قسم غير معروف', 'bad seat': 'مقعد غير معروف', 'bad name': 'كل اسم بين حرفين و80 حرفاً', 'not found': 'العنصر غير موجود'};
 const emsg = (e, d) => { const m = (e && e.message) || ''; for (const k in ERR) if (m.includes(k)) return ERR[k];
@@ -3179,25 +3223,27 @@ function loadOffice(force){
 }
 const cur = () => OF.terms.find(t => !t.ended_at) || null;
 const seatRow = (tid, k) => OF.seats.find(s => s.term_id === tid && s.seat === k) || null;
-const mySeat = () => { if (!ok()) return null; const c = cur(); if (!c) return null; const s = OF.seats.find(x => x.term_id === c.id && x.user_id === me.id); return s ? s.seat : null; };
-const isLead = () => ['president', 'vice'].includes(mySeat());
+const SORD = SEATS.map(s => s.k);
+const seatsOf = id => { const c = cur(); if (!c || !id) return []; const set = new Set(OF.seats.filter(x => x.term_id === c.id && x.user_id === id).map(x => x.seat)); return SORD.filter(k => set.has(k)); };
+const mySeats = () => ok() ? seatsOf(me.id) : [];
+const isLead = () => mySeats().some(k => k === 'president' || k === 'vice');
 
 // ===== الشارات بجانب الأسماء (الملف، التعليقات، المحادثات، قائمة الأعضاء) =====
 function paintBadges(){
   const c = cur(); if (!c) return;
-  const map = {}; OF.seats.forEach(s => { if (s.term_id === c.id && s.user_id) map[s.user_id] = s.seat; });
+  const map = {}; SORD.forEach(k => OF.seats.forEach(s => { if (s.term_id === c.id && s.user_id && s.seat === k) (map[s.user_id] = map[s.user_id] || []).push(k); }));
   if (!Object.keys(map).length) return;
   document.querySelectorAll('#main a[href^="#u/"]').forEach(a => {
     if (a.dataset.ofb) return; a.dataset.ofb = '1';
     const k = map[a.getAttribute('href').slice(3)]; if (!k) return;
     const cl = a.cloneNode(true); cl.querySelectorAll('.ava,img,svg').forEach(x => x.remove());
     if (!cl.textContent.trim()) return;
-    const tag = `<span class="ofb">${esc(ST(k))}</span>`, b = a.querySelector('b');
+    const tag = k.map(x => `<span class="ofb">${esc(ST(x))}</span>`).join(''), b = a.querySelector('b');
     if (b) b.insertAdjacentHTML('afterend', tag); else a.insertAdjacentHTML('afterend', tag);
   });
   if (view === 'u') {
     const h = document.querySelector('#main .pc h1'), id = (location.hash.split('/')[1] || '');
-    if (h && !h.dataset.ofb) { h.dataset.ofb = '1'; if (map[id]) h.insertAdjacentHTML('afterend', `<div><span class="ofb big">${esc(ST(map[id]))}</span></div>`); }
+    if (h && !h.dataset.ofb) { h.dataset.ofb = '1'; if (map[id]) h.insertAdjacentHTML('afterend', `<div>${map[id].map(x => `<span class="ofb big">${esc(ST(x))}</span>`).join('')}</div>`); }
   }
 }
 let paintQ = false;
@@ -3206,7 +3252,7 @@ try { new MutationObserver(schedulePaint).observe(main, {childList: true, subtre
 let menuFor = null;
 function kick(){
   if (!ok()) return;
-  loadOffice().then(() => { schedulePaint(); const k = mySeat() || '-'; if (menuFor !== k) { menuFor = k; try { drawMenu(); } catch (e) {} } });
+  Promise.all([loadOffice(), loadHeads()]).then(() => { schedulePaint(); const k = mySeats().join(',') + '|' + myHeads().join(','); if (menuFor !== k) { menuFor = k; try { drawMenu(); } catch (e) {} } });
 }
 
 // ===== صفحة فريقنا: المكتب + الشركاء =====
@@ -3266,7 +3312,7 @@ function drawOffice0(){
   const acts = [];
   if (ok() && holders) acts.push('<button class="btn gold" data-a="b4contact">📨 راسل المكتب</button>');
   else if (!me && holders) acts.push('<a class="btn line" href="#login">سجّل الدخول لمراسلة المكتب</a>');
-  if (mySeat()) acts.push('<a class="btn navy" href="#bureau">🏛️ لوحة المكتب</a>');
+  if (mySeats().length) acts.push('<a class="btn navy" href="#bureau">🏛️ لوحة المكتب</a>');
   el.innerHTML = `<div class="ofh"><span class="chip">العهدة ${esc(c.title)}</span>${adm() ? `<div class="ar" style="gap:8px"><a class="btn line sm" href="#roles">🏅 المناصب</a><button class="btn line sm" data-a="b4ren" data-id="${c.id}">✎ العنوان</button><button class="btn no sm" data-a="b4hand">🤝 تسليم المهام</button></div>` : ''}</div>
   <div class="ofg">${SEATS.map(s => seatCard(c, s.k)).join('')}</div>
   ${acts.length ? `<div class="ar" style="justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap">${acts.join('')}</div>` : ''}${archiveHTML()}`;
@@ -3275,8 +3321,8 @@ async function pTeam(){
   main.innerHTML = hero('users', 'فريقنا', 'الفريق والشركاء', 'الوجوه التي تصنع النادي، والجهات التي تدعم رسالته.') +
   `<div class="sec rt" style="padding-top:36px"><div class="ar" style="margin-bottom:14px"><h2 style="margin:0;font-size:1.6rem">المكتب</h2></div><div id="ofx">${loader}</div>
   <div class="ar" style="margin:42px 0 6px"><h2 style="margin:0;font-size:1.6rem">الشركاء والداعمون</h2>${canPartners() ? '<button class="btn gold sm" data-a="b4ptnew">＋ إضافة شريك</button>' : ''}</div><div id="ptl">${loader}</div></div>`;
-  await Promise.all([loadOffice(true), loadPartners()]);
-  drawOffice(); schedulePaint();
+  await Promise.all([loadOffice(true), loadHeads(true), loadPartners()]);
+  drawOffice(); drawPartners(); schedulePaint();
 }
 
 // ===== قائمة كل الأعضاء (للمشرف): مباشرة من جدول الملفات، بلا شرط قسم ولا قبول =====
@@ -3296,14 +3342,16 @@ async function seatModal(k){
   let list = await loadProfiles();
   if (list) list = list.filter(p => p.status === 'approved' || p.role === 'admin');
   else { const r = await sb.from('public_profiles').select('id,full_name,committee').order('full_name'); list = (r.data && r.data.length ? r.data : ((typeof MBL !== 'undefined' && MBL) || [])).slice(); }
-  const used = {}; OF.seats.filter(s => s.term_id === c.id && s.user_id && s.seat !== k).forEach(s => used[s.user_id] = ST(s.seat));
+  const used = {}; OF.seats.filter(s => s.term_id === c.id && s.user_id && s.seat !== k).forEach(s => (used[s.user_id] = used[s.user_id] || []).push(ST(s.seat)));
   const sel = $('#sml'), q = $('#smq'), b = $('#smb'); if (!sel) return;
   const draw = () => { const t = q.value.trim(); const l = list.filter(p => !t || (p.full_name || '').includes(t) || String(p.card_no || '').includes(t));
-    sel.innerHTML = l.length ? l.map(p => { const bad = p.status && p.status !== 'approved', why = bad ? 'غير مقبول' : used[p.id];
-      return `<option value="${esc(p.id)}"${why ? ' disabled' : ''}>${esc(p.full_name)}${me && p.id === me.id ? ' (أنت)' : ''}${why ? ' — ' + why : ''}</option>`; }).join('') : '<option disabled>لا نتائج</option>'; b.disabled = true; };
+    sel.innerHTML = l.length ? l.map(p => { const bad = p.status && p.status !== 'approved', also = used[p.id];
+      return `<option value="${esc(p.id)}"${bad ? ' disabled' : ''}>${esc(p.full_name)}${me && p.id === me.id ? ' (أنت)' : ''}${bad ? ' — غير مقبول' : also ? ' — يشغل أيضاً: ' + also.join('، ') : ''}</option>`; }).join('') : '<option disabled>لا نتائج</option>'; b.disabled = true; };
   draw(); q.oninput = draw; sel.onchange = () => { b.disabled = !sel.value; };
   b.onclick = async () => {
-    if (!sel.value) return; b.disabled = true;
+    if (!sel.value) return;
+    const old = seatRow(c.id, k); if (old && old.user_id && old.user_id !== sel.value && !confirm('«' + old.full_name + '» سيخرج من مقعد ' + ST(k) + '. متابعة؟')) return;
+    b.disabled = true;
     const {error} = await sb.rpc('office_assign', {p_seat: k, p_user: sel.value});
     if (error) { b.disabled = false; return toast(emsg(error)); }
     $('#modal').style.display = 'none'; toast('تم التعيين ✓'); await loadOffice(true); drawOffice(); schedulePaint();
@@ -3373,40 +3421,41 @@ function partnerModal(id){
 
 // ===== لوحة المكتب (رئيس / نائب / كاتب عام / أمين مال) =====
 const TABS = {ov: ['نظرة عامة', 'flask'], ap: ['الطلبات', 'file'], tk: ['المهام', 'key'], ev: ['الفعاليات', 'calendar'], mb: ['الأعضاء', 'users']};
-const tabsFor = k => k === 'president' || k === 'vice' ? ['ov', 'ap', 'tk', 'ev'] : k === 'secretary' ? ['ov', 'ev', 'mb'] : ['ov', 'ev'];
+const TORD = ['ov', 'ap', 'tk', 'ev', 'mb'];
+const tabsFor = ks => { const set = new Set(['ov', 'ev']); ks.forEach(k => { if (k === 'president' || k === 'vice') ['ap', 'tk'].forEach(x => set.add(x)); if (k === 'secretary') set.add('mb'); }); return TORD.filter(x => set.has(x)); };
 const stTxt = {pending: ['قيد المراجعة', 's-pending'], interview: ['مقابلة', 's-pending'], rejected: ['مرفوض', 's-rejected'], approved: ['مقبول', 's-approved']};
 const tkTxt = {todo: ['للتنفيذ', 's-pending'], doing: ['جارية', 's-pending'], done: ['منجزة', 's-approved']};
 const isPastEv = a => a.event_date && new Date(a.event_date) < new Date();
 let BF = {};
 async function pBureau(arg){
-  const k = mySeat(), tabs = tabsFor(k), t = tabs.includes(arg) ? arg : 'ov';
-  main.innerHTML = hero('flask', 'لوحة المكتب', ST(k), 'متابعة عمل النادي. القبول والرفض من اختصاص الموارد البشرية، ونشر الفعاليات من اختصاص قسم التصميم.') +
+  const ks = mySeats(), tabs = tabsFor(ks), t = tabs.includes(arg) ? arg : 'ov';
+  main.innerHTML = hero('flask', 'لوحة المكتب', ks.map(ST).join(' · '), 'متابعة عمل النادي. القبول والرفض من اختصاص الموارد البشرية، ونشر الفعاليات من اختصاص قسم التصميم.') +
   `<div class="sec rt" style="padding-top:12px"><div class="tabs">${tabs.map(x => `<a href="#bureau/${x}" class="${x === t ? 'on' : ''}">${ic(TABS[x][1], 20)}${TABS[x][0]}</a>`).join('')}</div><div id="bc">${loader}</div></div>`;
   const live = () => view === 'bureau' && $('#bc');
-  if (t === 'ov') return bOverview(k, live);
+  if (t === 'ov') return bOverview(ks, live);
   if (t === 'ap') return bApps(live);
   if (t === 'tk') return bTasks(live);
   if (t === 'ev') return bEvents(live);
   if (t === 'mb') return bMembers(live);
 }
-async function bOverview(k, live){
-  const c = cur(), lead = k === 'president' || k === 'vice';
+async function bOverview(ks, live){
+  const c = cur(), lead = ks.some(k => k === 'president' || k === 'vice'), sec = ks.includes('secretary');
   const [ap, tk, ev, mb] = await Promise.all([
     lead ? sb.rpc('office_applications') : null,
     lead ? sb.from('tasks').select('id,status') : null,
     sb.from('activities').select('id,event_date'),
-    k === 'secretary' ? sb.rpc('office_members') : null]);
+    sec ? sb.rpc('office_members') : null]);
   if (!live()) return;
   const cards = [];
   if (lead) {
     const open = (ap && ap.data || []).filter(x => x.status !== 'rejected').length;
     cards.push(['طلبات قيد المراجعة', open, '#bureau/ap'], ['مهام مفتوحة', (tk && tk.data || []).filter(x => x.status !== 'done').length, '#bureau/tk']);
   }
-  if (k === 'secretary') cards.push(['الأعضاء المقبولون', (mb && mb.data || []).length, '#bureau/mb']);
+  if (sec) cards.push(['الأعضاء المقبولون', (mb && mb.data || []).length, '#bureau/mb']);
   cards.push(['فعاليات قادمة', (ev.data || []).filter(a => !isPastEv(a)).length, '#bureau/ev']);
-  $('#bc').innerHTML = `<div class="pan"><div class="ar"><div><b style="font-size:1.15rem">${ST(k)}</b><div class="mut">العهدة ${esc(c ? c.title : '')}</div></div>${c && c.group_id ? `<a class="btn gold sm" href="#group/${c.group_id}">💬 محادثة المكتب</a>` : ''}</div></div>
+  $('#bc').innerHTML = `<div class="pan"><div class="ar"><div><b style="font-size:1.15rem">${esc(ks.map(ST).join(' · '))}</b><div class="mut">العهدة ${esc(c ? c.title : '')}</div></div>${c && c.group_id ? `<a class="btn gold sm" href="#group/${c.group_id}">💬 محادثة المكتب</a>` : ''}</div></div>
   <div class="bst">${cards.map(([l, n, h]) => `<a class="bsc" href="${h}"><b>${n}</b><span>${l}</span></a>`).join('')}</div>
-  <p class="mut" style="line-height:2;margin-top:16px">${lead ? 'صلاحياتك قراءة فقط: الطلبات والمهام والفعاليات. يمكنك مراسلة رئيس القسم المعني مباشرة من صفحة العضو.' : k === 'secretary' ? 'تدير قائمة الأعضاء وتصديرها. الحضور والشهادات ستُضاف لاحقاً.' : 'يمكنك متابعة الفعاليات القادمة.'}</p>`;
+  <p class="mut" style="line-height:2;margin-top:16px">${[lead ? 'صلاحياتك قراءة فقط: الطلبات والمهام والفعاليات. يمكنك مراسلة رئيس القسم المعني مباشرة من صفحة العضو.' : '', sec ? 'تدير قائمة الأعضاء وتصديرها. الحضور والشهادات ستُضاف لاحقاً.' : '', !lead && !sec ? 'يمكنك متابعة الفعاليات القادمة.' : ''].filter(Boolean).join(' ')}</p>`;
 }
 async function bApps(live){
   const r = await sb.rpc('office_applications');
@@ -3542,13 +3591,22 @@ async function dPin(){
   };
 }
 
-// ===== شاشة المناصب (للمشرف): القسم، رئاسة القسم، مقعد المكتب لأي عضو =====
+// ===== شاشة المناصب (للمشرف): القسم، رئاسة الأقسام (أكثر من قسم)، مقاعد المكتب (أكثر من مقعد) =====
 let RL = {list: [], q: '', f: 'ok', n: 40};
-const seatOfId = id => { const c = cur(); if (!c) return ''; const s = OF.seats.find(x => x.term_id === c.id && x.user_id === id); return s ? s.seat : ''; };
+// من يرأس القسم x؟ (head_roles أولاً، ثم العمود القديم head_of لمن لم يُنقل)
+const headRow = x => { const r = HD.rows.find(h => h.committee === x); return r ? r.user_id : null; };
+const headerOf = (x, except) => {
+  const id = headRow(x); const p = id ? RL.list.find(q => q.id === id) : RL.list.find(q => q.head_of === x && q.status === 'approved');
+  return p && p.id !== except ? p : null;
+};
+const headsOf = id => { const s = new Set(HD.rows.filter(r => r.user_id === id).map(r => r.committee)); const p = RL.list.find(q => q.id === id); if (p && p.status === 'approved' && p.head_of) s.add(p.head_of); return HORD.filter(x => s.has(x)); };
+const seatHolder = (k, except) => { const c = cur(); if (!c) return null; const r = OF.seats.find(z => z.term_id === c.id && z.seat === k && z.user_id && z.user_id !== except); return r || null; };
+const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
+const refreshRoles = async () => { const [l] = await Promise.all([loadProfiles(), loadOffice(true), loadHeads(true)]); if (l) RL.list = l; };
 async function pRoles(){
-  main.innerHTML = hero('key', 'المناصب', 'إدارة المناصب', 'ابحث عن أي عضو ثم حدّد قسمه، ورئاسته للقسم، ومقعده في المكتب.') +
+  main.innerHTML = hero('key', 'المناصب', 'إدارة المناصب', 'ابحث عن أي عضو ثم حدّد قسمه، وأقسامه التي يرأسها، ومقاعده في المكتب — ويمكن للعضو الواحد أن يجمع أكثر من منصب.') +
   `<div class="sec rt" style="padding-top:12px"><div id="rlb"></div><div id="rll">${loader}</div></div>`;
-  const [l] = await Promise.all([loadProfiles(), loadOffice(true)]);
+  const [l] = await Promise.all([loadProfiles(), loadOffice(true), loadHeads(true)]);
   if (view !== 'roles' || !$('#rll')) return;
   if (!l) { $('#rll').innerHTML = '<div class="pan c mut">تعذّر تحميل الأعضاء.</div>'; return; }
   RL.list = l; drawRoles();
@@ -3556,7 +3614,7 @@ async function pRoles(){
 function drawRoles(){
   const bx = $('#rlb'); if (!bx) return;
   const c = cur();
-  const heads = COMMS.map(x => { const h = RL.list.find(p => p.head_of === x.k); return `<div class="rlp${h ? '' : ' vac'}"><span>رئيس ${esc(x.t)}</span><b>${h ? esc(h.full_name) : 'شاغر'}</b></div>`; });
+  const heads = COMMS.map(x => { const h = headerOf(x.k); return `<div class="rlp${h ? '' : ' vac'}"><span>رئيس ${esc(x.t)}</span><b>${h ? esc(h.full_name) : 'شاغر'}</b></div>`; });
   const seats = SEATS.map(x => { const r = c ? seatRow(c.id, x.k) : null; return `<div class="rlp${r ? '' : ' vac'}"><span>${x.t}</span><b>${r ? esc(r.full_name) : 'شاغر'}</b></div>`; });
   const f = RL.f, chip = (v, l) => `<button class="btn ${f === v ? 'navy' : 'line'} sm" data-a="b4rf" data-v="${v}">${l}</button>`;
   bx.innerHTML = `${ok() ? '' : `<div class="pan"><b>حسابك كمشرف غير مقبول رسمياً</b><p class="mut" style="line-height:1.9;margin:6px 0 10px">لذلك لا يظهر اسمك في قوائم الأعضاء ولا يمكن تعيينك في منصب. اعتمد حسابك أولاً:</p><button class="btn gold sm" data-a="b4selfok">اعتمد حسابي</button></div>`}
@@ -3574,8 +3632,8 @@ function drawRoleList(){
   const l = RL.list.filter(p => (RL.f === 'all' || (RL.f === 'ok' ? p.status === 'approved' : p.status !== 'approved')) && (!t || (p.full_name || '').includes(t) || String(p.card_no || '').includes(t)));
   const n = $('#rln'); if (n) n.textContent = l.length;
   el.innerHTML = l.slice(0, RL.n).map(p => {
-    const ph = okImg(p.avatar_url), sk = seatOfId(p.id);
-    const tags = [p.role === 'admin' ? '<span class="ofb">مشرف</span>' : '', p.head_of ? `<span class="ofb">رئيس ${esc(cn(p.head_of))}</span>` : '', sk ? `<span class="ofb">${esc(ST(sk))}</span>` : '',
+    const ph = okImg(p.avatar_url);
+    const tags = [p.role === 'admin' ? '<span class="ofb">مشرف</span>' : '', ...headsOf(p.id).map(x => `<span class="ofb">رئيس ${esc(cn(x))}</span>`), ...seatsOf(p.id).map(k => `<span class="ofb">${esc(ST(k))}</span>`),
       p.status !== 'approved' ? `<span class="st2 s-pending">${esc(PST[p.status] || p.status)}</span>` : ''].join('');
     return `<div class="pan" style="padding:14px 16px"><div class="ar"><div class="who" style="gap:12px">${ph ? `<img class="rla" src="${ph}" alt="" loading="lazy">` : `<span class="rla">${esc(ini(p.full_name))}</span>`}
       <div><b>${esc(p.full_name)}${me && p.id === me.id ? ' (أنت)' : ''}</b><div class="mut" style="font-size:.86rem">${p.committee ? esc(cn(p.committee)) : 'بلا قسم'}${p.card_no ? ' · ' + esc(p.card_no) : ''}</div></div></div>
@@ -3584,33 +3642,49 @@ function drawRoleList(){
 }
 function roleModal(id){
   const p = RL.list.find(x => x.id === id); if (!p) return;
-  const c = cur(), now = seatOfId(id), appr = p.status === 'approved';
-  const headOpt = COMMS.map(x => { const h = RL.list.find(q => q.head_of === x.k && q.id !== id); return `<option value="${x.k}"${p.head_of === x.k ? ' selected' : ''}>رئيس ${esc(x.t)}${h ? ' — حالياً: ' + esc(h.full_name) : ''}</option>`; }).join('');
-  const seatOpt = SEATS.map(x => { const r = c ? OF.seats.find(z => z.term_id === c.id && z.seat === x.k && z.user_id && z.user_id !== id) : null; return `<option value="${x.k}"${now === x.k ? ' selected' : ''}>${x.t}${r ? ' — يشغله ' + esc(r.full_name) : ''}</option>`; }).join('');
-  box(`<h3 style="margin-bottom:4px">تعيين منصب</h3><div class="mut" style="margin-bottom:8px">${esc(p.full_name)}</div>
-  ${appr ? '' : `<p style="color:#b42318;line-height:1.9;margin-bottom:6px">هذا الحساب غير مقبول (${esc(PST[p.status] || p.status)})، فلا يمكن تعيينه رئيس قسم أو في المكتب. يمكنك تحديد قسمه فقط.</p>`}
-  <form id="rlf"><div class="fl">القسم</div><select name="c"><option value="">بلا قسم</option>${COMMS.map(x => `<option value="${x.k}"${p.committee === x.k ? ' selected' : ''}>${esc(x.t)}</option>`).join('')}</select>
-  <div class="fl">رئاسة القسم</div><select name="h"${appr ? '' : ' disabled'}><option value="">ليس رئيس قسم</option>${headOpt}</select>
-  <div class="fl">مقعد المكتب</div><select name="s"${appr && c ? '' : ' disabled'}><option value="">لا يشغل مقعداً</option>${seatOpt}</select>
+  const c = cur(), appr = p.status === 'approved', nowS = seatsOf(id), nowH = headsOf(id);
+  const hint = h => h ? `<small class="mut">حالياً: ${esc(h.full_name)} — سيحلّ هذا العضو محلّه</small>` : '';
+  const headRows = COMMS.map(x => `<label class="rlk"><input type="checkbox" name="h" value="${x.k}"${nowH.includes(x.k) ? ' checked' : ''}${appr ? '' : ' disabled'}><span><b>رئيس ${esc(x.t)}</b>${hint(headerOf(x.k, id))}</span></label>`).join('');
+  const seatRows = SEATS.map(x => { const r = seatHolder(x.k, id); return `<label class="rlk"><input type="checkbox" name="s" value="${x.k}"${nowS.includes(x.k) ? ' checked' : ''}${appr && c ? '' : ' disabled'}><span><b>${x.t}</b>${r ? `<small class="mut">يشغله حالياً: ${esc(r.full_name)} — سيحلّ هذا العضو محلّه</small>` : ''}</span></label>`; }).join('');
+  box(`<h3 style="margin-bottom:4px">تعيين المناصب</h3><div class="mut" style="margin-bottom:8px">${esc(p.full_name)}</div>
+  ${appr ? '<p class="mut" style="line-height:1.9;margin-bottom:6px">اختر ما تشاء: يمكن للعضو أن يرأس أكثر من قسم ويشغل أكثر من مقعد في المكتب في نفس الوقت.</p>' : `<p style="color:#b42318;line-height:1.9;margin-bottom:6px">هذا الحساب غير مقبول (${esc(PST[p.status] || p.status)})، فلا يمكن تعيينه رئيس قسم أو في المكتب. يمكنك تحديد قسمه فقط.</p>`}
+  <form id="rlf"><div class="fl">قسمه الأساسي</div><select name="c"></select>
+  <div class="fl">رئاسة الأقسام</div><div class="rlkg">${headRows}</div>
+  <div class="fl">مقاعد المكتب</div><div class="rlkg">${seatRows}</div>
   ${c ? '' : '<p class="mut" style="font-size:.88rem;margin-top:6px">ابدأ عهدة المكتب من صفحة فريقنا لتفعيل المقاعد.</p>'}
   <button class="btn navy block" style="margin-top:16px">حفظ</button></form>`);
-  const f = $('#rlf'), sync = () => { if (f.h.value) { f.c.value = f.h.value; f.c.disabled = true; } else f.c.disabled = false; };
-  f.h.onchange = sync; sync();
+  const f = $('#rlf'), sel = f.c, chk = n => [...f.querySelectorAll(`input[name="${n}"]`)].filter(i => i.checked).map(i => i.value);
+  // القسم الأساسي: إن كان رئيساً لأقسام فيُختار من بينها فقط (كما يفعل الخادم)
+  const sync = () => {
+    const hs = HORD.filter(x => chk('h').includes(x)), cv = sel.value || (p.committee || '');
+    const opts = hs.length ? COMMS.filter(x => hs.includes(x.k)) : COMMS;
+    const keep = hs.length ? (hs.includes(cv) ? cv : hs[0]) : cv;
+    sel.innerHTML = (hs.length ? '' : '<option value="">بلا قسم</option>') + opts.map(x => `<option value="${x.k}"${x.k === keep ? ' selected' : ''}>${esc(x.t)}</option>`).join('');
+    sel.value = keep; sel.disabled = hs.length === 1;
+  };
+  sel.innerHTML = '<option value="">بلا قسم</option>' + COMMS.map(x => `<option value="${x.k}"${p.committee === x.k ? ' selected' : ''}>${esc(x.t)}</option>`).join('');
+  f.querySelectorAll('input[name="h"]').forEach(i => i.onchange = sync); sync();
   f.onsubmit = async e => {
     e.preventDefault();
-    const comm = f.h.value || f.c.value || null, head = f.h.value || null, seat = f.s.value || null, seatChanged = !f.s.disabled && seat !== (now || null);
-    const oh = head && RL.list.find(x => x.head_of === head && x.id !== id);
-    const os = seatChanged && seat && c && OF.seats.find(z => z.term_id === c.id && z.seat === seat && z.user_id && z.user_id !== id);
-    let msg = ''; if (oh) msg += `رئيس القسم الحالي «${oh.full_name}» سيصبح عضواً عادياً.\n`; if (os) msg += `«${os.full_name}» سيخرج من مقعد ${ST(seat)}.\n`;
+    const hs = HORD.filter(x => chk('h').includes(x)), ss = SORD.filter(x => chk('s').includes(x));
+    const comm = hs.length ? (hs.includes(sel.value) ? sel.value : hs[0]) : (sel.value || null);
+    const seatsChanged = !f.querySelector('input[name="s"]').disabled && !sameSet(ss, nowS);
+    const headsChanged = !f.querySelector('input[name="h"]').disabled && !sameSet(hs, nowH);
+    const commChanged = comm !== (p.committee || null);
+    if (!seatsChanged && !headsChanged && !commChanged) { $('#modal').style.display = 'none'; return; }
+    let msg = '';
+    if (headsChanged) hs.filter(x => !nowH.includes(x)).forEach(x => { const o = headerOf(x, id); if (o) msg += `«${o.full_name}» سيخسر رئاسة ${cn(x)}.\n`; });
+    if (seatsChanged) ss.filter(x => !nowS.includes(x)).forEach(x => { const o = seatHolder(x, id); if (o) msg += `«${o.full_name}» سيخرج من مقعد ${ST(x)}.\n`; });
     if (msg && !confirm(msg + 'متابعة؟')) return;
     const btn = f.querySelector('button.navy'); btn.disabled = true;
     try {
-      if (seatChanged) { const r = await sb.rpc('office_set_seat', {p_user: id, p_seat: seat}); if (r.error) throw r.error; }
-      if (comm !== (p.committee || null) || head !== (p.head_of || null)) { const r = await sb.rpc('admin_set_roles', {p_user: id, p_committee: comm, p_head: head}); if (r.error) throw r.error; }
+      if (seatsChanged) { const r = await sb.rpc('office_set_seats', {p_user: id, p_seats: ss}); if (r.error) throw r.error; }
+      if (headsChanged || commChanged) { const r = await sb.rpc('admin_set_roles', {p_user: id, p_committee: comm, p_heads: hs}); if (r.error) throw r.error; }
     } catch (err) { btn.disabled = false; return toast(emsg(err)); }
-    if (me && id === me.id) { me.committee = comm; me.head_of = head; try { drawMenu(); } catch (x) {} }
     $('#modal').style.display = 'none'; toast('تم الحفظ ✓');
-    const [l] = await Promise.all([loadProfiles(), loadOffice(true)]); if (l) RL.list = l; drawRoles();
+    await refreshRoles();
+    if (me && id === me.id) { me.committee = comm; me.head_of = (headsChanged ? hs : nowH).length ? comm : null; menuFor = null; try { drawMenu(); } catch (x) {} kick(); }
+    drawRoles();
   };
 }
 
@@ -3624,8 +3698,8 @@ window.render = async function(){
       if (v0 === 'roles') { if (!isAdm()) return nav('#home'); }
       else {
         if (!ok()) return nav('#home');
-        if (v0 === 'bureau') { await loadOffice(); if (!mySeat()) return nav('#home'); }
-        if (v0 === 'design' && !canDesign()) return nav('#home');
+        if (v0 === 'bureau') { await loadOffice(); if (!mySeats().length) return nav('#home'); }
+        if (v0 === 'design') { await loadHeads(true); if (!canDesign()) return nav('#home'); }
       }
     }
     leaveChat(); const mn = $('#menu'); if (mn) mn.style.display = 'none'; const md = $('#modal'); if (md) md.style.display = 'none';
@@ -3641,7 +3715,7 @@ window.drawMenu = function(){
   const m = $('#menu'); if (!m || !me) return;
   m.querySelectorAll('[data-b4]').forEach(x => x.remove());
   const items = [];
-  if (ok() && mySeat()) items.push('<a data-b4="1" href="#bureau">🏛️ لوحة المكتب</a>');
+  if (ok() && mySeats().length) items.push('<a data-b4="1" href="#bureau">🏛️ لوحة المكتب</a>');
   if (ok() && canDesign() && me.role !== 'admin') items.push('<a data-b4="1" href="#design">🎨 لوحة التصميم</a>');
   if (isAdm()) items.push('<a data-b4="1" href="#roles">🏅 المناصب</a>');
   if (!items.length) return;
