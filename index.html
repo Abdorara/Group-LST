@@ -3901,7 +3901,7 @@ async function loadPerms(){
 }
 const canMake = () => ok() && (PM.all || PM.heads.length > 0);
 const canMgr = c => ok() && !!c && (PM.all || PM.heads.includes(c.committee));
-const depts = () => PM.all ? ['hr', 'ext', 'design'] : PM.heads.slice();
+const depts = () => PM.all ? ['hr', 'ext', 'design', 'org'] : PM.heads.slice();
 
 // ---- يوتيوب ----
 let ytP = null;
