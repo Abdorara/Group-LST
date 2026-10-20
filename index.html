@@ -5,6 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'">
 <title>LST CLUB</title>
+<script>
+window.__FR_DICT = (window.__FR_DICT || '') + `
+100pkop|Établir les plans et organiser le temps
+1fyp3dx|Suivre l'exécution des tâches
+1hjzz2f|Organiser les réunions et les événements
+1jkmahc|Répartition des tâches et des responsabilités, coordination des efforts des membres et suivi du travail pour garantir la réalisation des objectifs du club
+846xx|Responsable de l'organisation
+8k6cb5|L'activation du département Organisation est incomplète : modifiez la ligne const HORD du bloc du lot 4 (voir les instructions), puis réessayez
+9wsxip|Répartir les tâches et les responsabilités
+epy5m6|Résoudre les problèmes et garantir la discipline
+lbeold|Coordonner les membres et les équipes
+tnmbcf|Organisation
+vngwq5|Département Organisation
+`;
+</script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b1430">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -5994,6 +6009,84 @@ document.addEventListener('change', e => {
 document.addEventListener('visibilitychange', () => { if (!ch) return; try { document.hidden ? ch.untrack() : ch.track({t: Date.now()}); } catch (e) {} });
 window.addEventListener('pagehide', () => { try { if (ch) ch.untrack(); } catch (e) {} });
 kick();
+})();
+</script>
+<style>
+.tk8{margin-top:16px;padding-top:14px;border-top:1px dashed var(--bd)}
+.tk8>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;font-weight:700;color:var(--goldtx);list-style:none;-webkit-tap-highlight-color:transparent}
+.tk8>summary::-webkit-details-marker{display:none}
+.tk8>summary::after{content:"";width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-4px;transition:transform .2s}
+.tk8[open]>summary::after{transform:rotate(225deg);margin-top:4px}
+.tk8 ul{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.tk8 li{position:relative;padding-inline-start:22px;color:var(--mut);line-height:1.8;font-size:.95rem}
+.tk8 li::before{content:"";position:absolute;inset-inline-start:0;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+</style>
+<script>
+(() => {
+// ================= قسم «التنظيم» =================
+if (typeof COMMS === 'undefined' || !Array.isArray(COMMS)) return;
+
+const NEW = [
+  {k: 'org', t: 'التنظيم', i: 'grid', d: 'عملية توزيع المهام والمسؤوليات وتنسيق جهود الأعضاء ومتابعة العمل لضمان تحقيق أهداف النادي.'}
+];
+// مهام كل قسم (تظهر في بطاقة القسم بالصفحة الرئيسية). يمكن إضافة أقسام أخرى هنا بنفس الطريقة.
+const TASKS = {
+  org: [
+    'توزيع المهام والمسؤوليات',
+    'وضع الخطط وتنظيم الوقت',
+    'التنسيق بين الأعضاء والفرق',
+    'متابعة تنفيذ المهام',
+    'تنظيم الاجتماعات والفعاليات',
+    'حل المشكلات وضمان الانضباط'
+  ]
+};
+
+let added = false;
+NEW.forEach(n => { if (!COMMS.some(c => c.k === n.k)) { COMMS.push(n); added = true; } });
+
+// يضيف قائمة «مهام القسم» داخل بطاقات الأقسام (الصفحة الرئيسية). التطابق بالترتيب، فلا يتأثر بلغة الواجهة.
+const decorate = () => {
+  try {
+    document.querySelectorAll('.cards').forEach(box => {
+      const cards = Array.from(box.children).filter(e => e.classList.contains('cd'));
+      if (cards.length !== COMMS.length || cards.some(e => e.querySelector('.ico.g'))) return;
+      cards.forEach((el, i) => {
+        const list = TASKS[COMMS[i].k];
+        if (!list || el.querySelector('.tk8')) return;
+        el.insertAdjacentHTML('beforeend', '<details class="tk8"><summary>مهام القسم</summary><ul>' + list.map(x => '<li>' + x + '</li>').join('') + '</ul></details>');
+      });
+    });
+  } catch (e) { console.error(e); }
+};
+
+let tm = 0;
+const kick = () => { if (!tm) tm = setTimeout(() => { tm = 0; decorate(); }, 30); };
+
+const _render = window.render;
+if (typeof _render === 'function') {
+  window.render = async function () { const r = await _render.apply(this, arguments); decorate(); return r; };
+}
+const m = typeof main !== 'undefined' ? main : document.getElementById('main');
+if (m) new MutationObserver(kick).observe(m, {childList: true, subtree: true});
+
+// حارس أمان: لو لم يتم تعديل السطر const HORD في كتلة الدفعة 4 يتجاهل النموذج رئاسة التنظيم ويحفظ بدونها بصمت.
+// نمنع الحفظ عندها ونظهر تنبيها بدل أن تضيع الرئاسة.
+document.addEventListener('submit', e => {
+  const f = e.target;
+  if (!f || f.id !== 'rlf') return;
+  const o = f.querySelector('input[name="h"][value="org"]');
+  if (!o || !o.checked || o.disabled) return;
+  const sl = f.elements.c;
+  if (sl && sl.querySelector('option[value="org"]') && !sl.querySelector('option[value=""]')) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  toast('لم يكتمل تفعيل قسم التنظيم: يجب تعديل السطر const HORD في كتلة الدفعة 4 (انظر التعليمات) ثم إعادة المحاولة');
+}, true);
+
+// إن كانت صفحة معروضة فعلا (الرئيسية أو نموذج الانضمام أو المرشحات) نعيد رسمها لتظهر الأقسام الجديدة
+if (added && m && m.querySelector('.cards, input[name="comm"], #fc, #mc, #tkc')) {
+  try { Promise.resolve(window.render()).catch(() => {}); } catch (e) {}
+}
+decorate();
 })();
 </script>
 </body>
