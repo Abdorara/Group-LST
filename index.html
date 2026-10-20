@@ -6245,5 +6245,93 @@ decorate();
 fixTree(document.body);
 })();
 </script>
+<style>
+.del10{margin-top:20px;padding-top:14px;border-top:1px dashed var(--bd);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.del10 small{line-height:1.8}
+.del10r{color:var(--no);margin-inline-start:6px}
+</style>
+<script>
+(() => {
+// ================= حذف عضو بشكل نهائي (للمشرف) =================
+if (typeof showP !== 'function') return;
+const FR = (() => { try { return localStorage.getItem('lst_lang') === 'fr'; } catch (e) { return false; } })();
+const L = FR ? {
+  btn: 'Supprimer définitivement ce membre',
+  row: 'Supprimer',
+  note: "Supprime le compte et tout ce qui s'y rattache (messages, commentaires, inscriptions, progression, certificats). Le membre pourra se réinscrire ensuite.",
+  c1: n => 'Supprimer définitivement « ' + n + ' » ?\n\nSon compte et toutes ses données seront effacés, sans retour possible. Il pourra se réinscrire ensuite avec le même numéro étudiant.',
+  c2: card => 'Pour confirmer, saisissez son numéro étudiant : ' + card,
+  bad: 'Le numéro saisi ne correspond pas : suppression annulée',
+  ok: n => n + ' : membre supprimé',
+  office: "Ce membre occupe un poste du bureau : retirez-le d'abord depuis « Postes »",
+  fail: 'Échec de la suppression'
+} : {
+  btn: 'حذف هذا العضو بشكل نهائي',
+  row: 'حذف نهائي',
+  note: 'يحذف الحساب وكل ما يخصه (الرسائل، التعليقات، التسجيلات، التقدم في الدورات، الشهادات). ويستطيع العضو التسجيل من جديد بعد ذلك.',
+  c1: n => 'حذف «' + n + '» بشكل نهائي؟\n\nسيمحى حسابه وكل بياناته ولا يمكن التراجع. وبعدها يستطيع التسجيل من جديد بنفس الرقم الجامعي.',
+  c2: card => 'للتأكيد اكتب رقمه الجامعي: ' + card,
+  bad: 'الرقم المكتوب غير مطابق فتم إلغاء الحذف',
+  ok: n => 'تم حذف ' + n,
+  office: 'هذا العضو له منصب في المكتب: أزل منصبه من «المناصب» قبل حذفه',
+  fail: 'تعذر الحذف'
+};
+const _show = window.showP;
+window.showP = function (id) {
+  const r = _show.apply(this, arguments);
+  try {
+    const p = (typeof P !== 'undefined' ? P : []).find(x => x.id === id), bx = document.querySelector('#modal .box');
+    if (p && bx && typeof me !== 'undefined' && me && me.role === 'admin' && p.id !== me.id && p.role !== 'admin' && !bx.querySelector('[data-a="del10"]')) {
+      bx.insertAdjacentHTML('beforeend', '<div class="del10"><button type="button" class="btn no sm" data-a="del10" data-nofr="1" data-id="' + esc(p.id) + '">' + L.btn + '</button><small class="mut" data-nofr="1">' + L.note + '</small></div>');
+    }
+  } catch (e) { console.error(e); }
+  return r;
+};
+
+// زر «حذف نهائي» بجانب «إيقاف» في جدول أعضاء النادي
+const decoRows = () => {
+  try {
+    document.querySelectorAll('#tb button[data-a="rej"][data-id]').forEach(r => {
+      if (r.parentElement.querySelector('[data-a="del10"]')) return;
+      const id = r.dataset.id, p = (typeof P !== 'undefined' ? P : []).find(x => x.id === id);
+      if (!p || p.role === 'admin' || (typeof me !== 'undefined' && me && p.id === me.id)) return;
+      r.insertAdjacentHTML('afterend', '<button type="button" class="btn line sm del10r" data-a="del10" data-nofr="1" data-id="' + esc(id) + '">' + L.row + '</button>');
+    });
+  } catch (e) { console.error(e); }
+};
+const _mb = window.tMb;
+if (typeof _mb === 'function') {
+  window.tMb = function () {
+    const r = _mb.apply(this, arguments);
+    decoRows();
+    const tb = document.getElementById('tb');
+    if (tb) new MutationObserver(decoRows).observe(tb, {childList: true, subtree: true});
+    return r;
+  };
+}
+let busy = false;
+document.addEventListener('click', async e => {
+  const b = e.target && e.target.closest ? e.target.closest('[data-a="del10"]') : null;
+  if (!b) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  if (busy) return;
+  const id = b.dataset.id, p = (typeof P !== 'undefined' ? P : []).find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(L.c1(p.full_name))) return;
+  const v = prompt(L.c2(p.card_no));
+  if (v === null) return;
+  if (String(v).trim().toLowerCase() !== String(p.card_no || '').trim().toLowerCase()) return toast(L.bad);
+  busy = true; b.disabled = true;
+  try {
+    const {error} = await sb.rpc('admin_delete_member', {p_user: id});
+    if (error) { b.disabled = false; return toast(/office holder/.test(error.message || '') ? L.office : L.fail); }
+    const md = document.getElementById('modal'); if (md) md.style.display = 'none';
+    toast(L.ok(p.full_name));
+    if (typeof adminTab === 'function') adminTab();
+  } catch (x) { b.disabled = false; toast(L.fail); }
+  finally { busy = false; }
+}, true);
+})();
+</script>
 </body>
 </html>
