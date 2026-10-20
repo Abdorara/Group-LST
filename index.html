@@ -8,14 +8,19 @@
 <script>
 window.__FR_DICT = (window.__FR_DICT || '') + `
 100pkop|Établir les plans et organiser le temps
+101qomn|Responsable du département Ressources humaines
 1fyp3dx|Suivre l'exécution des tâches
 1hjzz2f|Organiser les réunions et les événements
+1jienpa|Responsable du département Design et Médias
 1jkmahc|Répartition des tâches et des responsabilités, coordination des efforts des membres et suivi du travail pour garantir la réalisation des objectifs du club
-846xx|Responsable de l'organisation
+1ngw1xp|Responsable du département Relations extérieures et Communication
 8k6cb5|L'activation du département Organisation est incomplète : modifiez la ligne const HORD du bloc du lot 4 (voir les instructions), puis réessayez
+9ula5n|Responsable du département Organisation
 9wsxip|Répartir les tâches et les responsabilités
+e503tp|Département Ressources humaines
 epy5m6|Résoudre les problèmes et garantir la discipline
 lbeold|Coordonner les membres et les équipes
+nj90zj|Département Relations extérieures et Communication
 tnmbcf|Organisation
 vngwq5|Département Organisation
 `;
@@ -6027,7 +6032,7 @@ kick();
 if (typeof COMMS === 'undefined' || !Array.isArray(COMMS)) return;
 
 const NEW = [
-  {k: 'org', t: 'التنظيم', i: 'grid', d: 'عملية توزيع المهام والمسؤوليات وتنسيق جهود الأعضاء ومتابعة العمل لضمان تحقيق أهداف النادي.'}
+  {k: 'org', t: 'قسم التنظيم', i: 'grid', d: 'عملية توزيع المهام والمسؤوليات وتنسيق جهود الأعضاء ومتابعة العمل لضمان تحقيق أهداف النادي.'}
 ];
 // مهام كل قسم (تظهر في بطاقة القسم بالصفحة الرئيسية). يمكن إضافة أقسام أخرى هنا بنفس الطريقة.
 const TASKS = {
@@ -6043,6 +6048,43 @@ const TASKS = {
 
 let added = false;
 NEW.forEach(n => { if (!COMMS.some(c => c.k === n.k)) { COMMS.push(n); added = true; } });
+
+const FRL = (() => { try { return localStorage.getItem('lst_lang') === 'fr'; } catch (e) { return false; } })();
+const HAS_AR = /[ء-ي]/;
+
+// الوضع الفرنسي: أوصاف الأقسام الثلاثة القديمة (تطبق حسب مفتاح القسم، فلا تتأثر بأي اختلاف بسيط في النص العربي)
+if (FRL) {
+  const FRD = {
+    hr: "Chargé de la gestion des membres du club. Il s'occupe du recrutement, de l'organisation interne, du suivi des équipes et du maintien d'un bon climat de travail afin d'assurer une coordination efficace entre tous les membres.",
+    ext: "Chargé de la communication entre le club et ses partenaires, sponsors et autres organismes. Il est responsable de la diffusion de l'information, de la gestion des collaborations et du maintien d'une image positive du club à l'extérieur.",
+    design: "Responsable de la création de l'identité visuelle du club. Il conçoit les affiches, les publications des réseaux sociaux, les vidéos, les photos et tous les contenus créatifs. Il contribue aussi à promouvoir les activités du club de manière attrayante et professionnelle."
+  };
+  COMMS.forEach(c => { if (FRD[c.k] && HAS_AR.test(c.d || '')) { c.d = FRD[c.k]; added = true; } });
+}
+
+// نصوص عامة في الموقع تذكر عدد الأقسام أو لم تترجم بعد (تطبق على النص الظاهر)
+const RULES = FRL ? [
+  [/ثلاث\s+لجان\s+متخصصة\s+تعمل\s+جنب\S*\s+إلى\s+جنب/, 'Quatre comités spécialisés qui travaillent main dans la main'],
+  [/تثبيت\s+التطبيق/, "Installer l'application"],
+  [/\bdes trois départements\b/, 'des quatre départements'],
+  [/^\s*مجتمع\s+طلابي\s+يعمل\s+على\s+نشر[\s\S]*$/, "Une communauté d'étudiants qui œuvre à diffuser la culture scientifique et à développer les compétences de recherche et les compétences techniques depuis 2024, avec un programme riche d'ateliers, d'événements et de projets tout au long de l'année."]
+] : [
+  [/ثلاث\s+لجان/, 'أربع لجان'],
+  [/الأقسام\s+الثلاثة/, 'الأقسام الأربعة']
+];
+const fixNode = n => {
+  try {
+    const t = n.data; if (!t || t.length < 4) return;
+    const p = n.parentElement; if (!p || p.closest('[data-nofr],textarea,script,style')) return;
+    for (const [re, to] of RULES) { if (re.test(t)) { n.data = t.replace(re, to); return; } }
+  } catch (e) {}
+};
+const fixTree = root => {
+  if (!root) return;
+  if (root.nodeType === 3) return fixNode(root);
+  if (root.nodeType !== 1) return;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) fixNode(n);
+};
 
 // يضيف قائمة «مهام القسم» داخل بطاقات الأقسام (الصفحة الرئيسية). التطابق بالترتيب، فلا يتأثر بلغة الواجهة.
 const decorate = () => {
@@ -6068,6 +6110,8 @@ if (typeof _render === 'function') {
 }
 const m = typeof main !== 'undefined' ? main : document.getElementById('main');
 if (m) new MutationObserver(kick).observe(m, {childList: true, subtree: true});
+new MutationObserver(ms => { for (const x of ms) { if (x.type === 'characterData') fixNode(x.target); else x.addedNodes.forEach(fixTree); } })
+  .observe(document.body, {childList: true, subtree: true, characterData: true});
 
 // حارس أمان: لو لم يتم تعديل السطر const HORD في كتلة الدفعة 4 يتجاهل النموذج رئاسة التنظيم ويحفظ بدونها بصمت.
 // نمنع الحفظ عندها ونظهر تنبيها بدل أن تضيع الرئاسة.
@@ -6087,6 +6131,7 @@ if (added && m && m.querySelector('.cards, input[name="comm"], #fc, #mc, #tkc'))
   try { Promise.resolve(window.render()).catch(() => {}); } catch (e) {}
 }
 decorate();
+fixTree(document.body);
 })();
 </script>
 </body>
