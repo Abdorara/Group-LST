@@ -3174,7 +3174,7 @@ const ok = () => !!me && me.status === 'approved';
 const adm = () => ok() && me.role === 'admin';
 const isAdm = () => !!me && me.role === 'admin';
 const PST = {pending: 'قيد المراجعة', interview: 'مقابلة', rejected: 'مرفوض', banned: 'موقوف', approved: 'مقبول'};
-const HORD = ['hr', 'ext', 'design'];
+const HORD = ['hr', 'ext', 'design', 'org'];
 // رئاسات الأقسام: جدول head_roles (يمكن للعضو رئاسة أكثر من قسم) + العمود القديم head_of للتوافق
 let HD = {at: 0, rows: [], err: false}, hdP = null;
 function loadHeads(force){
