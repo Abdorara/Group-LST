@@ -6618,5 +6618,283 @@ setInterval(sweep, 2500);
 addEventListener('hashchange', () => setTimeout(onScroll, 80));
 })();
 </script>
+<style id="b12css">
+.r12 .g2>div{min-width:0}
+.r12 input[type=date],.r12 input[type=time],.r12 input[type=datetime-local]{min-width:0;width:100%;max-width:100%;box-sizing:border-box}
+.r12 .who>div{min-width:0}
+.r12 .who b{word-break:break-word}
+.r12 .pan .ar{flex-wrap:wrap;gap:10px}
+</style>
+<script>
+window.B12T = {
+  mReq: ['📋 طلبات الانضمام', "📋 Demandes d'adhésion"], mOrg: ['📁 لوحة التنظيم', '📁 Espace Organisation'],
+  hrPill: ['قسم الموارد البشرية', 'Département des ressources humaines'], rqH: ['طلبات الانضمام', "Demandes d'adhésion"],
+  rqSub: ['راجع الطلبات الجديدة واتخذ القرار: قبول أو مقابلة أو رفض.', 'Examinez les nouvelles demandes et décidez : accepter, entretien ou refus.'],
+  search: ['ابحث بالاسم أو الرقم الجامعي…', 'Rechercher par nom ou numéro étudiant…'],
+  cnt: [n => n + ' طلب ينتظر القرار', n => n + (n > 1 ? ' demandes en attente' : ' demande en attente')],
+  none: ['لا توجد طلبات بانتظار القرار.', 'Aucune demande en attente.'],
+  st_pending: ['قيد المراجعة', 'En attente'], st_interview: ['مقابلة', 'Entretien'],
+  view: ['عرض', 'Voir'], ok: ['قبول', 'Accepter'], iv: ['مقابلة', 'Entretien'], no: ['رفض', 'Refuser'],
+  card: ['الرقم الجامعي', 'N° étudiant'], phone: ['الجوال', 'Téléphone'], dept: ['القسم', 'Filière'], year: ['السنة', 'Année'],
+  comm: ['اللجنة المطلوبة', 'Comité souhaité'], date: ['تاريخ الطلب', 'Date de la demande'], why: ['لماذا يريد الانضمام؟', 'Motivation'],
+  cert: ['الشهادة', 'Certificat'], idc: ['بطاقة التعريف', "Carte d'identité"], nodoc: ['لا توجد وثائق', 'Aucun document'],
+  cRej: [n => 'رفض طلب «' + n + '»؟ لا يتراجع عن الرفض إلا المشرف.', n => 'Refuser la demande de « ' + n + ' » ? Seul un administrateur pourra revenir dessus.'],
+  doneOk: [n => 'تم قبول ' + n, n => n + ' : accepté(e)'], doneNo: [n => 'تم رفض ' + n, n => n + ' : refusé(e)'], doneIv: [n => 'تم تحويل ' + n + ' إلى المقابلة', n => n + ' : convoqué(e) à un entretien'],
+  gone: ['سبقك أحد إلى مراجعة هذا الطلب', 'Cette demande a déjà été traitée'], denied: ['غير مسموح لك بهذا الإجراء', "Vous n'avez pas ce droit"],
+  fail: ['تعذر التنفيذ', "Échec de l'opération"], sql: ['نفذ كود SQL الخاص بالدفعة 12 أولا', "Exécutez d'abord le SQL du lot 12"], docfail: ['تعذر فتح الملف', "Impossible d'ouvrir le fichier"],
+  orgPill: ['قسم التنظيم', 'Département Organisation'], orgH: ['لوحة التنظيم', 'Espace Organisation'],
+  orgSub: ['انشر الفعاليات، وأدر الإعلان المثبت.', "Publiez les événements et gérez l'annonce épinglée."],
+  tEv: ['الفعاليات', 'Événements'], tPin: ['الإعلان المثبت', 'Annonce épinglée'],
+  newEv: ['فعالية / منشور جديد', 'Nouvel événement / publication'], evTitle: ['عنوان الفعالية', "Titre de l'événement"],
+  evTitlePh: ['مثال: ورشة عمل: مدخل إلى علم البيانات', "Exemple : Atelier d'initiation à la science des données"],
+  evDate: ['التاريخ', 'Date'], evTime: ['الوقت (اختياري)', 'Heure (facultatif)'], evLoc: ['الموقع', 'Lieu'],
+  evLocPh: ['مثال: قاعة المؤتمرات – المبنى الرئيسي', 'Exemple : salle des conférences – bâtiment principal'],
+  evLink: ['رابط التسجيل (اختياري)', "Lien d'inscription (facultatif)"], evCap: ['عدد المقاعد (اختياري)', 'Nombre de places (facultatif)'],
+  evImgs: ['صور (حتى 4)', "Images (jusqu'à 4)"], evDesc: ['الوصف', 'Description'], evDescPh: ['وصف موجز للفعالية وما ينتظر الحضور…', "Brève description de l'événement…"],
+  publish: ['نشر', 'Publier'], evList: ['الفعاليات', 'Événements'], evNone: ['لا توجد فعاليات بعد.', "Aucun événement pour l'instant."],
+  past: ['منتهية', 'Terminé'], reg: [n => n + ' مسجل', n => n + ' inscrit(s)'], del: ['حذف', 'Supprimer'],
+  cDel: ['حذف هذه الفعالية نهائيا؟', 'Supprimer définitivement cet événement ?'], cDelPin: ['حذف هذا الإعلان نهائيا؟', 'Supprimer définitivement cette annonce ?'], posted: ['تم النشر ✓', 'Publié ✓'], postFail: ['تعذر النشر', 'Échec de la publication'], delFail: ['تعذر الحذف', 'Échec de la suppression'],
+  pinInfo: ['شريط يظهر أعلى الصفحة الرئيسية لكل الزوار. يظهر أحدث إعلان ساري فقط (قد يستغرق التحديث دقيقة).', "Bandeau affiché en haut de la page d'accueil pour tous les visiteurs. Seule l'annonce valide la plus récente est affichée (la mise à jour peut prendre une minute)."],
+  newPin: ['إعلان جديد', 'Nouvelle annonce'], pinTxt: ['نص الإعلان', "Texte de l'annonce"], pinTxtPh: ['مثال: آخر أجل للتسجيل في ورشة الذكاء الاصطناعي: 30 أكتوبر', "Exemple : dernier délai d'inscription à l'atelier d'IA : 30 octobre"],
+  pinLink: ['رابط (اختياري)', 'Lien (facultatif)'], pinBtn: ['نص الزر', 'Texte du bouton'], pinBtnPh: ['سجل الآن', "S'inscrire"],
+  pinExp: ['ينتهي في (اختياري)', 'Expire le (facultatif)'], pinPost: ['نشر الإعلان', "Publier l'annonce"], pinAll: ['الإعلانات', 'Annonces'], pinNone: ['لا توجد إعلانات بعد.', "Aucune annonce pour l'instant."],
+  hidden: ['مخفي', 'Masquée'], ended: ['منتهي', 'Expirée'], live: ['يظهر الآن', 'Affichée'], valid: ['ساري', 'Valide'],
+  hide: ['إخفاء', 'Masquer'], show: ['إظهار', 'Afficher'], noExp: ['بلا تاريخ انتهاء', "Sans date d'expiration"], expAt: ['ينتهي ', 'Expire le '],
+  linkBad: ['الرابط يبدأ بـ http أو https أو # مثل #join', 'Le lien commence par http, https ou # (ex. #join)'], pinPosted: ['تم نشر الإعلان ✓', 'Annonce publiée ✓'], loadFail: ['تعذر التحميل. تأكد من تنفيذ كود SQL الخاص بالدفعة 12.', 'Chargement impossible. Vérifiez que le SQL du lot 12 a été exécuté.']
+};
+</script>
+<script>
+(() => {
+'use strict';
+// ===== الدفعة 12: صفحة «طلبات الانضمام» للموارد البشرية + «لوحة التنظيم» لقسم التنظيم =====
+if (!window.B12T || typeof render !== 'function' || typeof sb === 'undefined' || typeof drawShell !== 'function') return;
+const FR = () => { try { return localStorage.getItem('lst_lang') === 'fr'; } catch (e) { return false; } };
+const T = window.B12T;
+const t = (k, a) => { const v = (T[k] || [k, k])[FR() ? 1 : 0]; return typeof v === 'function' ? v(a) : v; };
+const ok = () => !!me && me.status === 'approved';
+const loc = () => FR() ? 'fr-FR' : 'ar-u-nu-latn';
+const dday = d => d ? new Date(d).toLocaleDateString(loc(), {year: 'numeric', month: 'long', day: 'numeric'}) : '';
+const dtm = d => d ? new Date(d).toLocaleString(loc(), {dateStyle: 'medium', timeStyle: 'short'}) : '';
+const initials = n => (n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('');
+const hero = (icon, pill, h1, sub) => '<section class="dark ph"><span class="pill">' + ic(icon, 18) + ' ' + esc(pill) + '</span><h1>' + esc(h1) + '</h1><p>' + esc(sub) + '</p></section>';
+const MEDIA = /^https:\/\/[A-Za-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/media\/[A-Za-z0-9._\/-]+$/;
+const okImg = u => MEDIA.test(u || '') ? esc(u) : '';
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const modalBox = html => { const m = document.getElementById('modal'); m.innerHTML = '<div class="box">' + closeX + html + '</div>'; m.style.display = 'flex'; };
+
+// ===== ما يحق للمستخدم (يسأل الخادم) =====
+let PR = {uid: null, at: 0, v: null, p: null, drawn: null};
+function loadPerms(force) {
+  if (!ok()) { PR = {uid: null, at: 0, v: null, p: null, drawn: null}; return Promise.resolve(null); }
+  if (PR.uid !== me.id) PR = {uid: me.id, at: 0, v: null, p: null, drawn: null};
+  if (!force && PR.v && Date.now() - PR.at < 60000) return Promise.resolve(PR.v);
+  if (PR.p) return PR.p;
+  PR.p = (async () => {
+    let v = null;
+    try { const r = await sb.rpc('my_perms'); if (!r.error && r.data && typeof r.data === 'object' && !Array.isArray(r.data)) v = r.data; } catch (e) {}
+    PR.v = v; PR.at = Date.now(); PR.p = null; return v;
+  })();
+  return PR.p;
+}
+const redrawOnce = () => { if (ok() && PR.uid === me.id && PR.drawn !== JSON.stringify(PR.v)) { PR.drawn = JSON.stringify(PR.v); if (typeof drawMenu === 'function') drawMenu(); } };
+
+// ===== طلبات الانضمام (الموارد البشرية) =====
+let RQ = [], busy = false;
+async function pRequests() {
+  main.innerHTML = hero('users', t('hrPill'), t('rqH'), t('rqSub')) +
+    '<div class="sec r12"><div class="sr"><input id="r12q" placeholder="' + esc(t('search')) + '" autocomplete="off">' + ic('search', 20) + '</div><p class="mut" id="r12n" style="margin:6px 4px 16px"></p><div id="r12l">' + loader + '</div></div>';
+  document.getElementById('r12q').oninput = drawReq;
+  await loadReq();
+}
+async function loadReq() {
+  const r = await sb.rpc('hr_requests');
+  const box = document.getElementById('r12l'); if (view !== 'requests' || !box) return;
+  if (r.error) { box.innerHTML = '<div class="pan c mut">' + esc(t('sql')) + '</div>'; return; }
+  RQ = (r.data || []).map(x => typeof x === 'string' ? JSON.parse(x) : x);
+  drawReq();
+}
+function drawReq() {
+  const box = document.getElementById('r12l'); if (view !== 'requests' || !box) return;
+  const q = (document.getElementById('r12q').value || '').trim().toLowerCase();
+  const l = RQ.filter(p => !q || [p.full_name, p.card_no].join(' ').toLowerCase().includes(q));
+  document.getElementById('r12n').textContent = t('cnt', l.length);
+  box.innerHTML = l.map(p => '<div class="pan"><div class="ar"><div class="who"><span class="av">' + esc(initials(p.full_name)) + '</span><div><b>' + esc(p.full_name) + '</b><small class="mut" style="display:block">' +
+    esc([p.card_no, p.specialization, p.year].filter(Boolean).join(' · ')) + '</small></div></div><span class="st2 s-pending">' + esc(t('st_' + p.status)) + '</span></div>' +
+    '<div class="mut" style="margin:10px 0 0;font-size:.9rem">' + esc(cn(p.committee)) + ' · ' + esc(dday(p.created_at)) + '</div>' + btns(p, false) + '</div>').join('') || '<div class="pan c mut">' + esc(t('none')) + '</div>';
+}
+const btns = (p, full) => '<div class="ar" style="justify-content:flex-start;gap:8px;margin-top:14px;flex-wrap:wrap">' +
+  (full ? '' : '<button type="button" class="btn line sm" data-a="r12view" data-id="' + esc(p.id) + '">' + esc(t('view')) + '</button>') +
+  '<button type="button" class="btn ok sm" data-a="r12ok" data-id="' + esc(p.id) + '">' + esc(t('ok')) + '</button>' +
+  (p.status === 'interview' ? '' : '<button type="button" class="btn line sm" data-a="r12iv" data-id="' + esc(p.id) + '">' + esc(t('iv')) + '</button>') +
+  '<button type="button" class="btn no sm" data-a="r12no" data-id="' + esc(p.id) + '">' + esc(t('no')) + '</button></div>';
+function openReq(id) {
+  const p = RQ.find(x => x.id === id); if (!p) return;
+  const doc = (b, path, label) => path ? '<button type="button" class="btn line sm" data-a="r12doc" data-b="' + b + '" data-p="' + esc(path) + '">' + ic('file', 16) + esc(label) + '</button>' : '';
+  const docs = doc('certificates', p.certificate_url, t('cert')) + doc('idcards', p.id_card_url, t('idc'));
+  modalBox('<h3 style="font-size:1.4rem;margin-bottom:6px">' + esc(p.full_name) + '</h3><span class="st2 s-pending">' + esc(t('st_' + p.status)) + '</span>' +
+    '<dl class="dl"><dt>' + t('card') + '</dt><dd>' + esc(p.card_no) + '</dd><dt>' + t('phone') + '</dt><dd>' + esc(p.phone || '—') + '</dd><dt>' + t('dept') + '</dt><dd>' + esc(p.specialization) + '</dd><dt>' + t('year') + '</dt><dd>' + esc(p.year || '—') +
+    '</dd><dt>' + t('comm') + '</dt><dd>' + esc(cn(p.committee)) + '</dd><dt>' + t('date') + '</dt><dd>' + esc(dday(p.created_at)) + '</dd></dl>' +
+    '<b>' + t('why') + '</b><p class="mut" style="margin-top:6px;line-height:2">' + esc(p.motivation || '—') + '</p>' +
+    '<div class="ar" style="justify-content:flex-start;gap:8px;margin-top:16px;flex-wrap:wrap">' + (docs || '<span class="mut">' + esc(t('nodoc')) + '</span>') + '</div>' + btns(p, true));
+}
+async function review(id, st) {
+  const p = RQ.find(x => x.id === id); if (!p || busy) return;
+  if (st === 'rejected' && !confirm(t('cRej', p.full_name))) return;
+  busy = true;
+  try {
+    const r = await sb.rpc('hr_review', {p_user: id, p_status: st});
+    if (r.error) {
+      const m = r.error.message || '';
+      if (/not reviewable|not found/.test(m)) { toast(t('gone')); await loadReq(); }
+      else toast(/not allowed/.test(m) ? t('denied') : /does not exist|schema cache/i.test(m) ? t('sql') : t('fail'));
+      return;
+    }
+    const md = document.getElementById('modal'); if (md) md.style.display = 'none';
+    toast(t(st === 'approved' ? 'doneOk' : st === 'rejected' ? 'doneNo' : 'doneIv', p.full_name));
+    await loadReq();
+  } catch (e) { toast(t('fail')); }
+  finally { busy = false; }
+}
+
+// ===== لوحة التنظيم: نشر الفعاليات والإعلان المثبت =====
+const toBlob = (file, max) => new Promise((res, rej) => {
+  const im = new Image(), u = URL.createObjectURL(file);
+  im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k));
+    const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(new Error('img')), 'image/jpeg', .85); };
+  im.onerror = () => rej(new Error('img')); im.src = u; });
+async function upImg(file, max) {
+  const blob = await toBlob(file, max), path = me.id + '/' + crypto.randomUUID() + '.jpg';
+  const up = await sb.storage.from('media').upload(path, blob, {contentType: 'image/jpeg'});
+  if (up.error) throw up.error;
+  return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+}
+const live = () => view === 'org' && document.getElementById('oc');
+async function pOrg(arg) {
+  const v = PR.v || {}, tabs = v.pin || me.role === 'admin' ? ['ev', 'pin'] : ['ev'], cur = arg === 'pin' && tabs.includes('pin') ? 'pin' : 'ev';
+  main.innerHTML = hero('grid', t('orgPill'), t('orgH'), t('orgSub')) +
+    '<div class="sec r12" style="padding-top:12px"><div class="tabs">' + tabs.map(x => '<a href="#org/' + x + '" class="' + (x === cur ? 'on' : '') + '">' + ic(x === 'ev' ? 'calplus' : 'pin', 20) + esc(t(x === 'ev' ? 'tEv' : 'tPin')) + '</a>').join('') + '</div><div id="oc">' + loader + '</div></div>';
+  return cur === 'pin' ? oPin() : oEvents();
+}
+async function oEvents() {
+  const v = PR.v || {}, mgr = !!v.manage || me.role === 'admin';
+  const [a, c] = await Promise.all([sb.from('activities').select('id,title,event_date,location,images,created_by').order('event_date', {ascending: false}), sb.rpc('activity_counts')]);
+  if (!live()) return;
+  const cnt = {}; (c.data || []).forEach(x => cnt[x.activity_id] = Number(x.n));
+  const rows = a.data || [];
+  document.getElementById('oc').innerHTML = '<form class="pan" id="oaf"><h3><i class="g">' + ic('calplus', 24) + '</i>' + esc(t('newEv')) + '</h3>' +
+    '<div class="fl" style="margin-top:0">' + t('evTitle') + '</div><input name="ttl" required maxlength="150" placeholder="' + esc(t('evTitlePh')) + '">' +
+    '<div class="g2"><div><div class="fl">' + t('evDate') + '</div><input type="date" name="dt" required></div><div><div class="fl">' + t('evTime') + '</div><input type="time" name="tm"></div></div>' +
+    '<div class="fl">' + t('evLoc') + '</div><input name="loc" placeholder="' + esc(t('evLocPh')) + '">' +
+    '<div class="fl">' + t('evLink') + '</div><input name="lnk" type="url" placeholder="https://forms.gle/…">' +
+    '<div class="fl">' + t('evCap') + '</div><input name="cap" type="number" min="1">' +
+    '<div class="fl">' + ic('camera', 20) + t('evImgs') + '</div><input type="file" id="oaimg" accept="image/*" multiple><div id="oaprev" class="ar" style="justify-content:flex-start;gap:8px;margin-top:8px"></div>' +
+    '<div class="fl">' + t('evDesc') + '</div><textarea name="dsc" placeholder="' + esc(t('evDescPh')) + '"></textarea>' +
+    '<button class="btn navy block" style="margin-top:22px">' + esc(t('publish')) + '</button></form>' +
+    '<h2 style="margin:26px 0 14px;font-size:1.5rem">' + esc(t('evList')) + ' <span class="cnt">' + rows.length + '</span></h2>' +
+    (rows.map(x => { const im = okImg((x.images || [])[0]), mine = mgr || x.created_by === me.id, past = x.event_date && new Date(x.event_date) < new Date();
+      return '<div class="pan"><div class="ar"><div class="who">' + (im ? '<img src="' + im + '" alt="" style="width:56px;height:56px;border-radius:14px;object-fit:cover">' : '') + '<div><b>' + esc(x.title) + '</b> ' +
+        (past ? '<span class="st2 s-rejected">' + esc(t('past')) + '</span>' : '') + '<div class="mut">' + esc(dday(x.event_date)) + (x.location ? ' · ' + esc(x.location) : '') + ' · ' + esc(t('reg', cnt[x.id] || 0)) + '</div></div></div>' +
+        (mine ? '<button type="button" class="btn no sm" data-a="o12evdel" data-id="' + esc(x.id) + '">' + esc(t('del')) + '</button>' : '') + '</div></div>'; }).join('') || '<div class="pan c mut">' + esc(t('evNone')) + '</div>');
+  document.getElementById('oaimg').onchange = e => { const fs = [...e.target.files].slice(0, 4); document.getElementById('oaprev').innerHTML = fs.map(f => '<img src="' + URL.createObjectURL(f) + '" alt="" style="height:64px;border-radius:12px">').join(''); };
+  document.getElementById('oaf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, b = f.querySelector('button.navy'); b.disabled = true;
+    try {
+      const urls = []; for (const x of [...document.getElementById('oaimg').files].slice(0, 4)) urls.push(await upImg(x, 1280));
+      const r = await sb.from('activities').insert({title: f.ttl.value.trim(), description: f.dsc.value.trim(), location: f.loc.value.trim(),
+        event_date: f.dt.value ? new Date(f.dt.value + 'T' + (f.tm.value || '00:00')).toISOString() : null,
+        reg_link: f.lnk.value.trim() || null, capacity: f.cap.value ? +f.cap.value : null, images: urls});
+      if (r.error) throw r.error; toast(t('posted')); oEvents();
+    } catch (err) { toast(t('postFail')); b.disabled = false; }
+  };
+}
+async function oPin() {
+  const {data, error} = await sb.from('announcements').select('*').order('created_at', {ascending: false});
+  if (!live()) return;
+  if (error) { document.getElementById('oc').innerHTML = '<div class="pan c mut">' + esc(t('loadFail')) + '</div>'; return; }
+  const now = new Date(), rows = data || [], lv = rows.find(a => a.active && (!a.expires_at || new Date(a.expires_at) > now));
+  const st = a => !a.active ? [t('hidden'), 's-rejected'] : (a.expires_at && new Date(a.expires_at) <= now) ? [t('ended'), 's-rejected'] : lv && a.id === lv.id ? [t('live'), 's-approved'] : [t('valid'), 's-pending'];
+  document.getElementById('oc').innerHTML = '<p class="mut" style="margin-bottom:12px">' + esc(t('pinInfo')) + '</p>' +
+    '<form class="pan" id="opf"><h3><i class="g">' + ic('pin', 24) + '</i>' + esc(t('newPin')) + '</h3>' +
+    '<div class="fl" style="margin-top:0">' + t('pinTxt') + '</div><input name="b" required minlength="2" maxlength="200" placeholder="' + esc(t('pinTxtPh')) + '">' +
+    '<div class="g2"><div><div class="fl">' + t('pinLink') + '</div><input name="l" placeholder="https://… / #join"></div><div><div class="fl">' + t('pinBtn') + '</div><input name="t" maxlength="40" placeholder="' + esc(t('pinBtnPh')) + '"></div></div>' +
+    '<div class="fl">' + t('pinExp') + '</div><input type="datetime-local" name="x"><button class="btn navy block" style="margin-top:20px">' + esc(t('pinPost')) + '</button></form>' +
+    '<h3 style="margin:22px 0 12px">' + esc(t('pinAll')) + '</h3>' +
+    (rows.map(a => { const [lb, cl] = st(a); return '<div class="pan"><div class="ar"><b style="line-height:1.8">' + esc(a.body) + '</b><span class="st2 ' + cl + '">' + esc(lb) + '</span></div>' +
+      '<div class="mut" style="font-size:.85rem;margin:6px 0">' + (a.link ? '🔗 ' + esc(a.link) + ' · ' : '') + (a.expires_at ? '⏰ ' + esc(t('expAt')) + esc(dtm(a.expires_at)) : esc(t('noExp'))) + '</div>' +
+      '<div class="ar" style="justify-content:flex-start;gap:8px"><button type="button" class="btn line sm" data-a="o12pintg" data-id="' + esc(a.id) + '" data-v="' + (a.active ? 0 : 1) + '">' + esc(t(a.active ? 'hide' : 'show')) + '</button><button type="button" class="btn no sm" data-a="o12pindel" data-id="' + esc(a.id) + '">' + esc(t('del')) + '</button></div></div>'; }).join('') || '<div class="pan c mut">' + esc(t('pinNone')) + '</div>');
+  document.getElementById('opf').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, link = f.l.value.trim();
+    if (link && !/^(https?:\/\/|#[a-z])/i.test(link)) return toast(t('linkBad'));
+    const btn = f.querySelector('button.navy'); btn.disabled = true;
+    const r = await sb.from('announcements').insert({body: f.b.value.trim(), link: link || null, link_label: f.t.value.trim() || null, expires_at: f.x.value ? new Date(f.x.value).toISOString() : null, active: true});
+    if (r.error) { btn.disabled = false; return toast(t('postFail')); }
+    toast(t('pinPosted')); oPin();
+  };
+}
+
+// ===== التوجيه والقائمة =====
+const _r = window.render;
+window.render = async function () {
+  const [v0, arg] = (location.hash || '#home').slice(1).split('/');
+  if (v0 === 'requests' || v0 === 'org') {
+    if (!me) return nav('#login');
+    if (!ok()) return nav('#home');
+    const v = await loadPerms(true);
+    if (!v || (v0 === 'requests' ? !v.review : !(v.org || me.role === 'admin'))) return nav('#home');
+    if (typeof leaveChat === 'function') leaveChat();
+    const mn = document.getElementById('menu'); if (mn) mn.style.display = 'none'; const md = document.getElementById('modal'); if (md) md.style.display = 'none';
+    view = v0; drawShell(); window.scrollTo(0, 0); const pb = document.getElementById('pinbar'); if (pb) pb.hidden = true;
+    return v0 === 'requests' ? pRequests() : pOrg(arg);
+  }
+  const r = await _r.apply(this, arguments);
+  if (ok()) loadPerms().then(redrawOnce);
+  return r;
+};
+const _dm = window.drawMenu;
+window.drawMenu = function () {
+  _dm.apply(this, arguments);
+  const m = document.getElementById('menu'); if (!m || !ok()) return;
+  m.querySelectorAll('[data-b12]').forEach(x => x.remove());
+  const v = PR.uid === me.id ? PR.v : null; if (!v || me.role === 'admin') return;
+  const items = [];
+  if (v.review) items.push('<a data-b12="1" href="#requests">' + esc(t('mReq')) + '</a>');
+  if (v.org) items.push('<a data-b12="1" href="#org">' + esc(t('mOrg')) + '</a>');
+  if (!items.length) return;
+  const last = Array.from(m.querySelectorAll('[data-b4]')).pop() || m.querySelector('[href="#team"]') || m.querySelector('[href="#events"]');
+  if (last) last.insertAdjacentHTML('afterend', items.join('')); else m.insertAdjacentHTML('afterbegin', items.join(''));
+};
+
+// ===== الأزرار =====
+document.addEventListener('click', async e => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-a^="r12"],[data-a^="o12"]') : null; if (!el) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const a = el.dataset.a, id = el.dataset.id;
+  if (a === 'r12view') return openReq(id);
+  if (a === 'r12ok') return review(id, 'approved');
+  if (a === 'r12iv') return review(id, 'interview');
+  if (a === 'r12no') return review(id, 'rejected');
+  if (a === 'r12doc') {
+    const {data, error} = await sb.storage.from(el.dataset.b).createSignedUrl(el.dataset.p, 120);
+    return error || !data ? toast(t('docfail')) : window.open(data.signedUrl, '_blank');
+  }
+  if (a === 'o12evdel') {
+    if (!confirm(t('cDel'))) return;
+    const r = await sb.from('activities').delete().eq('id', id);
+    if (r.error) return toast(t('delFail'));
+    return oEvents();
+  }
+  if (a === 'o12pintg') { const r = await sb.from('announcements').update({active: el.dataset.v === '1'}).eq('id', id); if (r.error) return toast(t('fail')); return oPin(); }
+  if (a === 'o12pindel') { if (!confirm(t('cDelPin'))) return; const r = await sb.from('announcements').delete().eq('id', id); if (r.error) return toast(t('delFail')); return oPin(); }
+}, true);
+
+// لو فتح الرابط مباشرة وسبق التوجيه الأصلي تحميل هذا الكود: أعد التوجيه مرة واحدة
+setTimeout(() => { const h0 = (location.hash || '').slice(1).split('/')[0]; if ((h0 === 'requests' || h0 === 'org') && me && view !== h0) window.render(); }, 0);
+// عند أول تحميل: اعرف الصلاحيات ثم ارسم القائمة
+const boot = async () => { if (ok()) { await loadPerms(); redrawOnce(); } };
+setTimeout(boot, 1200); setTimeout(boot, 3500);
+})();
+</script>
 </body>
 </html>
