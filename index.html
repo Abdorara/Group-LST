@@ -7233,19 +7233,87 @@ async function delList(id) {
     toast(t('tDel')); if (live()) await vManage(); loadSum(true).then(redrawOnce);
   } catch (e) { toast(t('eFail')); } finally { busy = false; }
 }
+// ===== الدفعة 14: الجدول في الموقع + إضافة أعمدة بعد النشر (يحل محل الجزء 2 القديم) =====
+Object.assign(T, {
+  fLocked: ['الأعمدة الحالية مقفلة لأن القائمة منشورة أو فيها تسجيلات، حتى لا تضيع ردود الأعضاء. يمكنك تعديل عناوينها وإضافة أعمدة جديدة في آخر الجدول.', 'Les colonnes actuelles sont verrouillées car la liste est publiée ou contient des inscriptions, afin de ne pas perdre les réponses. Vous pouvez les renommer et ajouter des colonnes à la fin du tableau.'],
+  fStdLock: ['المعلومات المأخوذة من الملف الشخصي مقفلة بعد النشر. لإضافة معلومة جديدة (مثل الجوال) أضف عمودا جديدا يكتبه العضو.', 'Les infos reprises du profil sont verrouillées après publication. Pour en ajouter (ex. téléphone), ajoutez une colonne que le membre remplit.'],
+  fCur: ['الأعمدة الحالية', 'Colonnes actuelles'], fNewCols: ['أعمدة جديدة', 'Nouvelles colonnes'],
+  fPrev: ['هكذا سيظهر الجدول في الموقع وفي ملف Word', 'Aperçu du tableau (site et fichier Word)'],
+  sheetHint: ['هذا سطرك في الجدول. الخانات الرمادية تؤخذ من ملفك الشخصي، واملأ الباقي.', 'Voici votre ligne du tableau. Les cases grisées viennent de votre profil, remplissez les autres.'],
+  fMaxCols: ['وصلت إلى الحد الأقصى: 20 عمودا', 'Maximum atteint : 20 colonnes'],
+  fAdd: ['＋ إضافة عمود', '＋ Ajouter une colonne'], fLabel: ['عنوان العمود (السؤال)', 'Titre de la colonne (question)'],
+  fCustom: ['أعمدة يكتب العضو معلوماتها', 'Colonnes remplies par le membre']
+});
+if (!document.getElementById('b13css2')) {
+  const st = document.createElement('style'); st.id = 'b13css2';
+  st.textContent = '.l13 .sheet{overflow:auto;border:1px solid var(--bd);border-radius:18px;margin:12px 0;background:var(--card)}' +
+    '.l13 .sheet table{border-collapse:collapse;width:100%;min-width:max-content}' +
+    '.l13 .sheet th,.l13 .sheet td{border:1px solid var(--bd);padding:8px 10px;text-align:start;vertical-align:middle}' +
+    '.l13 .sheet th{background:rgba(120,130,160,.14);font-size:.85rem;white-space:nowrap}' +
+    '.l13 .sheet td.auto{background:rgba(120,130,160,.08);color:var(--mut)}' +
+    '.l13 .sheet td input,.l13 .sheet td select,.l13 .sheet td textarea{margin:0;min-width:150px}' +
+    '.l13 .sheet.pv th{white-space:normal}.l13 .sheet.pv td{height:34px}' +
+    '#modal .box:has(.sheet.fill){max-width:min(920px,94vw)}' +
+    '@media (max-width:640px){.l13 .sheet table{min-width:0}.l13 .sheet.fill{overflow:hidden}.l13 .sheet.fill thead{display:none}' +
+    '.l13 .sheet.fill table,.l13 .sheet.fill tbody,.l13 .sheet.fill tr{display:block}' +
+    '.l13 .sheet.fill td{display:grid;grid-template-columns:38% 62%;padding:0;border-width:0 0 1px;align-items:stretch}' +
+    '.l13 .sheet.fill tr td:last-child{border-bottom:0}' +
+    '.l13 .sheet.fill td::before{content:attr(data-h);padding:10px;font-weight:700;font-size:.85rem;background:rgba(120,130,160,.14);border-inline-end:1px solid var(--bd);display:flex;align-items:center}' +
+    '.l13 .sheet.fill td>*{margin:6px;min-width:0;width:calc(100% - 12px);box-sizing:border-box;align-self:center}}';
+  document.head.appendChild(st);
+}
+
+// ----- نموذج العضو كجدول (يحل محل openForm في الجزء 1) -----
+function fCell(f, v, dis) {
+  const nm = ' name="' + f.k + '" aria-label="' + esc(f.label) + '"' + (dis ? ' disabled' : ''), val = v == null ? '' : String(v);
+  if (f.type === 'long') return '<textarea' + nm + ' maxlength="1000" style="min-height:70px">' + esc(val) + '</textarea>';
+  if (f.type === 'choice') return '<select' + nm + '><option value="">' + esc(t('choose')) + '</option>' + (f.options || []).map(o => '<option value="' + esc(o) + '"' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select>';
+  if (f.type === 'yesno') return '<select' + nm + '><option value="">' + esc(t('choose')) + '</option><option value="yes"' + (val === 'yes' ? ' selected' : '') + '>' + esc(t('yes')) + '</option><option value="no"' + (val === 'no' ? ' selected' : '') + '>' + esc(t('no')) + '</option></select>';
+  return '<input' + nm + (f.type === 'phone' ? ' type="tel" inputmode="tel" maxlength="20"' : f.type === 'number' ? ' inputmode="decimal" maxlength="14" autocomplete="off"' : ' maxlength="200"') + ' value="' + esc(val) + '">';
+}
+function openForm(id) {
+  const x = LS.find(l => String(l.id) === String(id)); if (!x) return;
+  const mine = x.mine !== null && x.mine !== undefined, d = x.mine || {}, can = !!x.accepting;
+  const auto = [[t('s_full_name'), me.full_name]].concat(x.std.map(k => [t('s_' + k), stdVal(k)]));
+  const hd = f => f.label + (f.required ? ' *' : '');
+  const th = auto.map(c => '<th>' + esc(c[0]) + '</th>').join('') + x.fields.map(f => '<th>' + esc(f.label) + (f.required ? ' <span class="req">*</span>' : '') + '</th>').join('');
+  const td = auto.map(c => '<td class="auto" data-h="' + esc(c[0]) + '"><span>' + esc(c[1]) + '</span></td>').join('') + x.fields.map(f => '<td data-h="' + esc(hd(f)) + '">' + fCell(f, d[f.k], !can) + '</td>').join('');
+  modalBox('<h3 style="font-size:1.35rem;margin:0 0 6px;padding-inline-end:36px">' + esc(x.title) + '</h3><div class="mut" style="margin-bottom:6px">' + esc(t('k_' + x.kind)) + '</div>' +
+    '<div class="mut" style="font-size:.9rem">' + esc(t('sheetHint')) + '</div>' +
+    '<form id="l13f" novalidate data-id="' + x.id + '"><div class="sheet fill"><table><thead><tr>' + th + '</tr></thead><tbody><tr>' + td + '</tr></tbody></table></div>' +
+    (x.fields.length ? '' : '<p class="mut" style="margin:12px 0">' + esc(t('noFields')) + '</p>') +
+    (can ? '<div class="lb-acts" style="margin-top:18px"><button type="submit" class="btn navy">' + esc(t(mine ? 'saveEdit' : 'submit')) + '</button>' + (mine ? '<button type="button" class="btn line" data-a="l13wd" data-id="' + x.id + '">' + esc(t('withdraw')) + '</button>' : '') + '</div>' : '') + '</form>');
+  const f = $id('l13f'); f.onsubmit = e => { e.preventDefault(); submitForm(x.id, f); };
+}
+
 // ----- نموذج إنشاء/تعديل القائمة -----
+let FBL = [], PART = false;
 function drawKinds() {
   const b = $id('l13k'); if (!b) return;
   b.innerHTML = KINDS.map(k => '<button type="button" class="btn ' + (k === FKIND ? 'navy' : 'line') + ' sm" data-a="l13kind" data-k="' + k + '">' + ic(KICON[k], 16) + esc(t('k_' + k)) + '</button>').join('');
 }
-function drawFB(locked) {
+function drawPrev() {
+  const box = $id('l13pv'), f = $id('l13b'); if (!box || !f) return;
+  const std = STD.filter(k => f.elements['std_' + k] && f.elements['std_' + k].checked);
+  const labs = FBL.concat(FB).map(q => String(q.label).trim() || '…');
+  const cols = ['#', t('s_full_name')].concat(std.map(k => t('s_' + k)), labs, FKIND === 'attendance' ? [t('sign')] : []);
+  box.innerHTML = '<div class="fl">' + esc(t('fPrev')) + '</div><div class="sheet pv"><table><thead><tr>' + cols.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead><tbody><tr>' + cols.map(() => '<td></td>').join('') + '</tr></tbody></table></div>';
+}
+function drawFB() {
   const box = $id('l13fb'); if (!box) return;
-  if (locked) { box.innerHTML = '<p class="mut" style="margin:0 0 10px">' + esc(t('fLocked')) + '</p>' + FB.map(f => '<span class="lb-chip">' + esc(f.label) + ' · ' + esc(t('ty_' + f.type)) + (f.required ? ' *' : '') + '</span>').join(''); return; }
-  box.innerHTML = FB.map((f, i) => '<div class="lb-row"><div class="fl" style="margin-top:0">' + esc(t('fLabel')) + '</div><input data-f13="label" data-i="' + i + '" maxlength="80" value="' + esc(f.label) + '">' +
+  let h = '';
+  if (PART) {
+    h += '<p class="mut" style="margin:0 0 10px;text-align:start">' + esc(t('fLocked')) + '</p>';
+    if (FBL.length) h += '<div class="fl" style="margin-top:0">' + esc(t('fCur')) + '</div>' + FBL.map((f, i) => '<div class="lb-row"><input data-f13="oldlabel" data-i="' + i + '" maxlength="80" value="' + esc(f.label) + '"><div class="lb-meta"><span>' + esc(t('ty_' + f.type)) + '</span>' +
+      (f.required ? '<span>' + esc(t('fReq')) + '</span>' : '') + (f.type === 'choice' ? '<span>' + esc(f.options.join(' / ')) + '</span>' : '') + '</div></div>').join('');
+    h += '<div class="fl">' + esc(t('fNewCols')) + '</div>';
+  }
+  h += FB.map((f, i) => '<div class="lb-row"><div class="fl" style="margin-top:0">' + esc(t('fLabel')) + '</div><input data-f13="label" data-i="' + i + '" maxlength="80" value="' + esc(f.label) + '">' +
     '<div class="g2"><div><select data-f13="type" data-i="' + i + '" style="margin-top:10px">' + TYPES.map(k => '<option value="' + k + '"' + (k === f.type ? ' selected' : '') + '>' + esc(t('ty_' + k)) + '</option>').join('') + '</select></div>' +
     '<label class="lb-chk" style="margin-top:10px"><input type="checkbox" data-f13="required" data-i="' + i + '"' + (f.required ? ' checked' : '') + '> ' + esc(t('fReq')) + '</label></div>' +
     (f.type === 'choice' ? '<div class="fl">' + esc(t('fOpts')) + '</div><textarea data-f13="options" data-i="' + i + '">' + esc(f.options) + '</textarea>' : '') +
     '<div class="lb-acts"><button type="button" class="btn line sm" data-a="l13up" data-i="' + i + '"' + (i === 0 ? ' disabled' : '') + '>↑</button><button type="button" class="btn line sm" data-a="l13dn" data-i="' + i + '"' + (i === FB.length - 1 ? ' disabled' : '') + '>↓</button><button type="button" class="btn no sm" data-a="l13rm" data-i="' + i + '">' + esc(t('del')) + '</button></div></div>').join('');
+  box.innerHTML = h; drawPrev();
 }
 async function vForm(id) {
   let x = null;
@@ -7256,8 +7324,10 @@ async function vForm(id) {
   }
   if (!live()) return;
   EDIT = x ? x.id : null; FKIND = x ? x.kind : 'other';
-  const locked = !!x && x.status !== 'draft', std = x ? x.std : STD_DEF.other;
-  FB = x ? x.fields.map(f => ({k: f.k, label: f.label, type: f.type, required: !!f.required, options: (f.options || []).join('\n')})) : [];
+  PART = !!x && (x.status !== 'draft' || Number(x.n) > 0);
+  const std = x ? x.std : STD_DEF.other;
+  FBL = PART ? x.fields.map(f => ({k: f.k, label: f.label, type: f.type, required: !!f.required, options: (f.options || []).slice()})) : [];
+  FB = x && !PART ? x.fields.map(f => ({k: f.k, label: f.label, type: f.type, required: !!f.required, options: (f.options || []).join('\n')})) : [];
   $id('lc').innerHTML = '<form class="pan" id="l13b" novalidate><h3><i class="g">' + ic('file', 24) + '</i>' + esc(t(x ? 'fEdit' : 'fNew')) + '</h3>' +
     '<div class="fl" style="margin-top:0">' + esc(t('fTitle')) + '</div><input name="ttl" maxlength="120" placeholder="' + esc(t('fTitlePh')) + '" value="' + esc(x ? x.title : '') + '">' +
     '<div class="fl">' + esc(t('fKind')) + '</div><div class="lb-kinds" id="l13k"></div>' +
@@ -7266,31 +7336,32 @@ async function vForm(id) {
     '<div><div class="fl">' + esc(t('fCloses')) + '</div><input type="datetime-local" name="cld" value="' + (x && x.closes_at ? toLocal(x.closes_at) : '') + '"></div></div>' +
     '<div class="g2"><div><div class="fl">' + esc(t('fLoc')) + '</div><input name="loc" maxlength="200" value="' + esc(x && x.location ? x.location : '') + '"></div>' +
     '<div><div class="fl">' + esc(t('fMax')) + '</div><input name="mx" inputmode="numeric" maxlength="6" value="' + (x && x.max_entries ? x.max_entries : '') + '"></div></div>' +
-    '<div class="fl">' + ic('users', 20) + esc(t('fStd')) + '</div><p class="mut" style="margin:0 0 6px;font-size:.9rem">' + esc(t('fStdNote')) + '</p>' +
+    '<div class="fl">' + ic('users', 20) + esc(t('fStd')) + '</div><p class="mut" style="margin:0 0 6px;font-size:.9rem;text-align:start">' + esc(t(PART ? 'fStdLock' : 'fStdNote')) + '</p>' +
     '<label class="lb-chk"><input type="checkbox" checked disabled> ' + esc(t('s_full_name')) + '</label>' +
-    STD.map(k => '<label class="lb-chk"><input type="checkbox" name="std_' + k + '"' + (std.includes(k) ? ' checked' : '') + (locked ? ' disabled' : '') + '> ' + esc(t('s_' + k)) + '</label>').join('') +
+    STD.map(k => '<label class="lb-chk"><input type="checkbox" name="std_' + k + '"' + (std.includes(k) ? ' checked' : '') + (PART ? ' disabled' : '') + '> ' + esc(t('s_' + k)) + '</label>').join('') +
     '<div class="fl">' + esc(t('fCustom')) + '</div><div id="l13fb"></div>' +
-    (locked ? '' : '<div class="lb-acts" style="margin-top:6px"><button type="button" class="btn line sm" data-a="l13add">' + esc(t('fAdd')) + '</button></div>' +
-      '<div class="lb-meta" style="margin-top:12px"><span>' + esc(t('fPresets')) + '</span>' + ['p_emerg', 'p_notes', 'p_size'].map(k => '<button type="button" class="btn line sm" data-a="l13preset" data-p="' + k + '">' + esc(t(k)) + '</button>').join('') + '</div>') +
-    '<div class="lb-acts" style="margin-top:24px">' + (locked || x ? '<button type="button" class="btn navy" data-a="l13save" data-pub="0">' + esc(t('fSave')) + '</button>' :
+    '<div class="lb-acts" style="margin-top:6px"><button type="button" class="btn line sm" data-a="l13add">' + esc(t('fAdd')) + '</button></div>' +
+    '<div class="lb-meta" style="margin-top:12px"><span>' + esc(t('fPresets')) + '</span>' + ['p_emerg', 'p_notes', 'p_size'].map(k => '<button type="button" class="btn line sm" data-a="l13preset" data-p="' + k + '">' + esc(t(k)) + '</button>').join('') + '</div>' +
+    '<div id="l13pv"></div>' +
+    '<div class="lb-acts" style="margin-top:24px">' + (x ? '<button type="button" class="btn navy" data-a="l13save" data-pub="0">' + esc(t('fSave')) + '</button>' :
       '<button type="button" class="btn line" data-a="l13save" data-pub="0">' + esc(t('fSaveDraft')) + '</button><button type="button" class="btn navy" data-a="l13save" data-pub="1">' + esc(t('fSavePub')) + '</button>') + '</div></form>';
   $id('l13b').onsubmit = e => e.preventDefault();
-  drawKinds(); drawFB(locked);
+  drawKinds(); drawFB();
 }
 async function saveForm(pub) {
   const f = $id('l13b'); if (!f || busy) return;
-  const x = EDIT ? LS.find(l => String(l.id) === String(EDIT)) : null, locked = !!x && x.status !== 'draft', E = n => f.elements[n];
+  const x = EDIT ? LS.find(l => String(l.id) === String(EDIT)) : null, E = n => f.elements[n];
   const title = E('ttl').value.trim(); if (title.length < 2) return toast(t('vTitle'));
-  let std, fields;
-  if (locked) { std = x.std; fields = x.fields; }
-  else {
-    std = STD.filter(k => E('std_' + k) && E('std_' + k).checked); fields = [];
-    for (const q of FB) {
-      const lb = q.label.trim(); if (!lb) return toast(t('vLabel'));
-      const o = {label: lb, type: q.type, required: !!q.required}; if (q.k) o.k = q.k;
-      if (q.type === 'choice') { const opts = Array.from(new Set(q.options.split(/\r?\n/).map(s => s.trim()).filter(Boolean))); if (opts.length < 2) return toast(t('vOpts', lb)); o.options = opts; }
-      fields.push(o);
-    }
+  const std = PART && x ? x.std : STD.filter(k => E('std_' + k) && E('std_' + k).checked), fields = [];
+  for (const q of FBL) {
+    const lb = q.label.trim(); if (!lb) return toast(t('vLabel'));
+    const o = {k: q.k, label: lb, type: q.type, required: q.required}; if (q.type === 'choice') o.options = q.options; fields.push(o);
+  }
+  for (const q of FB) {
+    const lb = q.label.trim(); if (!lb) return toast(t('vLabel'));
+    const o = {label: lb, type: q.type, required: !!q.required}; if (q.k) o.k = q.k;
+    if (q.type === 'choice') { const opts = Array.from(new Set(q.options.split(/\r?\n/).map(s => s.trim()).filter(Boolean))); if (opts.length < 2) return toast(t('vOpts', lb)); o.options = opts; }
+    fields.push(o);
   }
   const mx = latin(E('mx').value.trim()); if (mx && !/^[1-9][0-9]{0,5}$/.test(mx)) return toast(t('vMax'));
   const payload = {title, kind: FKIND, description: E('dsc').value.trim(), location: E('loc').value.trim(),
@@ -7305,7 +7376,6 @@ async function saveForm(pub) {
     toast(msg); loadSum(true).then(redrawOnce); nav('#lists/manage');
   } catch (e) { f.querySelectorAll('[data-a="l13save"]').forEach(b => b.disabled = false); toast(t('eFail')); } finally { busy = false; }
 }
-
 // ----- كشف الردود وتصدير Word -----
 const yn = v => v === 'yes' ? t('yes') : v === 'no' ? t('no') : v;
 const rowStd = (r, k) => k === 'committee' ? (r.committee ? cn(r.committee) : '—') : (r[k] || '—');
@@ -7418,14 +7488,17 @@ window.drawMenu = function () {
 // ===== الأزرار =====
 document.addEventListener('input', e => {
   const el = e.target; if (!el || !el.dataset || !el.dataset.f13) return;
+  if (el.dataset.f13 === 'oldlabel') { const o = FBL[+el.dataset.i]; if (o) { o.label = el.value; drawPrev(); } return; }
   const f = FB[+el.dataset.i]; if (!f) return;
-  if (el.dataset.f13 === 'label') f.label = el.value; else if (el.dataset.f13 === 'options') f.options = el.value;
+  if (el.dataset.f13 === 'label') { f.label = el.value; drawPrev(); } else if (el.dataset.f13 === 'options') f.options = el.value;
 });
 document.addEventListener('change', e => {
-  const el = e.target; if (!el || !el.dataset || !el.dataset.f13) return;
+  const el = e.target; if (!el) return;
+  if (el.name && el.name.indexOf('std_') === 0) return drawPrev();
+  if (!el.dataset || !el.dataset.f13) return;
   const f = FB[+el.dataset.i]; if (!f) return;
   if (el.dataset.f13 === 'required') f.required = el.checked;
-  else if (el.dataset.f13 === 'type') { f.type = el.value; drawFB(false); }
+  else if (el.dataset.f13 === 'type') { f.type = el.value; drawFB(); }
 });
 document.addEventListener('click', async e => {
   const el = e.target && e.target.closest ? e.target.closest('[data-a^="l13"]') : null; if (!el) return;
@@ -7445,16 +7518,16 @@ document.addEventListener('click', async e => {
     toast(t('rRemoved')); return vResp(RESP.x.id);
   }
   if (a === 'l13mg') return setMgr(id, el.dataset.on === '1', el.dataset.n);
-  if (a === 'l13kind') { FKIND = el.dataset.k; drawKinds(); const f = $id('l13b'); if (f && !EDIT) STD.forEach(k => { const c = f.elements['std_' + k]; if (c && !c.disabled) c.checked = STD_DEF[FKIND].includes(k); }); return; }
-  if (a === 'l13add') { if (FB.length >= 20) return; FB.push({k: '', label: '', type: 'text', required: false, options: ''}); return drawFB(false); }
+  if (a === 'l13kind') { FKIND = el.dataset.k; drawKinds(); drawPrev(); const f = $id('l13b'); if (f && !EDIT) STD.forEach(k => { const c = f.elements['std_' + k]; if (c && !c.disabled) c.checked = STD_DEF[FKIND].includes(k); }); return; }
+  if (a === 'l13add') { if (FBL.length + FB.length >= 20) return toast(t('fMaxCols')); FB.push({k: '', label: '', type: 'text', required: false, options: ''}); return drawFB(); }
   if (a === 'l13preset') {
-    if (FB.length >= 20) return; const p = el.dataset.p;
+    if (FBL.length + FB.length >= 20) return toast(t('fMaxCols')); const p = el.dataset.p;
     FB.push(p === 'p_emerg' ? {k: '', label: t(p), type: 'phone', required: true, options: ''} : p === 'p_notes' ? {k: '', label: t(p), type: 'long', required: false, options: ''} : {k: '', label: t(p), type: 'choice', required: true, options: 'S\nM\nL\nXL'});
-    return drawFB(false);
+    return drawFB();
   }
-  if (a === 'l13up' && i > 0) { [FB[i - 1], FB[i]] = [FB[i], FB[i - 1]]; return drawFB(false); }
-  if (a === 'l13dn' && i < FB.length - 1) { [FB[i + 1], FB[i]] = [FB[i], FB[i + 1]]; return drawFB(false); }
-  if (a === 'l13rm') { FB.splice(i, 1); return drawFB(false); }
+  if (a === 'l13up' && i > 0) { [FB[i - 1], FB[i]] = [FB[i], FB[i - 1]]; return drawFB(); }
+  if (a === 'l13dn' && i < FB.length - 1) { [FB[i + 1], FB[i]] = [FB[i], FB[i + 1]]; return drawFB(); }
+  if (a === 'l13rm') { FB.splice(i, 1); return drawFB(); }
   if (a === 'l13save') return saveForm(el.dataset.pub === '1');
 }, true);
 
