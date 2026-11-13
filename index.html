@@ -6896,5 +6896,573 @@ const boot = async () => { if (ok()) { await loadPerms(); redrawOnce(); } };
 setTimeout(boot, 1200); setTimeout(boot, 3500);
 })();
 </script>
+<style id="b13css">
+.l13 .g2>div{min-width:0}
+.l13 input[type=date],.l13 input[type=time],.l13 input[type=datetime-local]{min-width:0;width:100%;max-width:100%;box-sizing:border-box}
+.l13 input[type=checkbox],.l13 input[type=radio]{width:20px;height:20px;padding:0;margin:0;flex:none;accent-color:var(--gold)}
+.l13 .req{color:var(--no)}
+.l13 .lb-meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--mut);font-size:.9rem;margin:8px 0 2px}
+.l13 .lb-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bd);border-radius:99px;padding:6px 14px;font-size:.85rem;margin:0 0 8px;margin-inline-end:8px}
+.l13 .lb-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.l13 .lb-row{border:1px dashed var(--bd);border-radius:22px;padding:14px;margin-bottom:12px}
+.l13 .lb-row .fl{margin:10px 0 6px;font-size:.9rem}
+.l13 .lb-row textarea{min-height:90px}
+.l13 .lb-chk{display:flex;align-items:center;gap:10px;padding:8px 0;font-weight:600}
+.l13 .lb-kinds{display:flex;flex-wrap:wrap;gap:8px}
+.l13 .tw{overflow:auto}
+.l13 .tw table{min-width:520px}
+.l13 .tw td small{display:block;color:var(--mut)}
+.l13 .ar{flex-wrap:wrap;gap:10px}
+.l13 .who>div{min-width:0}
+</style>
+<script>
+window.B13T = {
+  mLists: ['📝 قوائم التسجيل', "📝 Listes d'inscription"],
+  pill: ['قوائم التسجيل', "Listes d'inscription"], h1: ['قوائم التسجيل', "Listes d'inscription"],
+  sub: ['سجل حضورك أو مشاركتك في الرحلات والأنشطة بمعلوماتك.', 'Inscrivez-vous aux sorties et aux activités en renseignant vos informations.'],
+  tMine: ['التسجيل', 'Inscription'], tManage: ['إدارة القوائم', 'Gestion des listes'], tMgr: ['المسؤولون', 'Responsables'],
+  k_attendance: ['حضور', 'Présence'], k_trip: ['رحلة', 'Sortie'], k_other: ['قائمة عامة', 'Liste'],
+  s_full_name: ['الاسم الكامل', 'Nom complet'], s_card_no: ['الرقم الجامعي', 'N° étudiant'], s_phone: ['الجوال', 'Téléphone'],
+  s_specialization: ['التخصص', 'Filière'], s_year: ['السنة', 'Année'], s_committee: ['اللجنة', 'Comité'],
+  none: ['لا توجد قوائم مفتوحة الآن.', 'Aucune liste ouverte pour le moment.'],
+  st_open: ['مفتوحة', 'Ouverte'], st_closed: ['مغلقة', 'Clôturée'], st_draft: ['مسودة', 'Brouillon'], st_full: ['اكتمل العدد', 'Complet'], st_late: ['انتهت المهلة', 'Délai dépassé'],
+  st_done: ['سجلت ✓', 'Inscrit(e) ✓'],
+  reg: ['سجل', "S'inscrire"], edit: ['عدل بياناتي', 'Modifier mes infos'], viewMine: ['عرض بياناتي', 'Voir mes infos'],
+  closesAt: ['تغلق: ', 'Clôture : '], seats: [(n, m) => n + '/' + m + ' مقعد', (n, m) => n + '/' + m + ' places'], regs: [n => n + ' مسجل', n => n + ' inscrit(s)'],
+  recorded: ['ستسجل هذه المعلومات من ملفك الشخصي:', 'Ces informations de votre profil seront enregistrées :'],
+  submit: ['تسجيل', 'Valider'], saveEdit: ['حفظ التعديل', 'Enregistrer'], withdraw: ['إلغاء تسجيلي', 'Annuler mon inscription'],
+  cWithdraw: ['إلغاء تسجيلك في هذه القائمة؟', 'Annuler votre inscription à cette liste ?'],
+  thanks: ['تم تسجيلك ✓', 'Inscription enregistrée ✓'], saved: ['تم حفظ التعديل ✓', 'Modification enregistrée ✓'], withdrawn: ['تم إلغاء تسجيلك', 'Inscription annulée'],
+  yes: ['نعم', 'Oui'], no: ['لا', 'Non'], choose: ['اختر…', 'Choisir…'], noFields: ['لا أسئلة إضافية. اضغط تسجيل فقط.', 'Aucune question supplémentaire. Appuyez simplement sur Valider.'],
+  eClosed: ['القائمة مغلقة', 'Cette liste est clôturée'], eFull: ['اكتمل العدد', 'La liste est complète'],
+  eMissing: [l => 'املأ حقل «' + l + '»', l => 'Renseignez le champ « ' + l + ' »'], eBad: [l => 'قيمة غير صحيحة في «' + l + '»', l => 'Valeur invalide pour « ' + l + ' »'],
+  eLong: [l => 'النص طويل جدا في «' + l + '»', l => 'Texte trop long pour « ' + l + ' »'],
+  eDenied: ['غير مسموح لك بهذا الإجراء', "Vous n'avez pas ce droit"], eFail: ['تعذر التنفيذ', "Échec de l'opération"],
+  eSql: ['نفذ كود SQL الخاص بالدفعة 13 أولا', "Exécutez d'abord le SQL du lot 13"],
+  eNone: ['لم تعد هذه القائمة موجودة', "Cette liste n'existe plus"], eLocked: ['الحقول مقفلة بعد النشر. أرجع القائمة مسودة لتعديلها', 'Champs verrouillés après publication. Remettez la liste en brouillon pour les modifier'],
+  ePast: ['مهلة القائمة انتهت. عدل المهلة ثم انشر', 'Le délai est dépassé. Modifiez-le puis publiez'],
+  newList: ['＋ قائمة جديدة', '＋ Nouvelle liste'], resp: ['الردود', 'Réponses'], exp: ['تصدير Word', 'Exporter en Word'], editL: ['تعديل', 'Modifier'],
+  pub: ['نشر', 'Publier'], close: ['إغلاق', 'Clôturer'], reopen: ['إعادة فتح', 'Rouvrir'], unpub: ['إلغاء النشر', 'Dépublier'], del: ['حذف', 'Supprimer'],
+  cDelList: [n => 'حذف هذه القائمة نهائيا مع ' + n + ' تسجيل؟', n => 'Supprimer définitivement cette liste et ses ' + n + ' inscription(s) ?'],
+  manageNone: ['لم تنشئ أي قائمة بعد.', "Vous n'avez encore créé aucune liste."],
+  tPub: ['تم نشر القائمة ✓', 'Liste publiée ✓'], tClosed: ['تم إغلاق القائمة', 'Liste clôturée'], tReopen: ['أعيد فتح القائمة', 'Liste rouverte'], tUnpub: ['رجعت القائمة مسودة', 'Liste remise en brouillon'], tDel: ['تم حذف القائمة', 'Liste supprimée'],
+  fNew: ['قائمة جديدة', 'Nouvelle liste'], fEdit: ['تعديل القائمة', 'Modifier la liste'], fTitle: ['عنوان القائمة', 'Titre de la liste'],
+  fTitlePh: ['مثال: رحلة إلى الشلف', 'Exemple : sortie à Chlef'], fKind: ['نوع القائمة', 'Type de liste'], fDesc: ['وصف (اختياري)', 'Description (facultatif)'],
+  fDescPh: ['تفاصيل يحتاجها الأعضاء قبل التسجيل…', 'Détails utiles avant de s’inscrire…'],
+  fDate: ['تاريخ ووقت الحدث (اختياري)', 'Date et heure (facultatif)'], fLoc: ['المكان (اختياري)', 'Lieu (facultatif)'],
+  fCloses: ['آخر موعد للتسجيل (اختياري)', "Date limite d'inscription (facultatif)"], fMax: ['عدد المقاعد (اختياري)', 'Nombre de places (facultatif)'],
+  fStd: ['معلومات تؤخذ من ملف العضو تلقائيا', 'Informations reprises du profil du membre'], fStdNote: ['الاسم الكامل يسجل دائما. اختر ما تحتاجه فقط.', 'Le nom complet est toujours enregistré. Ne cochez que le nécessaire.'],
+  fCustom: ['أسئلة يكتب العضو إجابتها', 'Questions posées au membre'], fAdd: ['＋ إضافة حقل', '＋ Ajouter un champ'], fLabel: ['نص السؤال', 'Intitulé'],
+  ty_text: ['نص قصير', 'Texte court'], ty_long: ['نص طويل', 'Texte long'], ty_number: ['رقم', 'Nombre'], ty_phone: ['هاتف', 'Téléphone'], ty_choice: ['اختيار من قائمة', 'Choix dans une liste'], ty_yesno: ['نعم / لا', 'Oui / Non'],
+  fReq: ['مطلوب', 'Obligatoire'], fOpts: ['الخيارات (كل خيار في سطر)', 'Options (une par ligne)'], fPresets: ['حقول جاهزة:', 'Champs prêts :'],
+  p_emerg: ['رقم للطوارئ', "Numéro d'urgence"], p_notes: ['ملاحظات', 'Remarques'], p_size: ['مقاس القميص', 'Taille du t-shirt'],
+  fSaveDraft: ['حفظ كمسودة', 'Enregistrer en brouillon'], fSavePub: ['حفظ ونشر الآن', 'Enregistrer et publier'], fSave: ['حفظ التعديلات', 'Enregistrer les modifications'],
+  fLocked: ['الحقول مقفلة لأن القائمة منشورة. لتعديلها أرجع القائمة إلى مسودة من «إدارة القوائم».', 'Champs verrouillés car la liste est publiée. Pour les modifier, remettez-la en brouillon depuis « Gestion des listes ».'],
+  fSaved: ['تم الحفظ ✓', 'Enregistré ✓'], vTitle: ['اكتب عنوانا للقائمة', 'Saisissez un titre'], vLabel: ['اكتب نص كل سؤال', 'Saisissez l’intitulé de chaque champ'],
+  vOpts: [l => 'أضف خيارين على الأقل في «' + l + '»', l => 'Ajoutez au moins deux options dans « ' + l + ' »'], vMax: ['عدد المقاعد رقم صحيح أكبر من صفر', 'Le nombre de places doit être un entier positif'],
+  rTitle: ['ردود: ', 'Réponses : '], rNone: ['لا يوجد مسجلون بعد.', 'Aucun inscrit pour le moment.'], rSearch: ['ابحث في الردود…', 'Rechercher dans les réponses…'],
+  cRem: [n => 'حذف تسجيل «' + n + '»؟', n => 'Supprimer l’inscription de « ' + n + ' » ?'], rRemoved: ['تم حذف التسجيل', 'Inscription supprimée'], rAt: ['وقت التسجيل', 'Inscrit le'],
+  back: ['← القوائم', '← Listes'], refresh: ['تحديث', 'Actualiser'], attNote: ['ملف Word لقائمة الحضور فيه عمود للتوقيع.', 'Le fichier Word d’une liste de présence contient une colonne de signature.'],
+  exDone: ['تم إنشاء ملف Word ✓', 'Fichier Word créé ✓'], sign: ['التوقيع', 'Signature'],
+  exCount: [n => 'عدد المسجلين: ' + n, n => "Nombre d'inscrits : " + n], exAt: [d => 'صدر بتاريخ ' + d, d => 'Édité le ' + d],
+  club: ['رواد العلوم والتكنولوجيا', 'Pionniers de la Science et de la Technologie'], uni: ['جامعة عبد الحميد ابن باديس – مستغانم', 'Université Abdelhamid Ibn Badis – Mostaganem'],
+  mgH: ['المسؤولون عن القوائم', 'Responsables des listes'],
+  mgInfo: ['المسؤولون يستطيعون إنشاء القوائم ونشرها ورؤية ردود كل الأعضاء، ومنها بياناتهم الشخصية التي تحددها كل قائمة. اختر أشخاصا تثق بهم وبعدد قليل.', 'Les responsables peuvent créer et publier des listes et voir les réponses de tous les membres, y compris les données personnelles choisies par chaque liste. Choisissez peu de personnes, de confiance.'],
+  mgNone: ['لم تعين أي مسؤول بعد.', "Aucun responsable n'a encore été désigné."], mgCur: [n => 'المسؤولون الحاليون (' + n + ')', n => 'Responsables actuels (' + n + ')'],
+  mgSearch: ['ابحث عن عضو بالاسم أو الرقم الجامعي لتعيينه…', 'Rechercher un membre par nom ou n° étudiant…'], mgAdd: ['تعيين', 'Désigner'], mgRemove: ['إزالة', 'Retirer'], mgIs: ['مسؤول ✓', 'Responsable ✓'],
+  mgAdded: ['تم تعيين المسؤول', 'Responsable désigné'], mgRemoved: ['تمت إزالة المسؤول', 'Responsable retiré'], mgNoRes: ['لا نتائج', 'Aucun résultat'],
+  cMgRemove: [n => 'إزالة «' + n + '» من مسؤولي القوائم؟', n => 'Retirer « ' + n + ' » des responsables ?'], mgNotElig: ['لا يمكن تعيين هذا العضو', 'Ce membre ne peut pas être désigné']
+};
+</script>
+<script>
+(() => {
+'use strict';
+// ===== الدفعة 13 (ب): مولد ملف Word حقيقي (docx) بدون أي مكتبة خارجية =====
+const enc = new TextEncoder();
+const crcT = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = crcT[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+const u16 = n => [n & 255, (n >> 8) & 255];
+const u32 = n => [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255];
+function zip(files) {
+  const d = new Date(), tm = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), dt = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  const parts = [], cen = []; let off = 0;
+  for (const f of files) {
+    const nm = enc.encode(f.name), crc = crc32(f.data), sz = f.data.length;
+    const h = new Uint8Array([0x50, 0x4b, 3, 4, ...u16(20), ...u16(0x0800), ...u16(0), ...u16(tm), ...u16(dt), ...u32(crc), ...u32(sz), ...u32(sz), ...u16(nm.length), ...u16(0)]);
+    parts.push(h, nm, f.data); cen.push({nm, crc, sz, off}); off += h.length + nm.length + sz;
+  }
+  let cs = 0;
+  for (const c of cen) {
+    const h = new Uint8Array([0x50, 0x4b, 1, 2, ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(tm), ...u16(dt), ...u32(c.crc), ...u32(c.sz), ...u32(c.sz), ...u16(c.nm.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(c.off)]);
+    parts.push(h, c.nm); cs += h.length + c.nm.length;
+  }
+  parts.push(new Uint8Array([0x50, 0x4b, 5, 6, ...u16(0), ...u16(0), ...u16(cen.length), ...u16(cen.length), ...u32(cs), ...u32(off), ...u16(0)]));
+  let len = 0; for (const p of parts) len += p.length;
+  const out = new Uint8Array(len); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; }
+  return out;
+}
+// حذف المحارف التي يرفضها XML ثم تهريب الباقي
+const X = s => String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u{FFFE}\u{FFFF}\u{D800}-\u{DFFF}]/gu, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const FONT = '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>';
+function runs(text, o, rtl) {
+  const rp = FONT + (o.b ? '<w:b/><w:bCs/>' : '') + (o.color ? '<w:color w:val="' + o.color + '"/>' : '') + '<w:sz w:val="' + (o.sz || 22) + '"/><w:szCs w:val="' + (o.sz || 22) + '"/>' + (rtl ? '<w:rtl/>' : '');
+  const lines = String(text == null ? '' : text).split(/\r\n|\r|\n/);
+  return lines.map((ln, i) => '<w:r><w:rPr>' + rp + '</w:rPr>' + (i ? '<w:br/>' : '') + '<w:t xml:space="preserve">' + X(ln) + '</w:t></w:r>').join('');
+}
+function para(text, o, rtl) {
+  o = o || {};
+  return '<w:p><w:pPr>' + (rtl ? '<w:bidi/>' : '') + '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after == null ? 80 : o.after) + '"/><w:jc w:val="' + (o.jc || 'left') + '"/></w:pPr>' + runs(text, o, rtl) + '</w:p>';
+}
+// spec: {rtl, landscape, club, title, meta: [string], count, cols: [{h, w}], rows: [[string]], footer}
+function build(spec) {
+  const rtl = !!spec.rtl, land = !!spec.landscape;
+  const W = land ? 16838 : 11906, H = land ? 11906 : 16838, M = 720, usable = W - 2 * M;
+  const cols = spec.cols, tw = cols.reduce((a, c) => a + (c.w || 1), 0);
+  const widths = cols.map(c => Math.max(500, Math.floor(usable * (c.w || 1) / tw)));
+  const border = '<w:top w:val="single" w:sz="4" w:space="0" w:color="8A94A8"/><w:left w:val="single" w:sz="4" w:space="0" w:color="8A94A8"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="8A94A8"/><w:right w:val="single" w:sz="4" w:space="0" w:color="8A94A8"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="8A94A8"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="8A94A8"/>';
+  const cell = (txt, w, head, minH) => '<w:tc><w:tcPr><w:tcW w:w="' + w + '" w:type="dxa"/>' + (head ? '<w:shd w:val="clear" w:color="auto" w:fill="E3EAF8"/>' : '') + '<w:vAlign w:val="center"/></w:tcPr>' + para(txt, {sz: 20, b: head, jc: head ? 'center' : 'left', after: 0}, rtl) + '</w:tc>';
+  const hdr = '<w:tr><w:trPr><w:cantSplit/><w:tblHeader/></w:trPr>' + cols.map((c, i) => cell(c.h, widths[i], true)).join('') + '</w:tr>';
+  const body = spec.rows.map(r => '<w:tr><w:trPr><w:cantSplit/>' + (spec.rowH ? '<w:trHeight w:val="' + spec.rowH + '" w:hRule="atLeast"/>' : '') + '</w:trPr>' + cols.map((c, i) => cell(r[i], widths[i], false)).join('') + '</w:tr>').join('');
+  const tbl = '<w:tbl><w:tblPr><w:tblW w:w="' + usable + '" w:type="dxa"/>' + (rtl ? '<w:bidiVisual/>' : '') + '<w:tblBorders>' + border + '</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>' + widths.map(w => '<w:gridCol w:w="' + w + '"/>').join('') + '</w:tblGrid>' + hdr + body + '</w:tbl>';
+  const head = para(spec.club, {sz: 24, b: true, color: '1B2B5E', jc: 'center', after: 40}, rtl) + para(spec.title, {sz: 36, b: true, jc: 'center', after: 80}, rtl) +
+    (spec.meta || []).filter(Boolean).map(m => para(m, {sz: 22, jc: 'center', after: 30, color: '444B5C'}, rtl)).join('') + para(spec.count, {sz: 22, b: true, jc: 'center', before: 60, after: 160}, rtl);
+  const foot = spec.footer ? para(spec.footer, {sz: 18, jc: 'center', before: 200, color: '6B7387'}, rtl) : '';
+  const sect = '<w:sectPr><w:pgSz w:w="' + W + '" w:h="' + H + '"' + (land ? ' w:orient="landscape"' : '') + '/><w:pgMar w:top="' + M + '" w:right="' + M + '" w:bottom="' + M + '" w:left="' + M + '" w:header="360" w:footer="360" w:gutter="0"/>' + (rtl ? '<w:bidi/>' : '') + '</w:sectPr>';
+  const NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  const doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ' + NS + '><w:body>' + head + tbl + foot + sect + '</w:body></w:document>';
+  const styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles ' + NS + '><w:docDefaults><w:rPrDefault><w:rPr>' + FONT + '<w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="' + (rtl ? 'ar-SA' : 'fr-FR') + '" w:eastAsia="en-US" w:bidi="ar-SA"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="259" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>';
+  const ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>';
+  const rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+  const drels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  const E = s => enc.encode(s);
+  return zip([{name: '[Content_Types].xml', data: E(ct)}, {name: '_rels/.rels', data: E(rels)}, {name: 'word/document.xml', data: E(doc)}, {name: 'word/styles.xml', data: E(styles)}, {name: 'word/_rels/document.xml.rels', data: E(drels)}]);
+}
+window.B13D = {build, crc32, zip};
+})();
+</script>
+<script>
+(() => {
+'use strict';
+// ===== الدفعة 13 (ج): قوائم التسجيل =====
+if (!window.B13T || !window.B13D || typeof render !== 'function' || typeof sb === 'undefined' || typeof drawShell !== 'function') return;
+const T = window.B13T;
+const FR = () => { try { return localStorage.getItem('lst_lang') === 'fr'; } catch (e) { return false; } };
+const t = (k, a, b) => { const v = (T[k] || [k, k])[FR() ? 1 : 0]; return typeof v === 'function' ? v(a, b) : v; };
+const $id = id => document.getElementById(id);
+const ok = () => !!me && me.status === 'approved';
+const loc = () => FR() ? 'fr-FR' : 'ar-u-nu-latn';
+const dday = d => d ? new Date(d).toLocaleDateString(loc(), {year: 'numeric', month: 'long', day: 'numeric'}) : '';
+const dtm = d => d ? new Date(d).toLocaleString(loc(), {dateStyle: 'medium', timeStyle: 'short'}) : '';
+const initials = n => (n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('');
+const asObj = x => typeof x === 'string' ? JSON.parse(x) : x;
+const latin = s => String(s).replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x6F0);
+const toLocal = d => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 16); };
+const hero = (icon, pill, h1, sub) => '<section class="dark ph"><span class="pill">' + ic(icon, 18) + ' ' + esc(pill) + '</span><h1>' + esc(h1) + '</h1><p>' + esc(sub) + '</p></section>';
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const modalBox = html => { const m = $id('modal'); m.innerHTML = '<div class="box"><div class="l13">' + closeX + html + '</div></div>'; m.style.display = 'flex'; };
+const closeModal = () => { const m = $id('modal'); if (m) m.style.display = 'none'; };
+const KINDS = ['attendance', 'trip', 'other'], KICON = {attendance: 'check', trip: 'pin', other: 'file'};
+const STD = ['card_no', 'phone', 'specialization', 'year', 'committee'];
+const STD_DEF = {attendance: ['card_no'], trip: ['card_no', 'phone'], other: ['card_no']};
+const TYPES = ['text', 'long', 'number', 'phone', 'choice', 'yesno'];
+const MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+// ===== الملخص (هل أنا مسؤول؟ كم قائمة تنتظرني؟) =====
+let SM = {uid: null, at: 0, v: null, p: null, drawn: null};
+function loadSum(force) {
+  if (!ok()) { SM = {uid: null, at: 0, v: null, p: null, drawn: null}; return Promise.resolve(null); }
+  if (SM.uid !== me.id) SM = {uid: me.id, at: 0, v: null, p: null, drawn: null};
+  if (!force && SM.v && Date.now() - SM.at < 60000) return Promise.resolve(SM.v);
+  if (SM.p) return SM.p;
+  SM.p = (async () => {
+    let v = null;
+    try { const r = await sb.rpc('lists_summary'); if (!r.error && r.data && typeof r.data === 'object' && !Array.isArray(r.data)) v = r.data; } catch (e) {}
+    SM.v = v; SM.at = Date.now(); SM.p = null; return v;
+  })();
+  return SM.p;
+}
+const redrawOnce = () => { if (ok() && SM.uid === me.id && SM.drawn !== JSON.stringify(SM.v)) { SM.drawn = JSON.stringify(SM.v); if (typeof drawMenu === 'function') drawMenu(); } };
+
+// ===== أخطاء الخادم بلغة المستخدم =====
+function errMsg(m, x) {
+  m = m || '';
+  const mm = /(missing|bad|toolong):(f\d+)/.exec(m);
+  if (mm) { const f = ((x && x.fields) || []).find(q => q.k === mm[2]); const lb = f ? f.label : ''; return t(mm[1] === 'missing' ? 'eMissing' : mm[1] === 'bad' ? 'eBad' : 'eLong', lb); }
+  if (/closes in past/.test(m)) return t('ePast');
+  if (/fields locked/.test(m)) return t('eLocked');
+  if (/not eligible/.test(m)) return t('mgNotElig');
+  if (/closed/.test(m)) return t('eClosed');
+  if (/full/.test(m)) return t('eFull');
+  if (/not allowed/.test(m)) return t('eDenied');
+  if (/not found/.test(m)) return t('eNone');
+  if (/does not exist|schema cache/i.test(m)) return t('eSql');
+  return t('eFail');
+}
+
+// ===== الصفحة =====
+let LS = [], FB = [], EDIT = null, FKIND = 'other', RESP = {x: null, rows: []}, MG = [], busy = false;
+const live = () => view === 'lists' && $id('lc');
+const failBox = () => { const b = $id('lc'); if (b) b.innerHTML = '<div class="pan c mut">' + esc(t('eSql')) + '</div>'; };
+async function loadOv() {
+  const r = await sb.rpc('lists_overview');
+  if (r.error) return null;
+  LS = (r.data || []).map(asObj); return LS;
+}
+async function pLists(sub, arg, s) {
+  if (!s) { main.innerHTML = hero('check', t('pill'), t('h1'), t('sub')) + '<div class="sec l13"><div class="pan c mut" id="lc">' + esc(t('eSql')) + '</div></div>'; return; }
+  const mgr = !!s.manage, adm = !!s.admin;
+  const tab = sub === 'mgr' ? 'mgr' : ['manage', 'new', 'edit', 'r'].includes(sub) ? 'manage' : 'mine';
+  if ((tab !== 'mine' && !mgr) || (sub === 'mgr' && !adm)) return nav('#lists');
+  const tabs = [['mine', '#lists', 'tMine', 'check']].concat(mgr ? [['manage', '#lists/manage', 'tManage', 'file']] : [], adm ? [['mgr', '#lists/mgr', 'tMgr', 'users']] : []);
+  main.innerHTML = hero('check', t('pill'), t('h1'), t('sub')) + '<div class="sec l13" style="padding-top:12px">' +
+    (tabs.length > 1 ? '<div class="tabs">' + tabs.map(x => '<a href="' + x[1] + '" class="' + (x[0] === tab ? 'on' : '') + '">' + ic(x[3], 20) + esc(t(x[2])) + '</a>').join('') + '</div>' : '') + '<div id="lc">' + loader + '</div></div>';
+  if (sub === 'manage') return vManage();
+  if (sub === 'new') return vForm(null);
+  if (sub === 'edit') return vForm(arg);
+  if (sub === 'r') return vResp(arg);
+  if (sub === 'mgr') return vMgr();
+  return vMine();
+}
+const metaHtml = x => {
+  const b = [];
+  if (x.event_date) b.push(ic('calplus', 16) + ' ' + esc(dtm(x.event_date)));
+  if (x.location) b.push(ic('pin', 16) + ' ' + esc(x.location));
+  if (x.closes_at) b.push(esc(t('closesAt') + dtm(x.closes_at)));
+  b.push(esc(x.max_entries ? t('seats', x.n, x.max_entries) : t('regs', x.n)));
+  return '<div class="lb-meta">' + b.map(i => '<span>' + i + '</span>').join('') + '</div>';
+};
+const head = (x, st) => '<div class="ar"><div class="who"><span class="av">' + ic(KICON[x.kind] || 'file', 22) + '</span><div><b>' + esc(x.title) + '</b><small class="mut" style="display:block">' + esc(t('k_' + x.kind)) + '</small></div></div><span class="st2 ' + st[1] + '">' + esc(t(st[0])) + '</span></div>' +
+  (x.description ? '<p class="mut" style="margin:10px 0 0;line-height:1.9;text-align:start">' + esc(x.description) + '</p>' : '');
+
+// ----- العضو -----
+async function vMine() {
+  if (!await loadOv()) return live() ? failBox() : 0;
+  if (!live()) return;
+  const rows = LS.filter(x => x.status !== 'draft');
+  $id('lc').innerHTML = rows.map(x => {
+    const mine = x.mine !== null && x.mine !== undefined, full = !!x.max_entries && x.n >= x.max_entries && !mine;
+    const st = mine ? ['st_done', 's-approved'] : !x.accepting ? ['st_closed', 's-rejected'] : full ? ['st_full', 's-rejected'] : ['st_open', 's-pending'];
+    const btn = x.accepting && !full ? '<button type="button" class="btn ' + (mine ? 'line' : 'navy') + ' sm" data-a="l13open" data-id="' + x.id + '">' + esc(t(mine ? 'edit' : 'reg')) + '</button>' :
+      mine ? '<button type="button" class="btn line sm" data-a="l13open" data-id="' + x.id + '">' + esc(t('viewMine')) + '</button>' : '';
+    return '<div class="pan">' + head(x, st) + metaHtml(x) + (btn ? '<div class="lb-acts">' + btn + '</div>' : '') + '</div>';
+  }).join('') || '<div class="pan c mut">' + esc(t('none')) + '</div>';
+}
+const stdVal = k => k === 'committee' ? cn(me.committee) : (me[k] || '—');
+function fIn(f, v, dis) {
+  const nm = ' name="' + f.k + '"' + (dis ? ' disabled' : '');
+  const val = v == null ? '' : String(v);
+  let h;
+  if (f.type === 'long') h = '<textarea' + nm + ' maxlength="1000" style="min-height:96px">' + esc(val) + '</textarea>';
+  else if (f.type === 'choice') h = '<select' + nm + '><option value="">' + esc(t('choose')) + '</option>' + (f.options || []).map(o => '<option value="' + esc(o) + '"' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select>';
+  else if (f.type === 'yesno') h = '<select' + nm + '><option value="">' + esc(t('choose')) + '</option><option value="yes"' + (val === 'yes' ? ' selected' : '') + '>' + esc(t('yes')) + '</option><option value="no"' + (val === 'no' ? ' selected' : '') + '>' + esc(t('no')) + '</option></select>';
+  else h = '<input' + nm + (f.type === 'phone' ? ' type="tel" inputmode="tel" maxlength="20"' : f.type === 'number' ? ' inputmode="decimal" maxlength="14" autocomplete="off"' : ' maxlength="200"') + ' value="' + esc(val) + '">';
+  return '<div class="fl">' + esc(f.label) + (f.required ? ' <span class="req">*</span>' : '') + '</div>' + h;
+}
+function openForm(id) {
+  const x = LS.find(l => String(l.id) === String(id)); if (!x) return;
+  const mine = x.mine !== null && x.mine !== undefined, d = x.mine || {}, can = !!x.accepting;
+  modalBox('<h3 style="font-size:1.35rem;margin:0 0 6px;padding-inline-end:36px">' + esc(x.title) + '</h3><div class="mut" style="margin-bottom:10px">' + esc(t('k_' + x.kind)) + '</div>' +
+    '<div class="mut" style="margin:10px 0 8px;font-size:.9rem">' + esc(t('recorded')) + '</div><div>' +
+    ['full_name'].concat(x.std).map(k => '<span class="lb-chip">' + esc(t('s_' + k)) + ': <b>' + esc(k === 'full_name' ? me.full_name : stdVal(k)) + '</b></span>').join('') + '</div>' +
+    '<form id="l13f" novalidate data-id="' + x.id + '">' + (x.fields.length ? x.fields.map(f => fIn(f, d[f.k], !can)).join('') : '<p class="mut" style="margin:12px 0">' + esc(t('noFields')) + '</p>') +
+    (can ? '<div class="lb-acts" style="margin-top:22px"><button type="submit" class="btn navy">' + esc(t(mine ? 'saveEdit' : 'submit')) + '</button>' + (mine ? '<button type="button" class="btn line" data-a="l13wd" data-id="' + x.id + '">' + esc(t('withdraw')) + '</button>' : '') + '</div>' : '') + '</form>');
+  const f = $id('l13f'); f.onsubmit = e => { e.preventDefault(); submitForm(x.id, f); };
+}
+async function submitForm(id, form) {
+  const x = LS.find(l => String(l.id) === String(id)); if (!x || busy) return;
+  const mine = x.mine !== null && x.mine !== undefined, data = {};
+  for (const f of x.fields) {
+    const el = form.elements[f.k]; let v = el ? String(el.value).trim() : '';
+    if (f.type === 'number' || f.type === 'phone') v = latin(v);
+    data[f.k] = v;
+    if (!v) { if (f.required) return toast(t('eMissing', f.label)); continue; }
+    if ((f.type === 'number' && !/^-?[0-9]{1,9}([.,][0-9]{1,4})?$/.test(v)) || (f.type === 'phone' && !/^[0-9+() .-]{6,20}$/.test(v))) return toast(t('eBad', f.label));
+    if (f.type === 'text' && v.length > 200) return toast(t('eLong', f.label));
+  }
+  busy = true; const b = form.querySelector('button[type=submit]'); if (b) b.disabled = true;
+  try {
+    const r = await sb.rpc('list_submit', {p_id: x.id, p_data: data});
+    if (r.error) { if (b) b.disabled = false; return toast(errMsg(r.error.message, x)); }
+    closeModal(); toast(t(mine ? 'saved' : 'thanks'));
+    if (live()) await vMine(); loadSum(true).then(redrawOnce);
+  } catch (e) { if (b) b.disabled = false; toast(t('eFail')); } finally { busy = false; }
+}
+async function withdraw(id) {
+  if (!confirm(t('cWithdraw')) || busy) return;
+  busy = true;
+  try {
+    const r = await sb.rpc('list_withdraw', {p_id: +id});
+    if (r.error) return toast(errMsg(r.error.message));
+    closeModal(); toast(t('withdrawn'));
+    if (live()) await vMine(); loadSum(true).then(redrawOnce);
+  } catch (e) { toast(t('eFail')); } finally { busy = false; }
+}
+
+// ----- المسؤول: إدارة القوائم -----
+async function vManage() {
+  if (!await loadOv()) return live() ? failBox() : 0;
+  if (!live()) return;
+  $id('lc').innerHTML = '<div class="lb-acts" style="margin:0 0 14px"><a class="btn navy" href="#lists/new">' + esc(t('newList')) + '</a></div>' +
+    (LS.map(x => {
+      const st = x.status === 'draft' ? ['st_draft', 's-pending'] : x.status === 'open' ? (x.accepting ? ['st_open', 's-approved'] : ['st_late', 's-rejected']) : ['st_closed', 's-rejected'];
+      const sb1 = (s, k, cls) => '<button type="button" class="btn ' + cls + ' sm" data-a="l13st" data-id="' + x.id + '" data-s="' + s + '">' + esc(t(k)) + '</button>';
+      return '<div class="pan">' + head(x, st) + metaHtml(x) + '<div class="lb-acts">' +
+        '<a class="btn line sm" href="#lists/r/' + x.id + '">' + esc(t('resp')) + '</a>' +
+        '<button type="button" class="btn line sm" data-a="l13exp" data-id="' + x.id + '">' + ic('download', 16) + esc(t('exp')) + '</button>' +
+        '<a class="btn line sm" href="#lists/edit/' + x.id + '">' + esc(t('editL')) + '</a>' +
+        (x.status === 'draft' ? sb1('open', 'pub', 'navy') : x.status === 'open' ? sb1('closed', 'close', 'line') : sb1('open', 'reopen', 'line')) +
+        (x.status !== 'draft' ? sb1('draft', 'unpub', 'line') : '') +
+        '<button type="button" class="btn no sm" data-a="l13del" data-id="' + x.id + '">' + esc(t('del')) + '</button></div></div>';
+    }).join('') || '<div class="pan c mut">' + esc(t('manageNone')) + '</div>');
+}
+async function setStatus(id, s) {
+  if (busy) return; busy = true;
+  try {
+    const r = await sb.rpc('list_set_status', {p_id: +id, p_status: s});
+    if (r.error) return toast(errMsg(r.error.message));
+    toast(t(s === 'open' ? (LS.find(l => String(l.id) === String(id)) || {}).status === 'closed' ? 'tReopen' : 'tPub' : s === 'closed' ? 'tClosed' : 'tUnpub'));
+    if (live()) await vManage(); loadSum(true).then(redrawOnce);
+  } catch (e) { toast(t('eFail')); } finally { busy = false; }
+}
+async function delList(id) {
+  const x = LS.find(l => String(l.id) === String(id)); if (!x || busy) return;
+  if (!confirm(t('cDelList', x.n))) return; busy = true;
+  try {
+    const r = await sb.rpc('list_delete', {p_id: x.id});
+    if (r.error) return toast(errMsg(r.error.message));
+    toast(t('tDel')); if (live()) await vManage(); loadSum(true).then(redrawOnce);
+  } catch (e) { toast(t('eFail')); } finally { busy = false; }
+}
+// ----- نموذج إنشاء/تعديل القائمة -----
+function drawKinds() {
+  const b = $id('l13k'); if (!b) return;
+  b.innerHTML = KINDS.map(k => '<button type="button" class="btn ' + (k === FKIND ? 'navy' : 'line') + ' sm" data-a="l13kind" data-k="' + k + '">' + ic(KICON[k], 16) + esc(t('k_' + k)) + '</button>').join('');
+}
+function drawFB(locked) {
+  const box = $id('l13fb'); if (!box) return;
+  if (locked) { box.innerHTML = '<p class="mut" style="margin:0 0 10px">' + esc(t('fLocked')) + '</p>' + FB.map(f => '<span class="lb-chip">' + esc(f.label) + ' · ' + esc(t('ty_' + f.type)) + (f.required ? ' *' : '') + '</span>').join(''); return; }
+  box.innerHTML = FB.map((f, i) => '<div class="lb-row"><div class="fl" style="margin-top:0">' + esc(t('fLabel')) + '</div><input data-f13="label" data-i="' + i + '" maxlength="80" value="' + esc(f.label) + '">' +
+    '<div class="g2"><div><select data-f13="type" data-i="' + i + '" style="margin-top:10px">' + TYPES.map(k => '<option value="' + k + '"' + (k === f.type ? ' selected' : '') + '>' + esc(t('ty_' + k)) + '</option>').join('') + '</select></div>' +
+    '<label class="lb-chk" style="margin-top:10px"><input type="checkbox" data-f13="required" data-i="' + i + '"' + (f.required ? ' checked' : '') + '> ' + esc(t('fReq')) + '</label></div>' +
+    (f.type === 'choice' ? '<div class="fl">' + esc(t('fOpts')) + '</div><textarea data-f13="options" data-i="' + i + '">' + esc(f.options) + '</textarea>' : '') +
+    '<div class="lb-acts"><button type="button" class="btn line sm" data-a="l13up" data-i="' + i + '"' + (i === 0 ? ' disabled' : '') + '>↑</button><button type="button" class="btn line sm" data-a="l13dn" data-i="' + i + '"' + (i === FB.length - 1 ? ' disabled' : '') + '>↓</button><button type="button" class="btn no sm" data-a="l13rm" data-i="' + i + '">' + esc(t('del')) + '</button></div></div>').join('');
+}
+async function vForm(id) {
+  let x = null;
+  if (id) {
+    if (!await loadOv()) return live() ? failBox() : 0;
+    x = LS.find(l => String(l.id) === String(id));
+    if (!x) { toast(t('eNone')); return nav('#lists/manage'); }
+  }
+  if (!live()) return;
+  EDIT = x ? x.id : null; FKIND = x ? x.kind : 'other';
+  const locked = !!x && x.status !== 'draft', std = x ? x.std : STD_DEF.other;
+  FB = x ? x.fields.map(f => ({k: f.k, label: f.label, type: f.type, required: !!f.required, options: (f.options || []).join('\n')})) : [];
+  $id('lc').innerHTML = '<form class="pan" id="l13b" novalidate><h3><i class="g">' + ic('file', 24) + '</i>' + esc(t(x ? 'fEdit' : 'fNew')) + '</h3>' +
+    '<div class="fl" style="margin-top:0">' + esc(t('fTitle')) + '</div><input name="ttl" maxlength="120" placeholder="' + esc(t('fTitlePh')) + '" value="' + esc(x ? x.title : '') + '">' +
+    '<div class="fl">' + esc(t('fKind')) + '</div><div class="lb-kinds" id="l13k"></div>' +
+    '<div class="fl">' + esc(t('fDesc')) + '</div><textarea name="dsc" maxlength="1000" placeholder="' + esc(t('fDescPh')) + '" style="min-height:96px">' + esc(x && x.description ? x.description : '') + '</textarea>' +
+    '<div class="g2"><div><div class="fl">' + esc(t('fDate')) + '</div><input type="datetime-local" name="evd" value="' + (x && x.event_date ? toLocal(x.event_date) : '') + '"></div>' +
+    '<div><div class="fl">' + esc(t('fCloses')) + '</div><input type="datetime-local" name="cld" value="' + (x && x.closes_at ? toLocal(x.closes_at) : '') + '"></div></div>' +
+    '<div class="g2"><div><div class="fl">' + esc(t('fLoc')) + '</div><input name="loc" maxlength="200" value="' + esc(x && x.location ? x.location : '') + '"></div>' +
+    '<div><div class="fl">' + esc(t('fMax')) + '</div><input name="mx" inputmode="numeric" maxlength="6" value="' + (x && x.max_entries ? x.max_entries : '') + '"></div></div>' +
+    '<div class="fl">' + ic('users', 20) + esc(t('fStd')) + '</div><p class="mut" style="margin:0 0 6px;font-size:.9rem">' + esc(t('fStdNote')) + '</p>' +
+    '<label class="lb-chk"><input type="checkbox" checked disabled> ' + esc(t('s_full_name')) + '</label>' +
+    STD.map(k => '<label class="lb-chk"><input type="checkbox" name="std_' + k + '"' + (std.includes(k) ? ' checked' : '') + (locked ? ' disabled' : '') + '> ' + esc(t('s_' + k)) + '</label>').join('') +
+    '<div class="fl">' + esc(t('fCustom')) + '</div><div id="l13fb"></div>' +
+    (locked ? '' : '<div class="lb-acts" style="margin-top:6px"><button type="button" class="btn line sm" data-a="l13add">' + esc(t('fAdd')) + '</button></div>' +
+      '<div class="lb-meta" style="margin-top:12px"><span>' + esc(t('fPresets')) + '</span>' + ['p_emerg', 'p_notes', 'p_size'].map(k => '<button type="button" class="btn line sm" data-a="l13preset" data-p="' + k + '">' + esc(t(k)) + '</button>').join('') + '</div>') +
+    '<div class="lb-acts" style="margin-top:24px">' + (locked || x ? '<button type="button" class="btn navy" data-a="l13save" data-pub="0">' + esc(t('fSave')) + '</button>' :
+      '<button type="button" class="btn line" data-a="l13save" data-pub="0">' + esc(t('fSaveDraft')) + '</button><button type="button" class="btn navy" data-a="l13save" data-pub="1">' + esc(t('fSavePub')) + '</button>') + '</div></form>';
+  $id('l13b').onsubmit = e => e.preventDefault();
+  drawKinds(); drawFB(locked);
+}
+async function saveForm(pub) {
+  const f = $id('l13b'); if (!f || busy) return;
+  const x = EDIT ? LS.find(l => String(l.id) === String(EDIT)) : null, locked = !!x && x.status !== 'draft', E = n => f.elements[n];
+  const title = E('ttl').value.trim(); if (title.length < 2) return toast(t('vTitle'));
+  let std, fields;
+  if (locked) { std = x.std; fields = x.fields; }
+  else {
+    std = STD.filter(k => E('std_' + k) && E('std_' + k).checked); fields = [];
+    for (const q of FB) {
+      const lb = q.label.trim(); if (!lb) return toast(t('vLabel'));
+      const o = {label: lb, type: q.type, required: !!q.required}; if (q.k) o.k = q.k;
+      if (q.type === 'choice') { const opts = Array.from(new Set(q.options.split(/\r?\n/).map(s => s.trim()).filter(Boolean))); if (opts.length < 2) return toast(t('vOpts', lb)); o.options = opts; }
+      fields.push(o);
+    }
+  }
+  const mx = latin(E('mx').value.trim()); if (mx && !/^[1-9][0-9]{0,5}$/.test(mx)) return toast(t('vMax'));
+  const payload = {title, kind: FKIND, description: E('dsc').value.trim(), location: E('loc').value.trim(),
+    event_date: E('evd').value ? new Date(E('evd').value).toISOString() : null, closes_at: E('cld').value ? new Date(E('cld').value).toISOString() : null,
+    max_entries: mx ? +mx : null, std, fields};
+  busy = true; f.querySelectorAll('[data-a="l13save"]').forEach(b => b.disabled = true);
+  try {
+    const r = await sb.rpc('list_save', {p_id: EDIT, p: payload});
+    if (r.error) { f.querySelectorAll('[data-a="l13save"]').forEach(b => b.disabled = false); return toast(errMsg(r.error.message)); }
+    let msg = t('fSaved');
+    if (pub) { const s = await sb.rpc('list_set_status', {p_id: r.data, p_status: 'open'}); msg = s.error ? errMsg(s.error.message) : t('tPub'); }
+    toast(msg); loadSum(true).then(redrawOnce); nav('#lists/manage');
+  } catch (e) { f.querySelectorAll('[data-a="l13save"]').forEach(b => b.disabled = false); toast(t('eFail')); } finally { busy = false; }
+}
+
+// ----- كشف الردود وتصدير Word -----
+const yn = v => v === 'yes' ? t('yes') : v === 'no' ? t('no') : v;
+const rowStd = (r, k) => k === 'committee' ? (r.committee ? cn(r.committee) : '—') : (r[k] || '—');
+const rowFld = (r, f) => { const v = r.data && r.data[f.k]; return v == null || v === '' ? '—' : f.type === 'yesno' ? yn(v) : String(v); };
+async function vResp(id) {
+  if (!await loadOv()) return live() ? failBox() : 0;
+  const x = LS.find(l => String(l.id) === String(id));
+  if (!x) { toast(t('eNone')); return nav('#lists/manage'); }
+  const r = await sb.rpc('list_roster', {p_id: x.id});
+  if (!live()) return;
+  if (r.error) { toast(errMsg(r.error.message)); return nav('#lists/manage'); }
+  RESP = {x, rows: r.data.map(asObj)};
+  $id('lc').innerHTML = '<div class="pan">' + head(x, x.status === 'draft' ? ['st_draft', 's-pending'] : x.status === 'open' ? ['st_open', 's-approved'] : ['st_closed', 's-rejected']) +
+    '<div class="lb-meta"><span>' + esc(t('regs', RESP.rows.length)) + '</span></div>' + (x.kind === 'attendance' ? '<p class="mut" style="margin:6px 0 0;font-size:.85rem">' + esc(t('attNote')) + '</p>' : '') +
+    '<div class="lb-acts"><a class="btn line sm" href="#lists/manage">' + esc(t('back')) + '</a><button type="button" class="btn navy sm" data-a="l13exp" data-id="' + x.id + '">' + ic('download', 16) + esc(t('exp')) + '</button><button type="button" class="btn line sm" data-a="l13rf" data-id="' + x.id + '">' + esc(t('refresh')) + '</button></div></div>' +
+    '<div class="sr"><input id="l13q" placeholder="' + esc(t('rSearch')) + '" autocomplete="off">' + ic('search', 20) + '</div><div id="l13t"></div>';
+  $id('l13q').oninput = drawResp; drawResp();
+}
+function drawResp() {
+  const box = $id('l13t'); if (!box || !RESP.x) return;
+  const x = RESP.x, q = ($id('l13q').value || '').trim().toLowerCase();
+  const rows = RESP.rows.filter(r => !q || [r.full_name, ...x.std.map(k => rowStd(r, k)), ...x.fields.map(f => rowFld(r, f))].join(' ').toLowerCase().includes(q));
+  if (!rows.length) { box.innerHTML = '<div class="pan c mut">' + esc(t('rNone')) + '</div>'; return; }
+  box.innerHTML = '<div class="tw"><table><thead><tr><th>#</th><th>' + esc(t('s_full_name')) + '</th>' + x.std.map(k => '<th>' + esc(t('s_' + k)) + '</th>').join('') + x.fields.map(f => '<th>' + esc(f.label) + '</th>').join('') + '<th>' + esc(t('rAt')) + '</th><th></th></tr></thead><tbody>' +
+    rows.map((r, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(r.full_name) + '</b></td>' + x.std.map(k => '<td>' + esc(rowStd(r, k)) + '</td>').join('') + x.fields.map(f => '<td>' + esc(rowFld(r, f)) + '</td>').join('') +
+      '<td><small>' + esc(dtm(r.created_at)) + '</small></td><td><button type="button" class="btn no sm" data-a="l13rr" data-u="' + esc(r.user_id) + '">' + esc(t('del')) + '</button></td></tr>').join('') + '</tbody></table></div>';
+}
+async function exportWord(id) {
+  const x = LS.find(l => String(l.id) === String(id)); if (!x || busy) return; busy = true;
+  try {
+    const r = await sb.rpc('list_roster', {p_id: x.id});
+    if (r.error) return toast(errMsg(r.error.message));
+    const rows = r.data.map(asObj), att = x.kind === 'attendance';
+    const cols = [{h: '#', w: .5}, {h: t('s_full_name'), w: 2}].concat(x.std.map(k => ({h: t('s_' + k), w: k === 'phone' ? 1.3 : 1.2})), x.fields.map(f => ({h: f.label, w: f.type === 'long' ? 2 : 1.2})), att ? [{h: t('sign'), w: 1.6}] : []);
+    const table = rows.map((e, i) => [String(i + 1), e.full_name].concat(x.std.map(k => rowStd(e, k)), x.fields.map(f => rowFld(e, f)), att ? [''] : []));
+    const day = new Date().toLocaleDateString(loc(), {year: 'numeric', month: 'long', day: 'numeric'});
+    const bytes = window.B13D.build({rtl: !FR(), landscape: cols.length > 6, rowH: att ? 620 : 0, club: t('club'), title: x.title,
+      meta: [t('uni'), t('k_' + x.kind) + (x.event_date ? ' · ' + dtm(x.event_date) : ''), x.location || ''], count: t('exCount', rows.length), cols, rows: table, footer: t('exAt', day)});
+    const ascii = String(x.title).normalize('NFKD').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40), slug = ascii.length >= 3 ? ascii : 'lst-' + x.kind;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bytes], {type: MIME})); a.download = slug + '-' + new Date().toISOString().slice(0, 10) + '.docx';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast(t('exDone'));
+  } catch (e) { toast(t('eFail')); } finally { busy = false; }
+}
+
+// ----- المشرف: المسؤولون عن القوائم -----
+async function vMgr() {
+  const r = await sb.rpc('admin_list_managers');
+  if (r.error) return live() ? failBox() : 0;
+  if (!live()) return;
+  MG = r.data.map(asObj);
+  $id('lc').innerHTML = '<p class="mut" style="margin:0 0 14px;line-height:1.9">' + esc(t('mgInfo')) + '</p><div id="l13m"></div>' +
+    '<div class="sr" style="margin-top:20px"><input id="l13q" placeholder="' + esc(t('mgSearch')) + '" autocomplete="off">' + ic('search', 20) + '</div><div id="l13c"></div>';
+  drawMgrs(); let tm = null; $id('l13q').oninput = () => { clearTimeout(tm); tm = setTimeout(findCand, 250); }; findCand();
+}
+function drawMgrs() {
+  const b = $id('l13m'); if (!b) return;
+  b.innerHTML = '<h3 style="margin:0 0 12px">' + esc(t('mgCur', MG.length)) + '</h3>' + (MG.map(m => '<div class="pan"><div class="ar"><div class="who"><span class="av">' + esc(initials(m.full_name)) + '</span><div><b>' + esc(m.full_name) + '</b><small class="mut" style="display:block">' + esc([m.card_no, m.committee ? cn(m.committee) : ''].filter(Boolean).join(' · ')) + '</small></div></div>' +
+    '<button type="button" class="btn no sm" data-a="l13mg" data-id="' + esc(m.user_id) + '" data-on="0" data-n="' + esc(m.full_name) + '">' + esc(t('mgRemove')) + '</button></div></div>').join('') || '<div class="pan c mut">' + esc(t('mgNone')) + '</div>');
+}
+async function findCand() {
+  const q = $id('l13q'); if (!q) return;
+  const r = await sb.rpc('list_candidates', {p_q: q.value.trim()});
+  const box = $id('l13c'); if (!box || !live()) return;
+  if (r.error) { box.innerHTML = ''; return; }
+  const rows = r.data.map(asObj);
+  box.innerHTML = rows.map(m => '<div class="pan"><div class="ar"><div class="who"><span class="av">' + esc(initials(m.full_name)) + '</span><div><b>' + esc(m.full_name) + '</b><small class="mut" style="display:block">' + esc([m.card_no, m.committee ? cn(m.committee) : ''].filter(Boolean).join(' · ')) + '</small></div></div>' +
+    (m.is_mgr ? '<span class="st2 s-approved">' + esc(t('mgIs')) + '</span>' : '<button type="button" class="btn navy sm" data-a="l13mg" data-id="' + esc(m.id) + '" data-on="1">' + esc(t('mgAdd')) + '</button>') + '</div></div>').join('') || '<div class="pan c mut">' + esc(t('mgNoRes')) + '</div>';
+}
+async function setMgr(id, on, name) {
+  if (busy) return; if (!on && !confirm(t('cMgRemove', name || ''))) return; busy = true;
+  try {
+    const r = await sb.rpc('admin_set_list_manager', {p_user: id, p_on: on});
+    if (r.error) return toast(errMsg(r.error.message));
+    toast(t(on ? 'mgAdded' : 'mgRemoved')); if (live()) await vMgr();
+  } catch (e) { toast(t('eFail')); } finally { busy = false; }
+}
+
+// ===== التوجيه والقائمة =====
+const _r = window.render;
+window.render = async function () {
+  const [v0, sub, arg] = (location.hash || '#home').slice(1).split('/');
+  if (v0 === 'lists') {
+    if (!me) return nav('#login');
+    if (!ok()) return nav('#home');
+    if (typeof leaveChat === 'function') leaveChat();
+    const mn = $id('menu'); if (mn) mn.style.display = 'none'; closeModal();
+    view = 'lists'; drawShell(); window.scrollTo(0, 0); const pb = $id('pinbar'); if (pb) pb.hidden = true;
+    const s = await loadSum(true); redrawOnce();
+    if (view !== 'lists') return;
+    return pLists(sub, arg, s);
+  }
+  const r = await _r.apply(this, arguments);
+  if (ok()) loadSum().then(redrawOnce);
+  return r;
+};
+const _dm = window.drawMenu;
+window.drawMenu = function () {
+  _dm.apply(this, arguments);
+  const m = $id('menu'); if (!m || !ok()) return;
+  m.querySelectorAll('[data-b13]').forEach(x => x.remove());
+  const v = SM.uid === me.id ? SM.v : null; if (!v) return;
+  const todo = Number(v.todo) || 0;
+  const after = m.querySelector('[href="#members"]') || m.querySelector('[href="#events"]');
+  const a = '<a data-b13="1" href="#lists">' + esc(t('mLists')) + (todo > 0 ? ' (' + todo + ')' : '') + '</a>';
+  if (after) after.insertAdjacentHTML('afterend', a); else m.insertAdjacentHTML('afterbegin', a);
+  const mb = $id('mbtn'); if (mb && todo > 0 && !mb.querySelector('.dot')) mb.insertAdjacentHTML('beforeend', '<i class="dot"></i>');
+};
+
+// ===== الأزرار =====
+document.addEventListener('input', e => {
+  const el = e.target; if (!el || !el.dataset || !el.dataset.f13) return;
+  const f = FB[+el.dataset.i]; if (!f) return;
+  if (el.dataset.f13 === 'label') f.label = el.value; else if (el.dataset.f13 === 'options') f.options = el.value;
+});
+document.addEventListener('change', e => {
+  const el = e.target; if (!el || !el.dataset || !el.dataset.f13) return;
+  const f = FB[+el.dataset.i]; if (!f) return;
+  if (el.dataset.f13 === 'required') f.required = el.checked;
+  else if (el.dataset.f13 === 'type') { f.type = el.value; drawFB(false); }
+});
+document.addEventListener('click', async e => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-a^="l13"]') : null; if (!el) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const a = el.dataset.a, id = el.dataset.id, i = +el.dataset.i;
+  if (a === 'l13open') return openForm(id);
+  if (a === 'l13wd') return withdraw(id);
+  if (a === 'l13st') return setStatus(id, el.dataset.s);
+  if (a === 'l13del') return delList(id);
+  if (a === 'l13exp') return exportWord(id);
+  if (a === 'l13rf') return vResp(id);
+  if (a === 'l13rr') {
+    const row = RESP.rows.find(r => r.user_id === el.dataset.u); if (!row || busy) return;
+    if (!confirm(t('cRem', row.full_name))) return;
+    const r = await sb.rpc('list_entry_remove', {p_id: RESP.x.id, p_user: row.user_id});
+    if (r.error) return toast(errMsg(r.error.message));
+    toast(t('rRemoved')); return vResp(RESP.x.id);
+  }
+  if (a === 'l13mg') return setMgr(id, el.dataset.on === '1', el.dataset.n);
+  if (a === 'l13kind') { FKIND = el.dataset.k; drawKinds(); const f = $id('l13b'); if (f && !EDIT) STD.forEach(k => { const c = f.elements['std_' + k]; if (c && !c.disabled) c.checked = STD_DEF[FKIND].includes(k); }); return; }
+  if (a === 'l13add') { if (FB.length >= 20) return; FB.push({k: '', label: '', type: 'text', required: false, options: ''}); return drawFB(false); }
+  if (a === 'l13preset') {
+    if (FB.length >= 20) return; const p = el.dataset.p;
+    FB.push(p === 'p_emerg' ? {k: '', label: t(p), type: 'phone', required: true, options: ''} : p === 'p_notes' ? {k: '', label: t(p), type: 'long', required: false, options: ''} : {k: '', label: t(p), type: 'choice', required: true, options: 'S\nM\nL\nXL'});
+    return drawFB(false);
+  }
+  if (a === 'l13up' && i > 0) { [FB[i - 1], FB[i]] = [FB[i], FB[i - 1]]; return drawFB(false); }
+  if (a === 'l13dn' && i < FB.length - 1) { [FB[i + 1], FB[i]] = [FB[i], FB[i + 1]]; return drawFB(false); }
+  if (a === 'l13rm') { FB.splice(i, 1); return drawFB(false); }
+  if (a === 'l13save') return saveForm(el.dataset.pub === '1');
+}, true);
+
+// لو فتح الرابط مباشرة وسبق التوجيه الأصلي تحميل هذا الكود: أعد التوجيه مرة واحدة
+setTimeout(() => { if ((location.hash || '').slice(1).split('/')[0] === 'lists' && me && view !== 'lists') window.render(); }, 0);
+const boot = async () => { if (ok()) { await loadSum(); redrawOnce(); } };
+setTimeout(boot, 1300); setTimeout(boot, 3600);
+})();
+</script>
 </body>
 </html>
