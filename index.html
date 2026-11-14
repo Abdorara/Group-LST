@@ -7808,5 +7808,311 @@ const boot = async () => { if (ok()) { await refresh(false); syncPush(); askLate
 setTimeout(boot, 1500); setTimeout(boot, 4000);
 })();
 </script>
+<style id="b16css">
+.m16 .g2>div{min-width:0}
+.m16 input[type=date],.m16 input[type=time]{min-width:0;width:100%;max-width:100%;box-sizing:border-box}
+.m16 input[type=checkbox]{width:20px;height:20px;padding:0;margin:0;flex:none;accent-color:var(--gold)}
+.m16 input[dir=ltr]{text-align:left}
+.m16 textarea.bd{min-height:270px;line-height:1.9}
+.m16 .chk{display:flex;align-items:center;gap:10px;padding:12px 0 0;font-weight:600}
+.m16 .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.m16 .acts .btn{flex:1 1 150px}
+.m16 .small{margin:16px 0 8px;font-size:.9rem;color:var(--mut)}
+.m16 .hint{margin:10px 0 0;font-size:.9rem;color:var(--mut);line-height:1.8}
+.m16 .lrow{display:flex;gap:12px;align-items:center;padding:14px 16px;border:1px solid var(--bd);border-radius:20px;margin-bottom:10px;background:var(--card,#fff)}
+.m16 .lrow .ic{width:40px;height:40px;border-radius:12px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex:none;color:var(--navy)}
+.m16 .lrow .tx{flex:1;min-width:0}
+.m16 .lrow .tx b{display:block;line-height:1.6;overflow-wrap:anywhere}
+.m16 .lrow .tx small{display:block;color:var(--mut);overflow-wrap:anywhere}
+.m16 .lrow .btn{flex:none}
+</style>
+<script>
+(() => {
+'use strict';
+// ===== الدفعة 16: المراسلة بالبريد =====
+if (typeof render !== 'function' || typeof sb === 'undefined' || typeof drawShell !== 'function' || typeof ic !== 'function' || typeof me === 'undefined') return;
+if (typeof I === 'object') {
+  if (!I.copy) I.copy = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
+  if (!I.trash) I.trash = '<path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>';
+}
+const FR = () => { try { return localStorage.getItem('lst_lang') === 'fr'; } catch (e) { return false; } };
+const T = {
+  mMail: ['📧 مراسلة بالبريد', '📧 Courrier'],
+  pill: ['مراسلة بالبريد', 'Courrier'], h1: ['مراسلة بالبريد', 'Courrier électronique'],
+  sub: ['جهز رسالة باسم النادي وافتحها في تطبيق البريد لترسلها بنفسك.', 'Préparez un message au nom du club et ouvrez-le dans votre messagerie pour l’envoyer vous-même.'],
+  fMsg: ['الرسالة', 'Message'],
+  to: ['بريد المستلم', 'E-mail du destinataire'], nm: ['اسم المستلم (اختياري)', 'Nom du destinataire (facultatif)'],
+  tpl: ['القالب', 'Modèle'], lang: ['لغة الرسالة', 'Langue du message'],
+  tp_interview: ['دعوة لمقابلة', 'Invitation à un entretien'], tp_thanks: ['شكر', 'Remerciements'], tp_partner: ['طلب شراكة', 'Demande de partenariat'],
+  tp_guest: ['دعوة لحضور نشاط', 'Invitation à une activité'], tp_free: ['رسالة حرة', 'Message libre'],
+  lg_ar: ['العربية', 'Arabe'], lg_fr: ['Français', 'Français'],
+  fDate: ['التاريخ', 'Date'], fTime: ['الساعة', 'Heure'], fPlace: ['المكان أو الرابط', 'Lieu ou lien'], fTopic: ['الموضوع', 'Sujet'],
+  subj: ['عنوان الرسالة', 'Objet'], body: ['نص الرسالة', 'Texte du message'],
+  edited: ['عدلت النص يدويا فلن يتغير تلقائيا مع القالب. اضغط "إعادة توليد النص" لتحديثه.', 'Vous avez modifié le texte : il ne suivra plus le modèle. Touchez « Régénérer le texte » pour le mettre à jour.'],
+  regen: ['إعادة توليد النص', 'Régénérer le texte'],
+  cc: ['إرسال نسخة (CC) إلى بريد النادي', 'Envoyer une copie (CC) à l’adresse du club'],
+  openMail: ['فتح في تطبيق البريد', 'Ouvrir dans la messagerie'], orOpen: ['أو افتحها في:', 'Ou ouvrir dans :'], copyB: ['نسخ النص', 'Copier le texte'],
+  note: ['الموقع لا يرسل البريد بنفسه: تضغط أنت "إرسال" من تطبيق البريد فيخرج من حسابك. يسجل الموقع في الأسفل أنك جهزت الرسالة، ولا يعني ذلك أنها أرسلت فعلا.', 'Le site n’envoie pas le courrier lui-même : vous touchez « Envoyer » dans votre messagerie, depuis votre compte. Le journal ci-dessous indique seulement que le message a été préparé, pas qu’il a été envoyé.'],
+  eMail: ['اكتب بريدا صحيحا للمستلم، بريدا واحدا فقط', 'Saisissez une adresse e-mail valide, une seule'],
+  eSubj: ['اكتب عنوان الرسالة', 'Saisissez l’objet du message'], eBody: ['اكتب نص الرسالة', 'Saisissez le texte du message'],
+  ePh: ['أكمل البيانات الناقصة بين الأقواس [ ] قبل فتح الرسالة', 'Complétez les informations entre crochets [ ] avant d’ouvrir le message'],
+  tooLong: ['الرسالة طويلة على تطبيق البريد، استعمل زر نسخ النص أو افتحها في Gmail', 'Message trop long pour la messagerie : utilisez Copier ou Gmail'],
+  opened: ['فتحت الرسالة، اضغط إرسال في تطبيق البريد ✓', 'Message ouvert, touchez Envoyer dans votre messagerie ✓'],
+  copied: ['تم نسخ الرسالة ✓', 'Message copié ✓'], eCopy: ['تعذر النسخ، حدد النص يدويا', 'Copie impossible, sélectionnez le texte à la main'],
+  eSql: ['شغل كود SQL الخاص بالدفعة 16 في Supabase أولا', 'Exécutez d’abord le SQL du lot 16 dans Supabase'],
+  eDenied: ['هذه الصفحة للمشرف ومسؤولي القوائم ورؤساء اللجان فقط', 'Cette page est réservée à l’administrateur, aux responsables de listes et aux chefs de comité'],
+  eFail: ['حدث خطأ، حاول مرة أخرى', 'Une erreur est survenue, réessayez'],
+  lHead: ['آخر المراسلات', 'Derniers courriers'], lNone: ['لا توجد مراسلات بعد', 'Aucun courrier pour le moment'],
+  cDel: ['حذف هذا السطر من السجل؟', 'Supprimer cette ligne du journal ?'], dDone: ['تم الحذف', 'Supprimé'],
+  v_mailto: ['تطبيق البريد', 'Messagerie'], v_gmail: ['Gmail', 'Gmail'], v_outlook: ['Outlook', 'Outlook'], v_copy: ['نسخ', 'Copie'],
+  del: ['حذف', 'Supprimer'], by: ['بواسطة', 'par'], to2: ['إلى', 'à']
+};
+const t = k => (T[k] || [k, k])[FR() ? 1 : 0];
+const $id = id => document.getElementById(id);
+const ok = () => !!me && me.status === 'approved';
+const loc = () => FR() ? 'fr-FR' : 'ar-u-nu-latn';
+const hero = (icon, pill, h1, sub) => '<section class="dark ph"><span class="pill">' + ic(icon, 18) + ' ' + esc(pill) + '</span><h1>' + esc(h1) + '</h1><p>' + esc(sub) + '</p></section>';
+const ago = d => {
+  const s = (Date.now() - new Date(d).getTime()) / 1000, f = new Intl.RelativeTimeFormat(loc(), { numeric: 'auto' });
+  return s < 3600 ? f.format(-Math.max(1, Math.round(s / 60)), 'minute') : s < 86400 ? f.format(-Math.round(s / 3600), 'hour') : f.format(-Math.round(s / 86400), 'day');
+};
+const EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+// ===== هل يحق لي المراسلة؟ =====
+let CS = { uid: null, at: 0, v: null, p: null, drawn: null };
+function loadCan(force) {
+  if (!ok()) { CS = { uid: null, at: 0, v: null, p: null, drawn: null }; return Promise.resolve(null); }
+  if (CS.uid !== me.id) CS = { uid: me.id, at: 0, v: null, p: null, drawn: null };
+  if (!force && CS.v !== null && Date.now() - CS.at < 300000) return Promise.resolve(CS.v);
+  if (CS.p) return CS.p;
+  const st = CS;
+  st.p = (async () => {
+    let v = null;
+    try { const r = await sb.rpc('mail_can'); if (r && !r.error && typeof r.data === 'boolean') v = r.data; } catch (e) {}
+    st.v = v; st.at = Date.now(); st.p = null; return v;
+  })();
+  return st.p;
+}
+const redrawOnce = () => { if (ok() && CS.uid === me.id && CS.drawn !== String(CS.v)) { CS.drawn = String(CS.v); if (typeof drawMenu === 'function') drawMenu(); } };
+
+// ===== القوالب =====
+const PH = { ar: { date: '[التاريخ]', time: '[الساعة]', place: '[المكان]', topic: '[الموضوع]' }, fr: { date: '[date]', time: '[heure]', place: '[lieu]', topic: '[sujet]' } };
+const PHS = [].concat(Object.values(PH.ar), Object.values(PH.fr));
+const hasPh = s => PHS.some(p => String(s).indexOf(p) >= 0);
+const NEED = { interview: ['date', 'time', 'place'], guest: ['topic', 'date', 'time', 'place'], partner: ['topic'], thanks: [], free: [] };
+const clubMail = () => { const e = (typeof S === 'object' && S && S.email) ? String(S.email).trim() : ''; return EMAIL.test(e) ? e : ''; };
+const univAr = () => (typeof S === 'object' && S && S.university) ? String(S.university) : 'جامعة عبد الحميد ابن باديس - مستغانم';
+const fmtDate = (s, L) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s); if (!m) return s;
+  try { return new Intl.DateTimeFormat(L === 'fr' ? 'fr-FR' : 'ar-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(+m[1], +m[2] - 1, +m[3])); } catch (e) { return s; }
+};
+let F = null;
+function gen() {
+  const L = F.lang === 'fr' ? 'fr' : 'ar', P = PH[L], sender = String((me && me.full_name) || '').trim(), em = clubMail();
+  const d = F.date ? fmtDate(F.date, L) : P.date, tm = F.time || P.time, pl = F.place || P.place, tp = F.topic || P.topic, n = F.name;
+  let sj, ls;
+  if (L === 'ar') {
+    const hi = 'السلام عليكم ورحمة الله وبركاته،', sal = n ? 'الأخ(ة) الفاضل(ة) ' + n + '،' : 'السيد(ة) المحترم(ة)،';
+    const club = 'نادي رواد العلوم والتكنولوجيا';
+    const K = {
+      interview: ['دعوة لمقابلة - ' + club, ['يسرنا في ' + club + ' بجامعة عبد الحميد ابن باديس - مستغانم أن ندعوكم لإجراء مقابلة معنا.', '', 'التاريخ: ' + d, 'الساعة: ' + tm, 'المكان: ' + pl, '', 'نرجو تأكيد حضوركم بالرد على هذه الرسالة.']],
+      thanks: ['شكر - ' + club, ['نشكركم على وقتكم واهتمامكم بـ' + club + ' وعلى تواصلكم معنا.', 'سنوافيكم بالرد في أقرب وقت ممكن.']],
+      partner: ['طلب شراكة - ' + club, ['نتشرف بالتواصل معكم باسم ' + club + ' بجامعة عبد الحميد ابن باديس - مستغانم، بخصوص: ' + tp + '.', '', 'نود أن نعرض عليكم فكرة التعاون بيننا، ويسعدنا تحديد موعد لقاء أو مكالمة في الوقت الذي يناسبكم.', 'نرجو إفادتنا برأيكم.']],
+      guest: ['دعوة لحضور نشاط - ' + club, ['يشرفنا في ' + club + ' أن ندعوكم للمشاركة في: ' + tp + '.', '', 'التاريخ: ' + d, 'الساعة: ' + tm, 'المكان: ' + pl, '', 'نرجو تأكيد مشاركتكم بالرد على هذه الرسالة.']],
+      free: ['', ['', '']]
+    }[F.tpl] || ['', ['', '']];
+    sj = K[0]; ls = [hi, '', sal, ''].concat(K[1], ['', 'مع خالص التحية والتقدير،']);
+    if (sender) ls.push(sender);
+    ls.push(club, univAr()); if (em) ls.push(em);
+  } else {
+    const sal = n ? 'Bonjour ' + n + ',' : 'Madame, Monsieur,';
+    const K = {
+      interview: ['Invitation à un entretien - LST CLUB', ['Le club LST CLUB (Université Abdelhamid Ibn Badis - Mostaganem) a le plaisir de vous inviter à un entretien.', '', 'Date : ' + d, 'Heure : ' + tm, 'Lieu : ' + pl, '', 'Merci de confirmer votre présence en répondant à ce message.']],
+      thanks: ['Remerciements - LST CLUB', ['Nous vous remercions pour votre temps et pour l’intérêt que vous portez à notre club.', 'Nous reviendrons vers vous dans les meilleurs délais.']],
+      partner: ['Proposition de partenariat - LST CLUB', ['Nous avons le plaisir de vous contacter au nom du club LST CLUB (Université Abdelhamid Ibn Badis - Mostaganem) au sujet de : ' + tp + '.', '', 'Nous aimerions vous proposer une collaboration et serions heureux de convenir d’un rendez-vous ou d’un appel à un moment qui vous convient.', 'Nous attendons votre retour avec intérêt.']],
+      guest: ['Invitation à une activité - LST CLUB', ['Le club LST CLUB a le plaisir de vous inviter à participer à : ' + tp + '.', '', 'Date : ' + d, 'Heure : ' + tm, 'Lieu : ' + pl, '', 'Merci de confirmer votre participation en répondant à ce message.']],
+      free: ['', ['', '']]
+    }[F.tpl] || ['', ['', '']];
+    sj = K[0]; ls = [sal, ''].concat(K[1], ['', 'Cordialement,']);
+    if (sender) ls.push(sender);
+    ls.push('LST CLUB', 'Université Abdelhamid Ibn Badis - Mostaganem'); if (em) ls.push(em);
+  }
+  return { subject: sj, body: ls.join('\n') };
+}
+// ===== الصفحة =====
+const frm = () => $id('m16f');
+const val = n => { const f = frm(); return f && f.elements[n] ? f.elements[n].value : ''; };
+function readForm() {
+  if (!frm()) return;
+  F.to = val('to').trim(); F.name = val('rcp').trim(); F.tpl = val('tpl'); F.lang = val('lang') === 'fr' ? 'fr' : 'ar';
+  F.date = val('date'); F.time = val('time'); F.place = val('place').trim(); F.topic = val('topic').trim(); F.subj = val('subj'); F.body = val('body');
+  const c = frm().elements.cc; F.cc = !!(c && c.checked);
+}
+function applyTpl(force) {
+  if (!frm()) return;
+  readForm(); if (force) { F.dS = false; F.dB = false; }
+  const g = gen(), f = frm();
+  if (!F.dS) f.elements.subj.value = g.subject;
+  if (!F.dB) f.elements.body.value = g.body;
+  const need = NEED[F.tpl] || [];
+  [['dt', ['date', 'time']], ['place', ['place']], ['topic', ['topic']]].forEach(([row, ks]) => {
+    const el = f.querySelector('[data-row="' + row + '"]'); if (el) el.style.display = ks.some(k => need.indexOf(k) >= 0) ? '' : 'none';
+  });
+  const h = $id('m16h'); if (h) h.style.display = F.dS || F.dB ? '' : 'none';
+}
+function formHtml() {
+  const lg = FR() ? 'fr' : 'ar', cm = clubMail();
+  const opt = (v, k, sel) => '<option value="' + v + '"' + (sel ? ' selected' : '') + '>' + esc(t(k)) + '</option>';
+  return '<form class="pan" id="m16f" novalidate autocomplete="off"><h3><i class="g">' + ic('mail', 24) + '</i>' + esc(t('fMsg')) + '</h3>' +
+    '<div class="fl" style="margin-top:0">' + esc(t('to')) + '</div><input name="to" type="email" inputmode="email" dir="ltr" maxlength="254" placeholder="name@example.com" autocapitalize="off" autocorrect="off" spellcheck="false">' +
+    '<div class="fl">' + esc(t('nm')) + '</div><input name="rcp" dir="auto" maxlength="100">' +
+    '<div class="g2"><div><div class="fl">' + esc(t('tpl')) + '</div><select name="tpl">' + ['interview', 'thanks', 'partner', 'guest', 'free'].map(k => opt(k, 'tp_' + k, k === F.tpl)).join('') + '</select></div>' +
+    '<div><div class="fl">' + esc(t('lang')) + '</div><select name="lang">' + opt('ar', 'lg_ar', lg === 'ar') + opt('fr', 'lg_fr', lg === 'fr') + '</select></div></div>' +
+    '<div data-row="topic"><div class="fl">' + esc(t('fTopic')) + '</div><input name="topic" dir="auto" maxlength="150"></div>' +
+    '<div class="g2" data-row="dt"><div><div class="fl">' + esc(t('fDate')) + '</div><input name="date" type="date"></div><div><div class="fl">' + esc(t('fTime')) + '</div><input name="time" type="time"></div></div>' +
+    '<div data-row="place"><div class="fl">' + esc(t('fPlace')) + '</div><input name="place" dir="auto" maxlength="200"></div>' +
+    '<div class="fl">' + esc(t('subj')) + '</div><input name="subj" dir="auto" maxlength="200">' +
+    '<div class="fl">' + esc(t('body')) + '</div><textarea class="bd" name="body" dir="auto" maxlength="4000"></textarea>' +
+    '<p class="hint" id="m16h" style="display:none">' + esc(t('edited')) + '</p>' +
+    '<div class="acts" style="margin-top:10px"><button type="button" class="btn line sm" data-a="m16regen">' + esc(t('regen')) + '</button></div>' +
+    (cm ? '<label class="chk"><input type="checkbox" name="cc"> <span>' + esc(t('cc')) + ' <bdi dir="ltr">(' + esc(cm) + ')</bdi></span></label>' : '') +
+    '<div class="acts"><button type="button" class="btn navy" data-a="m16open" data-v="mailto">' + ic('send', 18) + ' ' + esc(t('openMail')) + '</button>' +
+    '<button type="button" class="btn line" data-a="m16copy">' + ic('copy', 18) + ' ' + esc(t('copyB')) + '</button></div>' +
+    '<div class="small">' + esc(t('orOpen')) + '</div>' +
+    '<div class="acts" style="margin-top:0"><button type="button" class="btn line sm" data-a="m16open" data-v="gmail">Gmail</button><button type="button" class="btn line sm" data-a="m16open" data-v="outlook">Outlook</button></div>' +
+    '<p class="hint">' + esc(t('note')) + '</p></form>';
+}
+function pMail() {
+  F = { tpl: 'interview', lang: FR() ? 'fr' : 'ar', dS: false, dB: false, cc: false, to: '', name: '', date: '', time: '', place: '', topic: '', subj: '', body: '' };
+  main.innerHTML = hero('mail', t('pill'), t('h1'), t('sub')) + '<div class="sec m16" style="padding-top:12px">' + formHtml() +
+    '<h3 style="margin:26px 0 14px">' + esc(t('lHead')) + '</h3><div id="m16log">' + loader + '</div></div>';
+  applyTpl(true); loadLog();
+}
+
+// ===== فتح الرسالة =====
+const enc = encodeURIComponent;
+const crlf = s => String(s).replace(/\r?\n/g, '\r\n');
+const toEnc = a => enc(a).replace(/%40/g, '@');
+const mailtoUrl = () => 'mailto:' + toEnc(F.to) + '?subject=' + enc(F.subj.trim()) + '&body=' + enc(crlf(F.body)) + (F.cc && clubMail() ? '&cc=' + toEnc(clubMail()) : '');
+const gmailUrl = () => 'https://mail.google.com/mail/?view=cm&fs=1&to=' + enc(F.to) + '&su=' + enc(F.subj.trim()) + '&body=' + enc(F.body) + (F.cc && clubMail() ? '&cc=' + enc(clubMail()) : '');
+const outlookUrl = () => 'https://outlook.office.com/mail/deeplink/compose?to=' + enc(F.to) + '&subject=' + enc(F.subj.trim()) + '&body=' + enc(F.body) + (F.cc && clubMail() ? '&cc=' + enc(clubMail()) : '');
+function check() {
+  if (!EMAIL.test(F.to) || F.to.length > 254) return 'eMail';
+  if (!F.subj.trim()) return 'eSubj';
+  if (!F.body.trim()) return 'eBody';
+  if (hasPh(F.subj) || hasPh(F.body)) return 'ePh';
+  return '';
+}
+function openLink(url, blank) {
+  const a = document.createElement('a'); a.href = url; a.rel = 'noopener noreferrer'; if (blank) a.target = '_blank'; a.style.display = 'none';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+async function logMail(via) {
+  const a = { p_to: F.to, p_name: F.name || null, p_subject: F.subj.trim(), p_tpl: F.tpl, p_lang: F.lang, p_via: via };
+  try { await sb.rpc('mail_log_add', a); } catch (e) {}
+  if (view === 'mail') loadLog();
+}
+function doOpen(via) {
+  readForm(); const e = check(); if (e) return toast(t(e));
+  if (via === 'mailto') { const u = mailtoUrl(); if (u.length > 7000) return toast(t('tooLong')); openLink(u, false); }
+  else openLink(via === 'gmail' ? gmailUrl() : outlookUrl(), true);
+  toast(t('opened')); logMail(via);
+}
+async function doCopy() {
+  readForm(); const e = check(); if (e) return toast(t(e));
+  const txt = 'To: ' + F.to + '\nSubject: ' + F.subj.trim() + '\n\n' + F.body;
+  let done = false;
+  try { await navigator.clipboard.writeText(txt); done = true; } catch (x) {}
+  if (!done) {
+    const ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;left:-9999px;top:0';
+    document.body.appendChild(ta); ta.select(); try { done = document.execCommand('copy'); } catch (x) {} ta.remove();
+  }
+  if (!done) return toast(t('eCopy'));
+  toast(t('copied')); logMail('copy');
+}
+
+// ===== السجل =====
+const logRow = x => '<div class="lrow"><span class="ic">' + ic(x.via === 'copy' ? 'copy' : 'mail', 20) + '</span><div class="tx"><b>' + esc(x.subject) + '</b>' +
+  '<small>' + esc(t('to2')) + ' <bdi dir="ltr">' + esc(x.to_email) + '</bdi>' + (x.to_name ? ' (' + esc(x.to_name) + ')' : '') + '</small>' +
+  '<small>' + esc(t('v_' + x.via)) + ' · ' + esc(ago(x.created_at)) + (x.mine ? '' : ' · ' + esc(t('by')) + ' ' + esc(x.sender_name || '')) + '</small></div>' +
+  '<button type="button" class="btn line sm" data-a="m16del" data-id="' + esc(String(x.id)) + '" aria-label="' + esc(t('del')) + '">' + ic('trash', 16) + '</button></div>';
+async function loadLog() {
+  if (!$id('m16log')) return;
+  let rows = null;
+  try { const r = await sb.rpc('mail_log_list'); if (r && !r.error) rows = Array.isArray(r.data) ? r.data : typeof r.data === 'string' ? JSON.parse(r.data) : null; } catch (e) {}
+  const box = $id('m16log'); if (view !== 'mail' || !box) return;
+  box.innerHTML = rows === null ? '<div class="pan c mut">' + esc(t('eFail')) + '</div>' : rows.length ? rows.map(logRow).join('') : '<div class="pan c mut">' + esc(t('lNone')) + '</div>';
+}
+async function delRow(id) {
+  if (!confirm(t('cDel'))) return;
+  try {
+    const r = await sb.rpc('mail_log_delete', { p_id: Number(id) });
+    if (r.error) return toast(t('eFail'));
+    toast(t('dDone'));
+  } catch (e) { return toast(t('eFail')); }
+  loadLog();
+}
+
+// ===== التوجيه والقائمة =====
+const _r = window.render;
+window.render = async function () {
+  const v0 = (location.hash || '#home').slice(1).split('/')[0];
+  if (v0 === 'mail') {
+    if (!me) return nav('#login');
+    if (!ok()) return nav('#home');
+    if (typeof leaveChat === 'function') leaveChat();
+    const mn = $id('menu'); if (mn) mn.style.display = 'none'; if (typeof closeModal === 'function') closeModal();
+    view = 'mail'; drawShell(); window.scrollTo(0, 0); const pb = $id('pinbar'); if (pb) pb.hidden = true;
+    const c = await loadCan(true); redrawOnce();
+    if (view !== 'mail') return;
+    if (c === null) { main.innerHTML = hero('mail', t('pill'), t('h1'), t('sub')) + '<div class="sec m16"><div class="pan c mut">' + esc(t('eSql')) + '</div></div>'; return; }
+    if (c === false) { toast(t('eDenied')); return nav('#home'); }
+    return pMail();
+  }
+  const r = await _r.apply(this, arguments);
+  if (ok()) loadCan().then(redrawOnce);
+  return r;
+};
+const _dm = window.drawMenu;
+window.drawMenu = function () {
+  _dm.apply(this, arguments);
+  const m = $id('menu'); if (!m || !ok()) return;
+  m.querySelectorAll('[data-b16]').forEach(x => x.remove());
+  if (!(CS.uid === me.id && CS.v === true)) return;
+  const after = m.querySelector('[data-b13]') || m.querySelector('[href="#members"]') || m.querySelector('[href="#events"]');
+  const a = '<a data-b16="1" href="#mail">' + esc(t('mMail')) + '</a>';
+  if (after) after.insertAdjacentHTML('afterend', a); else m.insertAdjacentHTML('afterbegin', a);
+};
+
+// ===== الأزرار =====
+document.addEventListener('submit', e => { if (e.target && e.target.id === 'm16f') e.preventDefault(); }, true);
+document.addEventListener('input', e => {
+  const el = e.target; if (!el || !el.form || el.form.id !== 'm16f') return;
+  if (el.name === 'subj') { F.dS = true; const h = $id('m16h'); if (h) h.style.display = ''; return; }
+  if (el.name === 'body') { F.dB = true; const h = $id('m16h'); if (h) h.style.display = ''; return; }
+  if (el.name === 'to' || el.name === 'cc') return;
+  applyTpl(false);
+});
+document.addEventListener('change', e => {
+  const el = e.target; if (!el || !el.form || el.form.id !== 'm16f') return;
+  if (el.name === 'to' || el.name === 'cc' || el.name === 'subj' || el.name === 'body') return;
+  applyTpl(false);
+});
+document.addEventListener('click', e => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-a^="m16"]') : null; if (!el) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const a = el.dataset.a;
+  if (a === 'm16open') return doOpen(el.dataset.v);
+  if (a === 'm16copy') return doCopy();
+  if (a === 'm16regen') return applyTpl(true);
+  if (a === 'm16del') return delRow(el.dataset.id);
+}, true);
+
+// لو فتح الرابط مباشرة وسبق التوجيه الأصلي تحميل هذا الكود: أعد التوجيه مرة واحدة
+setTimeout(() => { if ((location.hash || '').slice(1).split('/')[0] === 'mail' && me && view !== 'mail') window.render(); }, 0);
+const boot = async () => { if (ok()) { await loadCan(); redrawOnce(); } };
+setTimeout(boot, 1400); setTimeout(boot, 3700);
+})();
+</script>
 </body>
 </html>
