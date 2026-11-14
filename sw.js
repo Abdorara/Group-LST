@@ -1,41 +1,43 @@
-const V = 'lst-v2';
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(V).then(c => c.addAll(['./', 'index.html', 'logo.jpg'])).catch(() => {}));
-  self.skipWaiting();
-});
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim()));
-});
-self.addEventListener('fetch', e => {
-  const r = e.request;
-  if (r.method !== 'GET' || new URL(r.url).origin !== location.origin) return;
-  e.respondWith(fetch(r).then(res => { const cp = res.clone(); caches.open(V).then(c => c.put(r, cp)); return res; })
-    .catch(() => caches.match(r).then(m => m || caches.match('index.html'))));
-});
+// LST CLUB: خدمة استقبال إشعارات الهاتف (لا تخزن أي صفحة ولا تغير سلوك الموقع)
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 
-// ===== الإشعارات =====
+let iconUrl;
+async function pickIcon() {
+  if (iconUrl !== undefined) return iconUrl;
+  for (const n of ['logo.png', 'logo.jpg', 'logo.jpeg']) {
+    try {
+      const r = await fetch('/' + n, { method: 'HEAD' });
+      if (r.ok && /^image\//.test(r.headers.get('content-type') || '')) return (iconUrl = '/' + n);
+    } catch (e) {}
+  }
+  return (iconUrl = null);
+}
+
 self.addEventListener('push', e => {
   let d = {};
-  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { title: 'LST CLUB', body: e.data ? e.data.text() : '' }; }
+  try { d = e.data ? e.data.json() : {}; } catch (x) {}
   e.waitUntil((async () => {
-    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    if (wins.some(w => w.visibilityState === 'visible' && w.focused)) return; // المستخدم داخل الموقع الآن
-    await self.registration.showNotification(d.title || 'LST CLUB', {
-      body: d.body || '', icon: 'icon-192.png', badge: 'icon-192.png',
-      tag: d.tag || undefined, renotify: !!d.tag, dir: 'rtl', lang: 'ar',
-      data: { url: d.url || './' },
-    });
+    const cl = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    cl.forEach(c => c.postMessage({ type: 'notice' }));
+    const icon = await pickIcon();
+    const o = { body: d.body || '', tag: d.tag || 'lst-club', lang: d.lang || 'ar', dir: d.dir || 'rtl', data: { url: d.url || '/#lists' } };
+    if (icon) { o.icon = icon; o.badge = icon; }
+    await self.registration.showNotification(d.title || 'LST CLUB', o);
   })());
 });
+
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  const url = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  let u = new URL((e.notification.data && e.notification.data.url) || '/#lists', self.location.origin);
+  if (u.origin !== self.location.origin) u = new URL('/#lists', self.location.origin);
+  const url = u.href;
   e.waitUntil((async () => {
-    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const w of wins) {
-      if (w.url.startsWith(self.registration.scope)) {
-        await w.focus();
-        try { await w.navigate(url); } catch (err) { w.postMessage({ type: 'nav', url }); }
+    const cl = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of cl) {
+      if (new URL(c.url).origin === self.location.origin) {
+        try { await c.focus(); } catch (x) {}
+        c.postMessage({ type: 'go', url });
         return;
       }
     }
