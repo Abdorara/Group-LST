@@ -8730,6 +8730,14 @@ setTimeout(() => {
 .b18nt .btn{margin-top:12px}
 .b18ev .cards{grid-template-columns:minmax(0,1fr);max-width:640px;margin-inline:auto}
 .b18ev .acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+.b18ph{margin:34px 0 14px;font-size:1.35rem;text-align:start}
+.b18lsb .pan{margin-bottom:14px}
+.b18lsb .ar{flex-wrap:wrap;gap:10px}
+.b18lsb .who>div{min-width:0}
+.b18lsb .pan p.d{margin:10px 0 0;line-height:1.9;text-align:start}
+.b18lsb .lb-meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--mut);font-size:.9rem;margin:8px 0 2px}
+.b18lsb .lb-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.b18lsb .acts{display:flex;justify-content:center;margin-top:6px}
 </style>
 <script>
 (() => {
@@ -8751,15 +8759,24 @@ const T = {
   ePill: ['فعالية', 'Événement'], eH1: ['تفاصيل الفعالية', 'Détails de l’événement'], eSub: ['شارك الرابط مع أصدقائك وسجل مشاركتك.', 'Partagez le lien avec vos amis et inscrivez-vous.'],
   eNone: ['هذه الفعالية غير متاحة. قد تكون حذفت، أو أنها للأعضاء فقط.', 'Cet événement n’est pas disponible. Il a peut-être été supprimé ou réservé aux membres.'],
   lNone: ['هذه القائمة غير متاحة: قد تكون مغلقة أو غير منشورة أو للأعضاء فقط.', 'Cette liste n’est pas disponible : elle est peut-être fermée, non publiée ou réservée aux membres.'],
-  login: ['تسجيل الدخول', 'Se connecter'], allEv: ['كل الفعاليات', 'Tous les événements'], eFail: ['حدث خطأ، حاول مرة أخرى', 'Une erreur est survenue, réessayez']
+  login: ['تسجيل الدخول', 'Se connecter'], allEv: ['كل الفعاليات', 'Tous les événements'], eFail: ['حدث خطأ، حاول مرة أخرى', 'Une erreur est survenue, réessayez'],
+  hLists: ['قوائم التسجيل المفتوحة', 'Listes d’inscription ouvertes'], hEv: ['الفعاليات', 'Événements'],
+  stOpen: ['مفتوحة', 'Ouverte'], stDone: ['سجلت ✓', 'Inscrit ✓'], stFull: ['اكتملت المقاعد', 'Complet'],
+  reg: ['سجل', 'S’inscrire'], editMine: ['عدل بياناتي', 'Modifier mes données'], doneG: ['تم تسجيلك ✓', 'Inscrit ✓'],
+  allL: [n => 'كل القوائم المفتوحة (' + n + ')', n => 'Toutes les listes ouvertes (' + n + ')'],
+  regs: [n => n + ' مسجل', n => n + ' inscrit(s)'], seats: [(n, m) => n + ' / ' + m + ' مسجل', (n, m) => n + ' / ' + m + ' inscrit(s)']
 };
-const t = k => (T[k] || [k, k])[FR() ? 1 : 0];
+const t = (k, a, b) => { const v = (T[k] || [k, k])[FR() ? 1 : 0]; return typeof v === 'function' ? v(a, b) : v; };
 const $id = id => document.getElementById(id);
 const asObj = x => typeof x === 'string' ? JSON.parse(x) : x;
 const loc = () => FR() ? 'fr-FR' : 'ar-u-nu-latn';
 const enc = encodeURIComponent;
 const clip = (s, n) => { s = String(s || '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1).trim() + '…' : s; };
 const dt = d => { const x = new Date(d); if (!d || isNaN(x)) return ''; const tm = x.getHours() || x.getMinutes(); return x.toLocaleDateString(loc(), { dateStyle: 'full' }) + (tm ? ' • ' + x.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' }) : ''); };
+const okM = () => !!me && me.status === 'approved';
+const dtm = d => d ? new Date(d).toLocaleString(loc(), { dateStyle: 'medium', timeStyle: 'short' }) : '';
+const GLs = () => { try { return JSON.parse(localStorage.getItem('lst_gl17') || '[]'); } catch (e) { return []; } };
+const KICON = { attendance: 'check', trip: 'pin', other: 'file' };
 const clubName = () => (typeof S === 'object' && S && S.club_name) || 'LST CLUB';
 const baseUrl = () => location.origin + location.pathname;
 const hero = (icon, pill, h1, sub) => '<section class="dark ph"><span class="pill">' + ic(icon, 18) + ' ' + esc(pill) + '</span><h1>' + esc(h1) + '</h1><p>' + esc(sub) + '</p></section>';
@@ -8786,7 +8803,7 @@ function build(kind, x) {
   const short = clip(x.title + (x.event_date ? ' — ' + dt(x.event_date) : ''), 200);
   return { title: x.title, body, text, url, short, priv: x.visibility === 'members' };
 }
-let SH = null, LR = {}, PUBR = [];
+let SH = null, LR = {}, PUBR = [], OVR = [];
 const actById = id => (typeof acts !== 'undefined' && Array.isArray(acts)) ? acts.find(a => a.id === id) : null;
 async function copy(s) {
   try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(s); return true; } } catch (e) {}
@@ -8833,23 +8850,36 @@ window.evCard = function (a) {
 // ===== التقاط بيانات القوائم لبناء الرسالة =====
 const rpcP = sb.rpc;
 sb.rpc = function (name, args, opts) {
-  if (name !== 'lists_overview') return rpcP.call(sb, name, args, opts);
+  if (name !== 'lists_overview' && name !== 'public_lists') return rpcP.call(sb, name, args, opts);
   const q = Promise.resolve(rpcP.call(sb, name, args, opts));
-  q.then(r => { try { if (r && !r.error && Array.isArray(r.data)) r.data.map(asObj).forEach(x => { if (x && x.id != null) LR[x.id] = x; }); } catch (e) {} }, () => {});
+  q.then(r => { try { if (r && !r.error && Array.isArray(r.data)) { const rows = r.data.map(asObj).filter(x => x && x.id != null); rows.forEach(x => { LR[x.id] = x; }); if (name === 'lists_overview') OVR = rows; else PUBR = rows; } } catch (e) {} }, () => {});
   return q;
 };
 let OV = { at: 0, p: null };
-function ovRows() {
+function ovRows(force) {
   if (OV.p) return OV.p;
+  if (!force && OV.at && Date.now() - OV.at < 8000) return Promise.resolve();
   OV.p = (async () => { try { await sb.rpc('lists_overview'); } catch (e) {} OV.at = Date.now(); OV.p = null; })();
   return OV.p;
+}
+let RD = { v: null, at: 0, p: null };
+function rdy() {
+  if (RD.v === true) return Promise.resolve(true);
+  if (RD.p) return RD.p;
+  if (RD.v === false && Date.now() - RD.at < 60000) return Promise.resolve(false);
+  RD.p = (async () => {
+    let v = false;
+    try { const r = await sb.rpc('club_vis_ready'); v = !!(r && !r.error && r.data === true); } catch (e) {}
+    RD.v = v; RD.at = Date.now(); RD.p = null; return v;
+  })();
+  return RD.p;
 }
 let PUB = { at: 0, p: null };
 function pubRows(force) {
   if (PUB.p) return PUB.p;
-  if (!force && PUB.at && Date.now() - PUB.at < 45000) return Promise.resolve();
+  if (!force && PUB.at && Date.now() - PUB.at < 8000) return Promise.resolve();
   PUB.p = (async () => {
-    try { const r = await sb.rpc('public_lists'); if (r && !r.error && Array.isArray(r.data)) { PUBR = r.data.map(asObj); PUBR.forEach(x => { LR[x.id] = x; }); } } catch (e) {}
+    try { if (await rdy()) await sb.rpc('public_lists'); } catch (e) {}
     PUB.at = Date.now(); PUB.p = null;
   })();
   return PUB.p;
@@ -8861,7 +8891,60 @@ function pubFind(p) {
   return PUBR[i] && PUBR[i].title === ti ? PUBR[i] : (PUBR.find(y => y.title === ti) || null);
 }
 function addTo(p, id) { const ac = p.querySelector('.lb-acts'); if (ac && !ac.querySelector('[data-a="b18sh"]')) ac.insertAdjacentHTML('beforeend', btnHtml('l', id)); }
+// ===== قوائم التسجيل المفتوحة داخل صفحة الفعاليات (وفي الرئيسية للأعضاء) =====
+const MAXL = 6;
+function lcard(x) {
+  const m = okM(), mine = m ? (x.mine !== null && x.mine !== undefined) : GLs().includes(x.id);
+  const full = !mine && !!(m ? (x.max_entries && x.n >= x.max_entries) : x.full);
+  const meta = [];
+  if (x.event_date) meta.push(ic('calplus', 16) + ' ' + esc(dtm(x.event_date)));
+  if (x.location) meta.push(ic('pin', 16) + ' ' + esc(x.location));
+  if (x.closes_at) meta.push(esc(t('closesAt') + dtm(x.closes_at)));
+  meta.push(esc(x.max_entries ? t('seats', x.n, x.max_entries) : t('regs', x.n)));
+  const st = mine ? ['stDone', 's-approved'] : full ? ['stFull', 's-rejected'] : ['stOpen', 's-pending'];
+  const go = mine ? (m ? '<button type="button" class="btn line sm" data-a="b18go" data-id="' + x.id + '">' + esc(t('editMine')) + '</button>' : '<button type="button" class="btn line sm" disabled>' + esc(t('doneG')) + '</button>') : full ? '' : '<button type="button" class="btn navy sm" data-a="b18go" data-id="' + x.id + '">' + esc(t('reg')) + '</button>';
+  const kd = 'k_' + x.kind, kl = t(kd) === kd ? t('k_other') : t(kd);
+  return '<div class="pan"><div class="ar"><div class="who"><span class="av">' + ic(KICON[x.kind] || 'file', 22) + '</span><div><b>' + esc(x.title) + '</b><small class="mut" style="display:block">' + esc(kl) + '</small></div></div><span class="st2 ' + st[1] + '">' + esc(t(st[0])) + '</span></div>' +
+    (x.description ? '<p class="d mut">' + esc(x.description) + '</p>' : '') + '<div class="lb-meta">' + meta.map(i => '<span>' + i + '</span>').join('') + '</div><div class="lb-acts">' + go + btnHtml('l', x.id) + '</div></div>';
+}
+function listsBlock(evh) {
+  const rows = okM() ? OVR.filter(x => x.status === 'open' && x.accepting !== false) : PUBR;
+  if (!rows.length) return '';
+  return '<div class="b18lsb"><h3 class="b18ph">' + esc(t('hLists')) + '</h3>' + rows.slice(0, MAXL).map(lcard).join('') +
+    (rows.length > MAXL ? '<div class="acts"><a class="btn line" href="#lists">' + esc(t('allL', rows.length)) + '</a></div>' : '') +
+    (evh ? '<h3 class="b18ph">' + esc(t('hEv')) + '</h3>' : '') + '</div>';
+}
+function filt() {
+  const blk = document.querySelector('#b18ls .b18lsb'); if (!blk) return;
+  const q = (($id('q') || {}).value || '').trim().toLowerCase();
+  let n = 0;
+  blk.querySelectorAll('.pan').forEach(p => { const s = !q || titleOf(p).toLowerCase().indexOf(q) > -1; p.style.display = s ? '' : 'none'; if (s) n++; });
+  blk.style.display = !q || n ? '' : 'none';
+}
+function ensure() {
+  if (okM()) { if (!OV.p && (!OV.at || Date.now() - OV.at > 8000)) ovRows(true).then(sched); }
+  else if (!PUB.p && (!PUB.at || Date.now() - PUB.at > 8000)) pubRows(true).then(sched);
+}
+function fillBox(box, evh) {
+  const h = listsBlock(evh);
+  if (box._h !== h) { box._h = h; box.innerHTML = h; }
+  filt();
+}
+function placeLists() {
+  if (view === 'events') {
+    const el = $id('el'); if (!el) return;
+    let box = $id('b18ls');
+    if (!box) { el.insertAdjacentHTML('beforebegin', '<div id="b18ls"></div>'); box = $id('b18ls'); ensure(); }
+    fillBox(box, true);
+  } else if (view === 'home' && okM()) {
+    const up = $id('up'); if (!up || !up.parentNode) return;
+    let box = $id('b18hlm');
+    if (!box) { up.parentNode.insertAdjacentHTML('beforeend', '<div id="b18hlm"></div>'); box = $id('b18hlm'); ensure(); }
+    fillBox(box, false);
+  }
+}
 function scan() {
+  placeLists();
   const vc = Array.prototype.filter.call(document.querySelectorAll('#b17lc > .pan, #b17hlb > .pan'), p => !p.querySelector('[data-a="b18sh"]') && p.querySelector('.lb-acts'));
   if (vc.length) {
     if (vc.some(p => !pubFind(p)) && !PUB.p && Date.now() - PUB.at > 4000) pubRows(true).then(sched);
@@ -8913,10 +8996,15 @@ async function showList(id) {
     if (card) glow(card); else note($id('lc'), false);
   }
 }
-async function goList(id) {
+function openBtn(id) {
+  const b = document.querySelector('#b17lc [data-a="b17lreg"][data-id="' + id + '"], #lc [data-a="l13open"][data-id="' + id + '"]');
+  if (b) b.click();
+}
+async function goList(id, open) {
   try { history.replaceState(null, '', location.pathname + location.search + '#lists'); } catch (e) { location.hash = '#lists'; return; }
   try { await window.render(); } catch (e) {}
   try { await showList(id); } catch (e) {}
+  if (open) { try { openBtn(id); } catch (e) {} }
 }
 
 // ===== التوجيه =====
@@ -8924,7 +9012,7 @@ const _r = window.render;
 window.render = async function () {
   const p = (location.hash || '#home').slice(1).split('/'), v0 = p[0], arg = p[1] || '';
   if (v0 === 'e' && /^[0-9]{1,12}$/.test(arg)) return pEvent18(+arg);
-  if (v0 === 'l' && /^[0-9]{1,12}$/.test(arg)) return goList(+arg);
+  if (v0 === 'l' && /^[0-9]{1,12}$/.test(arg)) return goList(+arg, p[2] === 'open');
   return _r.apply(this, arguments);
 };
 
@@ -8937,7 +9025,9 @@ document.addEventListener('click', e => {
   if (a === 'b18cl') return SH && doCopy(SH.url);
   if (a === 'b18ct') return SH && doCopy(SH.text);
   if (a === 'b18nat') return doNative();
+  if (a === 'b18go') { location.hash = '#l/' + el.dataset.id + '/open'; return; }
 }, true);
+document.addEventListener('input', e => { if (e.target && e.target.id === 'q') filt(); });
 
 // ===== تشغيل أول مرة =====
 // لو رسمت الصفحة الأولى قبل تحميل هذا الكود: أعد الرسم مرة واحدة
