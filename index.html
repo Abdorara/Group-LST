@@ -8114,5 +8114,537 @@ const boot = async () => { if (ok()) { await loadCan(); redrawOnce(); } };
 setTimeout(boot, 1400); setTimeout(boot, 3700);
 })();
 </script>
+<style id="b17css">
+.b17tag{display:inline-block;background:var(--cream);color:var(--goldtx);font-weight:700;font-size:.8rem;padding:3px 12px;border-radius:99px;margin-inline-end:6px;vertical-align:middle}
+.b17v{margin-top:16px}
+.b17v select{width:100%}
+.b17v .hint,.b17m .hint{margin:8px 0 0;font-size:.88rem;color:var(--mut);line-height:1.8}
+.b17row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.b17g{font-size:.72rem;background:var(--blue);color:var(--navy);border-radius:99px;padding:1px 8px;margin-inline-start:4px}
+.b17cmf>input{border-radius:99px;padding:10px 16px}
+.b17cmf .hint{margin:8px 0 0;font-size:.82rem;color:var(--mut);line-height:1.7}
+.b17m .g2>div{min-width:0}
+.b17m input[dir=ltr]{text-align:left}
+.b17m .req,.b17 .req{color:var(--no)}
+.b17m .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.b17m .acts .btn{flex:1 1 140px}
+.b17m .chip17{display:inline-flex;align-items:center;border:1px solid var(--bd);border-radius:99px;padding:5px 14px;font-size:.85rem;margin:0 0 6px;margin-inline-end:8px}
+.b17m .gr,.b17 .gr{border:1px solid var(--bd);border-radius:18px;padding:12px 14px;margin-bottom:10px}
+.b17m .gr b{display:block;line-height:1.7;overflow-wrap:anywhere}
+.b17m .gr small{display:block;color:var(--mut);overflow-wrap:anywhere;margin-bottom:8px}
+.b17 .lb-meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--mut);font-size:.9rem;margin:8px 0 2px}
+.b17 .lb-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.b17 .ar{flex-wrap:wrap;gap:10px}
+.b17 .who>div{min-width:0}
+.b17 .pan p.d{margin:10px 0 0;line-height:1.9;text-align:start}
+</style>
+<script>
+(() => {
+'use strict';
+// ===== الدفعة 17: فعاليات وقوائم عامة أو للأعضاء فقط =====
+if (typeof render !== 'function' || typeof sb === 'undefined' || typeof drawShell !== 'function' || typeof ic !== 'function' || typeof me === 'undefined' || typeof loadActs !== 'function' || typeof evCard !== 'function' || typeof drawMenu !== 'function') return;
+if (sb.__b17) return;
+sb.__b17 = true;
+const rpc0 = sb.rpc.bind(sb), from0 = sb.from.bind(sb);
+const FR = () => { try { return localStorage.getItem('lst_lang') === 'fr'; } catch (e) { return false; } };
+const T = {
+  vPub: ['🌐 عامة', '🌐 Publique'], vMem: ['🔒 للأعضاء فقط', '🔒 Membres uniquement'], change: ['تغيير', 'Modifier'],
+  vLabel: ['من يراها؟', 'Qui peut la voir ?'],
+  vOptPub: ['🌐 عامة (يراها الزائر)', '🌐 Publique (visible par les visiteurs)'], vOptMem: ['🔒 للأعضاء فقط', '🔒 Membres uniquement'],
+  vHintEv: ['العامة: يراها الزائر ويسجل فيها ويعلق ويعجب. للأعضاء: لا يراها إلا أعضاء النادي المقبولون.', 'Publique : les visiteurs la voient, s’inscrivent, commentent et aiment. Membres : visible seulement par les membres acceptés du club.'],
+  vHintLs: ['العامة: تظهر للزائر في صفحة القوائم ويسجل فيها بالاسم والهاتف. للأعضاء: لا يراها إلا الأعضاء.', 'Publique : visible pour les visiteurs, qui s’inscrivent avec nom et téléphone. Membres : réservée aux membres.'],
+  cVisEvMem: ['جعل هذه الفعالية للأعضاء فقط؟ ستختفي عن الزوار.', 'Réserver cet événement aux membres ? Il disparaîtra pour les visiteurs.'],
+  cVisEvPub: ['جعل هذه الفعالية عامة؟ سيراها الزوار ويسجلون فيها.', 'Rendre cet événement public ? Les visiteurs pourront le voir et s’y inscrire.'],
+  cVisLsMem: ['جعل هذه القائمة للأعضاء فقط؟ ستختفي عن الزوار.', 'Réserver cette liste aux membres ? Elle disparaîtra pour les visiteurs.'],
+  cVisLsPub: ['جعل هذه القائمة عامة؟ سيراها الزوار ويسجلون فيها.', 'Rendre cette liste publique ? Les visiteurs pourront la voir et s’y inscrire.'],
+  vDone: ['تم تغيير الظهور ✓', 'Visibilité modifiée ✓'],
+  gBtn: ['الزوار المسجلون', 'Visiteurs inscrits'], gTitle: ['الزوار المسجلون في الفعالية', 'Visiteurs inscrits à l’événement'],
+  gNone: ['لا يوجد زوار مسجلون بعد', 'Aucun visiteur inscrit pour le moment'], cGDel: ['حذف تسجيل هذا الزائر؟', 'Supprimer l’inscription de ce visiteur ?'],
+  del: ['حذف', 'Supprimer'], gDone: ['تم الحذف', 'Supprimé'],
+  regEv: ['سجل في الفعالية', 'S’inscrire'], regDone: ['تم تسجيلك ✓', 'Inscrit ✓'], full: ['اكتمل العدد', 'Complet'],
+  regTitle: ['التسجيل في:', 'Inscription :'], fName: ['الاسم الكامل', 'Nom complet'], fPhone: ['رقم الهاتف', 'Téléphone'], fEmail: ['البريد الإلكتروني (اختياري)', 'E-mail (facultatif)'],
+  submit: ['تسجيل', 'S’inscrire'],
+  regNote: ['بياناتك تصل لمنظمي النادي فقط. لإلغاء التسجيل راسل النادي.', 'Vos données ne sont vues que par les organisateurs du club. Pour annuler, contactez le club.'],
+  thanks: ['تم تسجيلك، شكرا لك ✓', 'Inscription enregistrée, merci ✓'],
+  eName: ['اكتب اسمك الكامل (حرفان على الأقل)', 'Saisissez votre nom complet (2 caractères minimum)'],
+  ePhone: ['اكتب رقم هاتف صحيحا (أرقام فقط، من 6 إلى 15 رقما)', 'Saisissez un numéro valide (chiffres seulement, 6 à 15)'],
+  eEmail: ['البريد الإلكتروني غير صحيح', 'Adresse e-mail invalide'],
+  eClosed: ['التسجيل مغلق', 'Les inscriptions sont closes'], eFull: ['اكتمل العدد', 'Complet'],
+  eRate: ['محاولات كثيرة، انتظر قليلا ثم حاول مرة أخرى', 'Trop de tentatives, patientez puis réessayez'],
+  eNone: ['لم تعد متاحة', 'N’est plus disponible'], eDenied: ['ليست لديك صلاحية', 'Vous n’avez pas l’autorisation'],
+  eSql: ['شغل كود SQL الخاص بالدفعة 17 في Supabase أولا', 'Exécutez d’abord le SQL du lot 17 dans Supabase'],
+  eFail: ['حدث خطأ، حاول مرة أخرى', 'Une erreur est survenue, réessayez'],
+  eMissing: [l => 'أكمل الحقل: ' + l, l => 'Complétez le champ : ' + l], eBad: [l => 'قيمة غير صحيحة في: ' + l, l => 'Valeur invalide : ' + l], eLong: [l => 'النص طويل جدا في: ' + l, l => 'Texte trop long : ' + l],
+  cmPh: ['اكتب تعليقا…', 'Écrire un commentaire…'], cmName: ['اسمك', 'Votre nom'], cmPost: ['نشر', 'Publier'], cmGuest: ['زائر', 'visiteur'],
+  cmDel: ['حذف', 'Supprimer'], cmNone: ['لا توجد تعليقات بعد', 'Aucun commentaire pour le moment'], cCmDel: ['حذف التعليق؟', 'Supprimer le commentaire ?'],
+  cmNote: ['تعلق باسمك المكتوب كزائر، وللمشرف حذف أي تعليق مسيء.', 'Vous commentez en tant que visiteur avec le nom saisi ; l’administrateur peut supprimer tout commentaire abusif.'],
+  eCm: ['اكتب اسمك (حرفان على الأقل) وتعليقك', 'Saisissez votre nom (2 caractères minimum) et votre commentaire'],
+  cmSent: ['تم نشر تعليقك ✓', 'Commentaire publié ✓'],
+  mLists: ['📝 القوائم المفتوحة', '📝 Listes ouvertes'],
+  lpPill: ['القوائم المفتوحة', 'Listes ouvertes'], lpH1: ['قوائم التسجيل العامة', 'Listes d’inscription publiques'],
+  lpSub: ['سجل في قوائم النادي المفتوحة للجميع بالاسم ورقم الهاتف.', 'Inscrivez-vous aux listes du club ouvertes à tous avec votre nom et votre téléphone.'],
+  lpNone: ['لا توجد قوائم مفتوحة حاليا', 'Aucune liste ouverte pour le moment'],
+  lpReg: ['سجل', 'S’inscrire'], lpFull: ['اكتملت المقاعد', 'Complet'], lpOpen: ['مفتوحة', 'Ouverte'],
+  closesAt: ['تغلق: ', 'Clôture : '], regs: [n => n + ' مسجل', n => n + ' inscrit(s)'], seats: [(n, m) => n + ' / ' + m + ' مسجل', (n, m) => n + ' / ' + m + ' inscrit(s)'],
+  k_attendance: ['حضور', 'Présence'], k_trip: ['رحلة', 'Sortie'], k_other: ['قائمة', 'Liste'],
+  choose: ['اختر', 'Choisir'], yes: ['نعم', 'Oui'], no: ['لا', 'Non']
+};
+const t = (k, a, b) => { const v = (T[k] || [k, k])[FR() ? 1 : 0]; return typeof v === 'function' ? v(a, b) : v; };
+const $id = id => document.getElementById(id);
+const ok = () => !!me && me.status === 'approved';
+const loc = () => FR() ? 'fr-FR' : 'ar-u-nu-latn';
+const asObj = x => typeof x === 'string' ? JSON.parse(x) : x;
+const latin = s => String(s).replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x6F0);
+const dtm = d => d ? new Date(d).toLocaleString(loc(), { dateStyle: 'medium', timeStyle: 'short' }) : '';
+const fmtT = d => { const x = new Date(d); return x.toDateString() === new Date().toDateString() ? x.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' }) : x.toLocaleDateString(loc(), { day: 'numeric', month: 'short' }); };
+const hero = (icon, pill, h1, sub) => '<section class="dark ph"><span class="pill">' + ic(icon, 18) + ' ' + esc(pill) + '</span><h1>' + esc(h1) + '</h1><p>' + esc(sub) + '</p></section>';
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const modalBox = html => { const m = $id('modal'); m.innerHTML = '<div class="box"><div class="b17m">' + closeX + html + '</div></div>'; m.style.display = 'flex'; };
+const closeM = () => { const m = $id('modal'); if (m) m.style.display = 'none'; };
+const EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+// ===== هل الدفعة 17 نفذت في Supabase؟ لو لا يبقى الموقع كما كان =====
+let RDY = { v: null, at: 0, p: null };
+function ready() {
+  if (RDY.v === true) return Promise.resolve(true);
+  if (RDY.p) return RDY.p;
+  if (RDY.v === false && Date.now() - RDY.at < 60000) return Promise.resolve(false);
+  RDY.p = (async () => {
+    let v = false;
+    try { const r = await rpc0('club_vis_ready'); v = !!(r && !r.error && r.data === true); } catch (e) {}
+    RDY.v = v; RDY.at = Date.now(); RDY.p = null; return v;
+  })();
+  return RDY.p;
+}
+const isReady = () => RDY.v === true;
+
+// ===== هوية الجهاز للزائر (للحد من الإساءة ولمعرفة ما أعجبه) =====
+let DV = null;
+function dev() {
+  if (DV) return DV;
+  try { DV = localStorage.getItem('lst_dev17'); } catch (e) {}
+  if (!DV || !/^[A-Za-z0-9_-]{16,64}$/.test(DV)) {
+    const a = new Uint8Array(16);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a); else for (let i = 0; i < 16; i++) a[i] = Math.floor(Math.random() * 256);
+    DV = Array.from(a, b => b.toString(16).padStart(2, '0')).join('');
+    try { localStorage.setItem('lst_dev17', DV); } catch (e) {}
+  }
+  return DV;
+}
+const gname = () => { try { return localStorage.getItem('lst_gname17') || ''; } catch (e) { return ''; } };
+const setGname = v => { try { localStorage.setItem('lst_gname17', v); } catch (e) {} };
+let GS = { likes: new Set(), regs: new Set() }, AS17 = {};
+const GL = { get: () => { try { return JSON.parse(localStorage.getItem('lst_gl17') || '[]'); } catch (e) { return []; } }, add: id => { try { const a = GL.get(); if (!a.includes(id)) { a.push(id); localStorage.setItem('lst_gl17', JSON.stringify(a.slice(-200))); } } catch (e) {} } };
+
+// ===== أخطاء الخادم بلغة المستخدم =====
+function err(m, x) {
+  m = String(m || '');
+  const mm = /(missing|bad|toolong):(f\d+)/.exec(m);
+  if (mm) { const f = ((x && x.fields) || []).find(q => q.k === mm[2]); const lb = f ? f.label : ''; return t(mm[1] === 'missing' ? 'eMissing' : mm[1] === 'bad' ? 'eBad' : 'eLong', lb); }
+  if (/bad name/.test(m)) return t('eName');
+  if (/bad phone/.test(m)) return t('ePhone');
+  if (/bad email/.test(m)) return t('eEmail');
+  if (/rate/.test(m)) return t('eRate');
+  if (/full/.test(m)) return t('eFull');
+  if (/closed/.test(m)) return t('eClosed');
+  if (/not allowed|permission denied/.test(m)) return t('eDenied');
+  if (/not found/.test(m)) return t('eNone');
+  if (/does not exist|schema cache|Could not find/i.test(m)) return t('eSql');
+  return t('eFail');
+}
+
+// ===== ذاكرة الظهور (فعاليات وقوائم) =====
+let VL = {}, EVV = {}, EVT = 0;
+const visLabel = v => v === 'members' ? t('vMem') : t('vPub');
+
+// ===== اعتراض بسيط لاستدعاءات Supabase =====
+sb.rpc = function (name, args, opts) {
+  if (name === 'lists_overview') {
+    return Promise.resolve(rpc0(name, args, opts)).then(r => {
+      try { if (r && !r.error && Array.isArray(r.data)) r.data.forEach(x => { const o = asObj(x); if (o && o.id != null) VL[o.id] = o.visibility || 'members'; }); } catch (e) {}
+      return r;
+    });
+  }
+  if (name === 'list_save') {
+    const el = document.querySelector('#l13b [name="vis17"]'), v = el ? el.value : null;
+    return Promise.resolve(rpc0(name, args, opts)).then(async r => {
+      try {
+        if (r && !r.error && v && r.data != null && isReady()) {
+          const id = +r.data, was = VL[id];
+          if ((was === undefined && v === 'public') || (was !== undefined && was !== v)) {
+            const x = await rpc0('list_set_visibility', { p_id: id, p_vis: v });
+            if (x && !x.error) VL[id] = v; else if (x && x.error) toast(err(x.error.message));
+          } else if (was === undefined) VL[id] = v;
+        }
+      } catch (e) {}
+      return r;
+    });
+  }
+  if (name === 'list_roster' && isReady()) {
+    return Promise.resolve(rpc0(name, args, opts)).then(async r => {
+      if (!r || r.error) return r;
+      try {
+        const g = await rpc0('list_roster_guests', { p_id: args.p_id });
+        if (g && !g.error && Array.isArray(g.data) && g.data.length) {
+          const rows = g.data.map(asObj).map(x => ({ user_id: 'g:' + x.guest_id, full_name: x.full_name + ' (' + t('cmGuest') + ') · ' + x.phone + (x.email ? ' · ' + x.email : ''), created_at: x.created_at, updated_at: x.created_at, data: x.data || {} }));
+          const all = (r.data || []).concat(rows).sort((p, q) => Date.parse(asObj(p).created_at) - Date.parse(asObj(q).created_at));
+          return Object.assign({}, r, { data: all });
+        }
+      } catch (e) {}
+      return r;
+    });
+  }
+  if (name === 'list_entry_remove' && args && /^g:\d+$/.test(String(args.p_user))) return rpc0('list_guest_remove', { p_id: args.p_id, p_guest: +String(args.p_user).slice(2) });
+  return rpc0(name, args, opts);
+};
+sb.from = function (tb) {
+  const q = from0(tb);
+  if (tb === 'activities' && q && typeof q.insert === 'function') {
+    const ins = q.insert.bind(q);
+    q.insert = function (row, opts) {
+      const el = document.querySelector('.b17v select[name="vis17"]');
+      if (isReady() && el && el.value === 'members' && row && typeof row === 'object' && !Array.isArray(row)) row = Object.assign({}, row, { visibility: 'members' });
+      return ins(row, opts);
+    };
+  }
+  return q;
+};
+
+// ===== بطاقة الفعالية: وسم الخاص للأعضاء، وزر تسجيل الزائر =====
+const pend = new Set();
+const _la = window.loadActs;
+window.loadActs = async function () {
+  await _la.apply(this, arguments);
+  await ready();
+  if (ok() || !isReady()) return;
+  try {
+    const [m, st] = await Promise.all([rpc0('guest_mine', { p_dev: dev() }), rpc0('activity_stats')]);
+    const d = m && !m.error ? asObj(m.data) : null;
+    GS = { likes: new Set((d && d.likes) || []), regs: new Set((d && d.regs) || []) };
+    AS17 = {}; ((st && !st.error && st.data) || []).forEach(x => { AS17[x.activity_id] = { likes: Number(x.likes), comments: Number(x.comments) }; });
+  } catch (e) {}
+};
+const HEART = '\u2764\uFE0F';
+const stats17 = a => { const s = AS17[a.id] || { likes: 0, comments: 0 }, l = GS.likes.has(a.id);
+  return '<button class="' + (l ? 'on' : '') + '" data-a="lk" data-id="' + a.id + '">' + (l ? HEART : '🤍') + ' ' + s.likes + '</button><button data-a="cm" data-id="' + a.id + '">💬 ' + s.comments + '</button>'; };
+function paintStats(n) { const a = typeof acts !== 'undefined' ? acts.find(x => x.id === n) : null, el = $id('st' + n); if (a && el) el.innerHTML = stats17(a); }
+const CMC = {};
+function setCm(n, count) {
+  CMC[n] = count;
+  if (!ok()) { const s = AS17[n] || (AS17[n] = { likes: 0, comments: 0 }); s.comments = count; }
+  const b = document.querySelector('#st' + n + ' [data-a="cm"]'); if (b) b.textContent = '💬 ' + count;
+}
+function fixCm() { Object.keys(CMC).forEach(n => { const b = document.querySelector('#st' + n + ' [data-a="cm"]'); if (b && b.textContent !== '💬 ' + CMC[n]) b.textContent = '💬 ' + CMC[n]; }); }
+const _ev = window.evCard;
+window.evCard = function (a) {
+  let h = _ev.apply(this, arguments);
+  if (!isReady() || !a) return h;
+  const priv = a.visibility === 'members';
+  h = h.replace('<div class="cd ev">', '<div class="cd ev" data-b17="1">');
+  if (!ok()) h = h.replace(/<div class="ar2" id="st(\d+)">[\s\S]*?<\/div>/, (m0, i) => '<div class="ar2" id="st' + i + '">' + stats17(a) + '</div>');
+  if (priv && ok()) h = h.replace('<span class="chip">', '<span class="b17tag">' + esc(t('vMem')) + '</span><span class="chip">');
+  if (!ok() && !priv && !isPast(a)) {
+    const n = counts[a.id] || 0, full = a.capacity && n >= a.capacity, joined = GS.regs.has(a.id);
+    const b = joined ? '<button class="btn line sm" disabled>' + esc(t('regDone')) + '</button>' : full ? '<button class="btn line sm" disabled>' + esc(t('full')) + '</button>' : '<button class="btn navy sm" data-a="b17reg" data-id="' + a.id + '">' + esc(t('regEv')) + '</button>';
+    h = h.replace('<div class="row">', '<div class="row">' + b);
+  }
+  return h;
+};
+function refreshCard(n) {
+  const el = $id('st' + n), a = typeof acts !== 'undefined' ? acts.find(x => x.id === n) : null; if (!el || !a) return;
+  const card = el.closest('.cd'); if (!card) return;
+  const box = $id('cmt' + n), was = !!box && box.style.display !== 'none';
+  card.outerHTML = window.evCard(a);
+  if (was) { const b2 = $id('cmt' + n); if (b2) { b2.style.display = 'block'; loadCm(n); } }
+}
+
+// ===== الإعجاب والتعليق: للأعضاء والزوار معا =====
+async function guestLike(n) {
+  if (pend.has('l' + n)) return; pend.add('l' + n);
+  const s = AS17[n] || (AS17[n] = { likes: 0, comments: 0 }), had = GS.likes.has(n);
+  had ? GS.likes.delete(n) : GS.likes.add(n); s.likes += had ? -1 : 1; paintStats(n);
+  let res = null;
+  try { res = await rpc0('guest_event_like', { p_activity: n, p_dev: dev() }); } catch (e) {}
+  const d = res && !res.error ? asObj(res.data) : null;
+  if (!d) { had ? GS.likes.add(n) : GS.likes.delete(n); s.likes += had ? 1 : -1; paintStats(n); toast(err(res && res.error ? res.error.message : '')); pend.delete('l' + n); return; }
+  if (d.liked) GS.likes.add(n); else GS.likes.delete(n);
+  if (typeof d.n === 'number') s.likes = d.n;
+  paintStats(n); pend.delete('l' + n);
+}
+const cmForm = n => ok()
+  ? '<form class="b17cmf" data-n="' + n + '"><div class="cmf"><input name="c" maxlength="500" required placeholder="' + esc(t('cmPh')) + '"><button class="btn navy sm">' + esc(t('cmPost')) + '</button></div></form>'
+  : '<form class="b17cmf" data-n="' + n + '"><input name="nm" maxlength="40" placeholder="' + esc(t('cmName')) + '" value="' + esc(gname()) + '" autocomplete="name" style="margin-bottom:8px"><div class="cmf"><input name="c" maxlength="500" required placeholder="' + esc(t('cmPh')) + '"><button class="btn navy sm">' + esc(t('cmPost')) + '</button></div><p class="hint">' + esc(t('cmNote')) + '</p></form>';
+async function loadCm(n) {
+  const box = $id('cmt' + n); if (!box) return;
+  box.innerHTML = loader;
+  let rows = null;
+  try { const r = await rpc0('event_comments', { p_activity: n }); if (r && !r.error) rows = (r.data || []).map(asObj); } catch (e) {}
+  const b2 = $id('cmt' + n); if (!b2 || b2.style.display === 'none') return;
+  if (rows === null) { b2.innerHTML = '<p class="mut c">' + esc(t('eFail')) + '</p>'; return; }
+  const adm = ok() && me.role === 'admin';
+  const list = rows.map(c => {
+    const uid = c.user_id, nm = c.name || (c.kind === 'g' ? t('cmGuest') : '—');
+    const who = uid ? '<a href="#u/' + esc(uid) + '">' + esc(nm) + '</a>' : esc(nm) + (c.kind === 'g' ? ' <span class="b17g">' + esc(t('cmGuest')) + '</span>' : '');
+    const del = (c.mine || adm) ? ' · <a href="#" data-a="b17cd" data-k="' + esc(c.kind) + '" data-id="' + esc(c.id) + '" data-n="' + n + '">' + esc(t('cmDel')) + '</a>' : '';
+    const pr = uid && typeof MB === 'object' && MB && MB[uid] ? MB[uid] : { full_name: nm };
+    return '<div class="cmi">' + av(pr, 36) + '<div class="bx"><b>' + who + '</b><p>' + esc(c.content) + '</p><small>' + esc(fmtT(c.created_at)) + del + '</small></div></div>';
+  }).join('') || '<p class="mut c">' + esc(t('cmNone')) + '</p>';
+  b2.innerHTML = list + cmForm(n);
+  setCm(n, rows.length);
+}
+function togglePanel(n) {
+  const box = $id('cmt' + n); if (!box) return;
+  if (box.style.display === 'none' || !box.style.display) { box.style.display = 'block'; loadCm(n); } else box.style.display = 'none';
+}
+async function postComment(f) {
+  const n = +f.dataset.n, c = f.elements.c.value.trim(), nmEl = f.elements.nm, b = f.querySelector('button');
+  if (!c) return;
+  if (nmEl) { const nm = nmEl.value.trim(); if (nm.length < 2) return toast(t('eCm')); setGname(nm); }
+  if (b) b.disabled = true;
+  try {
+    const r = nmEl ? await rpc0('guest_event_comment', { p_activity: n, p_name: nmEl.value.trim(), p_content: c, p_dev: dev() }) : await from0('comments').insert({ activity_id: n, content: c });
+    if (r.error) { if (b) b.disabled = false; return toast(err(r.error.message)); }
+    toast(t('cmSent'));
+    await loadCm(n);
+  } catch (e) { if (b) b.disabled = false; toast(t('eFail')); }
+}
+async function delComment(el) {
+  if (!confirm(t('cCmDel'))) return;
+  const n = +el.dataset.n, k = el.dataset.k, id = el.dataset.id;
+  try {
+    const r = k === 'g' ? await rpc0('guest_comment_delete', { p_id: +id }) : await from0('comments').delete().eq('id', id);
+    if (r.error) return toast(err(r.error.message));
+    toast(t('gDone')); loadCm(n);
+  } catch (e) { toast(t('eFail')); }
+}
+
+// ===== نافذة التسجيل (للفعالية وللقائمة) =====
+const contactHtml = () => '<div class="fl">' + esc(t('fName')) + ' <span class="req">*</span></div><input name="gname" maxlength="80" value="' + esc(gname()) + '" autocomplete="name">' +
+  '<div class="fl">' + esc(t('fPhone')) + ' <span class="req">*</span></div><input name="gphone" type="tel" inputmode="tel" dir="ltr" maxlength="20" autocomplete="tel">' +
+  '<div class="fl">' + esc(t('fEmail')) + '</div><input name="gemail" type="email" inputmode="email" dir="ltr" maxlength="120" autocomplete="email" autocapitalize="off" spellcheck="false">';
+function readContact(f) {
+  const nm = f.elements.gname.value.trim().replace(/\s+/g, ' '), ph = latin(f.elements.gphone.value.trim()).replace(/[ .()-]/g, ''), em = f.elements.gemail.value.trim();
+  if (nm.length < 2 || nm.length > 80) { toast(t('eName')); return null; }
+  if (!/^\+?[0-9]{6,15}$/.test(ph)) { toast(t('ePhone')); return null; }
+  if (em && (em.length > 120 || !EMAIL.test(em))) { toast(t('eEmail')); return null; }
+  return { nm, ph, em: em || null };
+}
+function openReg(n) {
+  const a = typeof acts !== 'undefined' ? acts.find(x => x.id === n) : null; if (!a) return;
+  modalBox('<h3 style="font-size:1.3rem;margin:0 0 4px;padding-inline-end:36px;line-height:1.6">' + esc(t('regTitle')) + ' ' + esc(a.title) + '</h3><form id="b17rf" novalidate data-id="' + n + '">' + contactHtml() +
+    '<div class="acts"><button type="submit" class="btn navy">' + esc(t('submit')) + '</button></div><p class="hint">' + esc(t('regNote')) + '</p></form>');
+}
+async function doReg(f) {
+  const n = +f.dataset.id, c = readContact(f); if (!c || pend.has('r' + n)) return;
+  pend.add('r' + n); const b = f.querySelector('button[type=submit]'); if (b) b.disabled = true;
+  try {
+    const r = await rpc0('guest_event_register', { p_activity: n, p_name: c.nm, p_phone: c.ph, p_email: c.em, p_dev: dev() });
+    if (r.error) { if (b) b.disabled = false; return toast(err(r.error.message)); }
+    const d = asObj(r.data); setGname(c.nm); GS.regs.add(n); if (d && typeof d.n === 'number') counts[n] = d.n;
+    closeM(); toast(t('thanks')); refreshCard(n);
+  } catch (e) { if (b) b.disabled = false; toast(t('eFail')); } finally { pend.delete('r' + n); }
+}
+
+// ===== صفحة القوائم العامة للزائر =====
+let PLS = [], PL = { n: 0, at: 0, p: null, drawn: -1 };
+const KICON = { attendance: 'check', trip: 'pin', other: 'file' };
+async function loadPub(force) {
+  if (!isReady() || ok()) return PL.n;
+  if (!force && Date.now() - PL.at < 90000) return PL.n;
+  if (PL.p) return PL.p;
+  PL.p = (async () => { let n = 0; try { const r = await rpc0('public_lists'); if (r && !r.error && Array.isArray(r.data)) n = r.data.length; } catch (e) {} PL.n = n; PL.at = Date.now(); PL.p = null; return n; })();
+  return PL.p;
+}
+const redrawMenu = () => { if (!ok() && PL.drawn !== PL.n) { PL.drawn = PL.n; if (typeof drawMenu === 'function') drawMenu(); } };
+function plCard(x) {
+  const done = GL.get().includes(x.id), full = !!x.full && !done;
+  const meta = [];
+  if (x.event_date) meta.push(ic('calplus', 16) + ' ' + esc(dtm(x.event_date)));
+  if (x.location) meta.push(ic('pin', 16) + ' ' + esc(x.location));
+  if (x.closes_at) meta.push(esc(t('closesAt') + dtm(x.closes_at)));
+  meta.push(esc(x.max_entries ? t('seats', x.n, x.max_entries) : t('regs', x.n)));
+  const btn = done ? '<button type="button" class="btn line sm" disabled>' + esc(t('regDone')) + '</button>' : full ? '<button type="button" class="btn line sm" disabled>' + esc(t('lpFull')) + '</button>' : '<button type="button" class="btn navy sm" data-a="b17lreg" data-id="' + x.id + '">' + esc(t('lpReg')) + '</button>';
+  return '<div class="pan"><div class="ar"><div class="who"><span class="av">' + ic(KICON[x.kind] || 'file', 22) + '</span><div><b>' + esc(x.title) + '</b><small class="mut" style="display:block">' + esc(t('k_' + x.kind)) + '</small></div></div><span class="st2 s-approved">' + esc(t('lpOpen')) + '</span></div>' +
+    (x.description ? '<p class="d mut">' + esc(x.description) + '</p>' : '') + '<div class="lb-meta">' + meta.map(i => '<span>' + i + '</span>').join('') + '</div><div class="lb-acts">' + btn + '</div></div>';
+}
+async function pLists17() {
+  main.innerHTML = hero('check', t('lpPill'), t('lpH1'), t('lpSub')) + '<div class="sec b17" style="padding-top:12px"><div id="b17lc">' + loader + '</div></div>';
+  let rows = null;
+  try { const r = await rpc0('public_lists'); if (r && !r.error) rows = (r.data || []).map(asObj); } catch (e) {}
+  const box = $id('b17lc'); if (view !== 'lists17' || !box) return;
+  if (rows === null) { box.innerHTML = '<div class="pan c mut">' + esc(t('eSql')) + '</div>'; return; }
+  PLS = rows; PL.n = rows.length; PL.at = Date.now(); redrawMenu();
+  box.innerHTML = rows.map(plCard).join('') || '<div class="pan c mut">' + esc(t('lpNone')) + '</div>';
+}
+function fIn(f) {
+  const nm = ' name="' + esc(f.k) + '"';
+  let h;
+  if (f.type === 'long') h = '<textarea' + nm + ' maxlength="1000" style="min-height:96px"></textarea>';
+  else if (f.type === 'choice') h = '<select' + nm + '><option value="">' + esc(t('choose')) + '</option>' + (f.options || []).map(o => '<option value="' + esc(o) + '">' + esc(o) + '</option>').join('') + '</select>';
+  else if (f.type === 'yesno') h = '<select' + nm + '><option value="">' + esc(t('choose')) + '</option><option value="yes">' + esc(t('yes')) + '</option><option value="no">' + esc(t('no')) + '</option></select>';
+  else h = '<input' + nm + (f.type === 'phone' ? ' type="tel" inputmode="tel" maxlength="20"' : f.type === 'number' ? ' inputmode="decimal" maxlength="14" autocomplete="off"' : ' maxlength="200"') + '>';
+  return '<div class="fl">' + esc(f.label) + (f.required ? ' <span class="req">*</span>' : '') + '</div>' + h;
+}
+function openListReg(id) {
+  const x = PLS.find(l => String(l.id) === String(id)); if (!x) return;
+  modalBox('<h3 style="font-size:1.3rem;margin:0 0 4px;padding-inline-end:36px;line-height:1.6">' + esc(x.title) + '</h3><form id="b17lf" novalidate data-id="' + x.id + '">' + contactHtml() +
+    (x.fields || []).map(fIn).join('') + '<div class="acts"><button type="submit" class="btn navy">' + esc(t('submit')) + '</button></div><p class="hint">' + esc(t('regNote')) + '</p></form>');
+}
+async function doListReg(f) {
+  const x = PLS.find(l => String(l.id) === String(f.dataset.id)); if (!x || pend.has('s' + x.id)) return;
+  const c = readContact(f); if (!c) return;
+  const data = {};
+  for (const q of (x.fields || [])) {
+    const el = f.elements[q.k]; let v = el ? String(el.value).trim() : '';
+    if (q.type === 'number' || q.type === 'phone') v = latin(v);
+    data[q.k] = v;
+    if (!v) { if (q.required) return toast(t('eMissing', q.label)); continue; }
+    if ((q.type === 'number' && !/^-?[0-9]{1,9}([.,][0-9]{1,4})?$/.test(v)) || (q.type === 'phone' && !/^[0-9+() .-]{6,20}$/.test(v))) return toast(t('eBad', q.label));
+    if (q.type === 'text' && v.length > 200) return toast(t('eLong', q.label));
+  }
+  pend.add('s' + x.id); const b = f.querySelector('button[type=submit]'); if (b) b.disabled = true;
+  try {
+    const r = await rpc0('guest_list_submit', { p_id: x.id, p_name: c.nm, p_phone: c.ph, p_email: c.em, p_data: data, p_dev: dev() });
+    if (r.error) { if (b) b.disabled = false; return toast(err(r.error.message, x)); }
+    setGname(c.nm); GL.add(x.id); closeM(); toast(t('thanks'));
+    if (view === 'lists17') pLists17();
+  } catch (e) { if (b) b.disabled = false; toast(t('eFail')); } finally { pend.delete('s' + x.id); }
+}
+
+// ===== المنظمون: اختيار الظهور، وكشف الزوار =====
+async function loadEvVis(ids) {
+  EVT = Date.now();
+  try {
+    const r = await from0('activities').select('id,visibility');
+    if (r && !r.error) { EVV = {}; (r.data || []).forEach(x => { EVV[x.id] = x.visibility || 'public'; }); }
+  } catch (e) {}
+  (ids || []).forEach(i => { if (EVV[i] === undefined) EVV[i] = 'public'; });
+}
+const rowHtml = id => '<div class="b17row"><button type="button" class="btn line sm b17vb" data-a="b17ev" data-id="' + id + '">' + esc(visLabel(EVV[id]) + ' · ' + t('change')) + '</button><button type="button" class="btn line sm" data-a="b17rg" data-id="' + id + '">' + esc(t('gBtn')) + '</button></div>';
+const visHtml = (cur, kind) => '<div class="b17v"><div class="fl">' + esc(t('vLabel')) + '</div><select name="vis17"><option value="public"' + (cur === 'public' ? ' selected' : '') + '>' + esc(t('vOptPub')) + '</option><option value="members"' + (cur !== 'public' ? ' selected' : '') + '>' + esc(t('vOptMem')) + '</option></select><p class="hint">' + esc(t(kind === 'ev' ? 'vHintEv' : 'vHintLs')) + '</p></div>';
+function scan() {
+  if (!isReady() || !ok()) return;
+  fixCm();
+  ['af', 'daf', 'oaf'].forEach(id => {
+    const f = $id(id); if (!f || f.querySelector('.b17v')) return;
+    const btn = f.querySelector('button.navy.block') || f.querySelector('button.navy'); if (btn) btn.insertAdjacentHTML('beforebegin', visHtml('public', 'ev'));
+  });
+  const miss = [];
+  document.querySelectorAll('#ac [data-a="del"],#dc [data-a="b4evdel"],#oc [data-a="o12evdel"]').forEach(b => {
+    const id = +b.dataset.id, pan = b.closest('.pan'), h = pan ? pan.querySelector('.who > div') : null;
+    if (!h || h.querySelector('.b17row')) return;
+    if (EVV[id] === undefined) { miss.push(id); return; }
+    h.insertAdjacentHTML('beforeend', rowHtml(id));
+  });
+  if (miss.length && Date.now() - EVT > 3000) loadEvVis(miss).then(sched);
+  const lf = $id('l13b');
+  if (lf && !lf.querySelector('.b17v') && lf.lastElementChild && lf.lastElementChild.classList.contains('lb-acts')) {
+    const m = /#lists\/edit\/(\d+)/.exec(location.hash || ''), cur = m ? VL[+m[1]] : 'members';
+    if (!m || cur !== undefined) lf.lastElementChild.insertAdjacentHTML('beforebegin', visHtml(cur, 'ls'));
+  }
+  document.querySelectorAll('#lc .pan').forEach(p => {
+    if (p.dataset.b17) return;
+    const btn = p.querySelector('[data-a="l13st"],[data-a="l13del"],[data-a="l13open"]'), id = btn ? +btn.dataset.id : 0;
+    if (!id || VL[id] === undefined) return;
+    p.dataset.b17 = '1';
+    const sm = p.querySelector('.who > div > small');
+    if (sm) sm.insertAdjacentHTML('beforeend', ' · <span class="b17lt" data-id="' + id + '">' + esc(visLabel(VL[id])) + '</span>');
+    const ac = p.querySelector('.lb-acts');
+    if (ac && p.querySelector('[data-a="l13del"]')) ac.insertAdjacentHTML('beforeend', '<button type="button" class="btn line sm" data-a="b17lv" data-id="' + id + '">' + esc(t('change')) + '</button>');
+  });
+}
+let SCQ = 0;
+function sched() { if (SCQ) return; SCQ = setTimeout(() => { SCQ = 0; try { scan(); } catch (e) {} }, 60); }
+new MutationObserver(sched).observe(document.body, { childList: true, subtree: true });
+async function toggleEv(id) {
+  const to = EVV[id] === 'members' ? 'public' : 'members';
+  if (!confirm(t(to === 'members' ? 'cVisEvMem' : 'cVisEvPub'))) return;
+  try {
+    const r = await rpc0('activity_set_visibility', { p_id: id, p_vis: to });
+    if (r.error) return toast(err(r.error.message));
+    EVV[id] = to; const a = typeof acts !== 'undefined' ? acts.find(x => x.id === id) : null; if (a) a.visibility = to;
+    document.querySelectorAll('.b17vb[data-id="' + id + '"]').forEach(b => { b.textContent = visLabel(to) + ' · ' + t('change'); });
+    toast(t('vDone'));
+  } catch (e) { toast(t('eFail')); }
+}
+async function toggleLs(id) {
+  const to = VL[id] === 'public' ? 'members' : 'public';
+  if (!confirm(t(to === 'members' ? 'cVisLsMem' : 'cVisLsPub'))) return;
+  try {
+    const r = await rpc0('list_set_visibility', { p_id: id, p_vis: to });
+    if (r.error) return toast(err(r.error.message));
+    VL[id] = to; document.querySelectorAll('.b17lt[data-id="' + id + '"]').forEach(s => { s.textContent = visLabel(to); });
+    toast(t('vDone'));
+  } catch (e) { toast(t('eFail')); }
+}
+async function showGuests(id) {
+  modalBox('<h3 style="font-size:1.3rem;margin:0 0 10px;padding-inline-end:36px">' + esc(t('gTitle')) + '</h3><div id="b17gl">' + loader + '</div>');
+  let r = null; try { r = await rpc0('guest_regs_list', { p_activity: id }); } catch (e) {}
+  const box = $id('b17gl'); if (!box) return;
+  if (!r || r.error) { box.innerHTML = '<p class="mut c">' + esc(err(r && r.error ? r.error.message : '')) + '</p>'; return; }
+  const rows = (r.data || []).map(asObj);
+  box.innerHTML = rows.length ? '<p class="mut" style="margin:0 0 10px">' + esc(t('regs', rows.length)) + '</p>' + rows.map((g, i) => '<div class="gr"><b>' + (i + 1) + '. ' + esc(g.full_name) + '</b><small><a href="tel:' + esc(g.phone) + '" dir="ltr">' + esc(g.phone) + '</a>' + (g.email ? ' · <a href="mailto:' + esc(g.email) + '" dir="ltr">' + esc(g.email) + '</a>' : '') + ' · ' + esc(dtm(g.created_at)) + '</small><button type="button" class="btn no sm" data-a="b17gd" data-id="' + esc(String(g.id)) + '" data-e="' + id + '">' + esc(t('del')) + '</button></div>').join('') : '<p class="mut c">' + esc(t('gNone')) + '</p>';
+}
+
+// ===== القائمة والتوجيه =====
+const _r = window.render;
+window.render = async function () {
+  const v0 = (location.hash || '#home').slice(1).split('/')[0];
+  if (v0 === 'lists' && !ok() && await ready()) {
+    if (typeof leaveChat === 'function') leaveChat();
+    const mn = $id('menu'); if (mn) mn.style.display = 'none'; closeM();
+    view = 'lists17'; drawShell(); window.scrollTo(0, 0); const pb = $id('pinbar'); if (pb) pb.hidden = true;
+    return pLists17();
+  }
+  const r = await _r.apply(this, arguments);
+  if (!ok()) ready().then(() => loadPub()).then(redrawMenu);
+  return r;
+};
+const _dm = window.drawMenu;
+window.drawMenu = function () {
+  _dm.apply(this, arguments);
+  const m = $id('menu'); if (!m || ok() || !isReady() || !(PL.n > 0) || m.querySelector('[data-b17]')) return;
+  const a = '<a data-b17="1" href="#lists">' + esc(t('mLists')) + '</a>', after = m.querySelector('[href="#events"]');
+  if (after) after.insertAdjacentHTML('afterend', a); else m.insertAdjacentHTML('afterbegin', a);
+};
+
+// ===== الأزرار =====
+document.addEventListener('click', e => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-a]') : null; if (!el) return;
+  const a = el.dataset.a;
+  if (a === 'cm' && isReady()) { e.preventDefault(); e.stopImmediatePropagation(); return togglePanel(+el.dataset.id); }
+  if (a === 'lk' && isReady() && !ok()) { e.preventDefault(); e.stopImmediatePropagation(); return guestLike(+el.dataset.id); }
+  if (a.slice(0, 3) !== 'b17') return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const id = +el.dataset.id;
+  if (a === 'b17reg') return openReg(id);
+  if (a === 'b17lreg') return openListReg(id);
+  if (a === 'b17cd') return delComment(el);
+  if (a === 'b17ev') return toggleEv(id);
+  if (a === 'b17lv') return toggleLs(id);
+  if (a === 'b17rg') return showGuests(id);
+  if (a === 'b17gd') {
+    if (!confirm(t('cGDel'))) return;
+    rpc0('guest_reg_delete', { p_id: id }).then(r => { if (r.error) return toast(err(r.error.message)); toast(t('gDone')); showGuests(+el.dataset.e); }).catch(() => toast(t('eFail')));
+  }
+}, true);
+document.addEventListener('submit', e => {
+  const f = e.target; if (!f || !f.id && !(f.classList && f.classList.contains('b17cmf'))) return;
+  if (f.id === 'b17rf') { e.preventDefault(); e.stopImmediatePropagation(); return doReg(f); }
+  if (f.id === 'b17lf') { e.preventDefault(); e.stopImmediatePropagation(); return doListReg(f); }
+  if (f.classList && f.classList.contains('b17cmf')) { e.preventDefault(); e.stopImmediatePropagation(); return postComment(f); }
+}, true);
+
+// ===== تشغيل أول مرة =====
+// لو رسمت الصفحة الأولى قبل تحميل هذا الكود: أعد رسم بطاقات الفعاليات مرة واحدة
+let RR = 0;
+const fixFirst = () => {
+  if (RR || !isReady() || typeof main === 'undefined' || !main || !main.querySelector) return;
+  if ((view === 'events' || view === 'home') && main.querySelector('.cd.ev:not([data-b17])')) { RR = 1; window.render(); }
+};
+ready().then(v => { if (!v) return; loadPub().then(redrawMenu); sched(); fixFirst(); setTimeout(fixFirst, 1200); setTimeout(fixFirst, 3000); });
+setTimeout(() => { if ((location.hash || '').slice(1).split('/')[0] === 'lists' && !ok() && view !== 'lists17') ready().then(v => { if (v && !ok() && view !== 'lists17') window.render(); }); }, 1500);
+})();
+</script>
 </body>
 </html>
