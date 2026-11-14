@@ -7538,5 +7538,275 @@ const boot = async () => { if (ok()) { await loadSum(); redrawOnce(); } };
 setTimeout(boot, 1300); setTimeout(boot, 3600);
 })();
 </script>
+<style id="b15css">
+.b15bell{position:relative;display:inline-flex;align-items:center;justify-content:center;color:inherit;text-decoration:none}
+.b15n{position:absolute;top:1px;inset-inline-end:-2px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--no);color:#fff;font-size:.72rem;font-weight:700;line-height:18px;text-align:center;box-sizing:border-box;pointer-events:none;font-style:normal}
+.n15 .row{display:flex;gap:14px;align-items:center;text-align:start;text-decoration:none;color:inherit;padding:16px 18px;border:1px solid var(--bd);border-radius:22px;background:var(--card,#fff);margin-bottom:12px}
+.n15 .row.un{border-color:var(--gold);background:var(--cream)}
+.n15 .row .ic{width:44px;height:44px;border-radius:14px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex:none;color:var(--navy)}
+.n15 .row .tx{flex:1;min-width:0}.n15 .row .tx b{display:block;line-height:1.6}.n15 .row .tx small{color:var(--mut)}
+.n15 .row .dotb{width:10px;height:10px;border-radius:50%;background:var(--no);flex:none}
+.n15 .card15 p{margin:12px 0 0;line-height:1.9;text-align:start}
+@media (max-width:480px){#hd.b15hd{padding-inline:10px}#hd.b15hd .ar{gap:0!important}#hd.b15hd .ib{padding:6px}#hd.b15hd .lg6{padding:0 9px;min-width:40px}#hd.b15hd .brand{gap:8px}#hd.b15hd .bt b{font-size:.98rem;line-height:1.25}html.fr #hd.b15hd .bt b{font-size:.84rem}#hd.b15hd #b15bell svg{width:24px;height:24px}}
+.b15ask{position:fixed;left:12px;right:12px;bottom:12px;z-index:70;max-width:460px;margin:0 auto;background:var(--card,#fff);color:inherit;border:1px solid var(--bd);border-radius:22px;padding:16px 18px;box-shadow:0 12px 36px rgba(11,20,48,.22);text-align:start}
+.b15ask p{margin:0 0 12px;line-height:1.8}.b15ask div{display:flex;gap:10px;flex-wrap:wrap}
+</style>
+<script>
+(() => {
+'use strict';
+// ===== الدفعة 15: الإشعارات (جرس داخل الموقع + إشعار الهاتف) =====
+if (typeof render !== 'function' || typeof sb === 'undefined' || typeof drawShell !== 'function' || typeof ic !== 'function' || typeof me === 'undefined') return;
+const VAPID_PUB = 'BGXD8ohRu-1tmGOWFhB9LTmw0NiJ8C-0KoPK1DAMMxeD8_SnU_YXYJsRHyjaSzhSkbvPQIK24iG58Wo9NnHuJjU';
+if (typeof I === 'object' && !I.bell) I.bell = '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>';
+const FR = () => { try { return localStorage.getItem('lst_lang') === 'fr'; } catch (e) { return false; } };
+const T = {
+  bell: ['الإشعارات', 'Notifications'], pill: ['الإشعارات', 'Notifications'], h1: ['إشعاراتي', 'Mes notifications'], sub: ['آخر ما نشر في النادي', 'Les dernières publications du club'],
+  nNone: ['لا توجد إشعارات بعد', 'Aucune notification pour le moment'], nClosed: ['مغلقة', 'Fermée'],
+  nList: [a => 'قائمة جديدة: ' + a, a => 'Nouvelle liste : ' + a], nToast: [a => '🔔 قائمة جديدة: ' + a, a => '🔔 Nouvelle liste : ' + a],
+  k_attendance: ['قائمة حضور', 'Liste de présence'], k_trip: ['رحلة', 'Sortie'], k_other: ['قائمة', 'Liste'],
+  eSql: ['شغل كود SQL الخاص بالدفعة 15 في Supabase أولا', 'Exécutez d’abord le SQL du lot 15 dans Supabase'],
+  pTitle: ['إشعارات الهاتف', 'Notifications sur téléphone'],
+  pOffTxt: ['لتصلك القوائم الجديدة على هاتفك حتى والموقع مغلق', 'Recevez les nouvelles listes sur votre téléphone, même site fermé'],
+  pOnTxt: ['مفعلة على هذا الجهاز', 'Activées sur cet appareil'],
+  pEnable: ['تفعيل الإشعارات', 'Activer les notifications'], pDisable: ['إيقاف', 'Désactiver'],
+  pDenied: ['الإشعارات محظورة لهذا الموقع. افتح إعدادات الموقع من رمز القفل بجانب الرابط، اسمح بالإشعارات ثم أعد تحميل الصفحة.', 'Les notifications sont bloquées pour ce site. Ouvrez les réglages du site (cadenas à côté de l’adresse), autorisez-les puis rechargez la page.'],
+  pUnsup: ['هذا المتصفح لا يدعم إشعارات الهاتف. جرب Chrome على أندرويد أو على الحاسوب.', 'Ce navigateur ne gère pas les notifications. Essayez Chrome sur Android ou sur ordinateur.'],
+  pIos: ['على الآيفون: افتح الموقع في Safari، اضغط زر المشاركة ثم إضافة إلى الشاشة الرئيسية، ثم افتح الموقع من الأيقونة الجديدة وقم بتفعيل الإشعارات من هنا.', 'Sur iPhone : ouvrez le site dans Safari, touchez Partager puis Sur l’écran d’accueil, ouvrez ensuite le site depuis la nouvelle icône et activez les notifications ici.'],
+  pNoSw: ['ملف sw.js غير موجود في الموقع بعد، أضفه إلى GitHub كما في التعليمات.', 'Le fichier sw.js est absent du site, ajoutez-le sur GitHub comme indiqué.'],
+  pFail: ['تعذر تفعيل الإشعارات، حاول مرة أخرى', 'Impossible d’activer les notifications, réessayez'],
+  pOk: ['تم تفعيل الإشعارات ✓', 'Notifications activées ✓'], pOffDone: ['تم إيقاف الإشعارات على هذا الجهاز', 'Notifications désactivées sur cet appareil'],
+  pCancel: ['لم يتم السماح بالإشعارات', 'Les notifications n’ont pas été autorisées'],
+  askTxt: ['هل تريد أن تصلك القوائم الجديدة كإشعار على هاتفك؟', 'Voulez-vous recevoir les nouvelles listes en notification sur votre téléphone ?'],
+  askYes: ['نعم، تفعيل', 'Oui, activer'], askNo: ['ليس الآن', 'Pas maintenant'],
+  pushDone: [(a, b) => 'تم إرسال الإشعار إلى ' + a + ' جهاز من ' + b, (a, b) => 'Notification envoyée à ' + a + ' appareil(s) sur ' + b],
+  pushNone: ['لم يفعل أحد إشعارات الهاتف بعد. الإشعار ظاهر داخل الموقع لكل الأعضاء.', 'Personne n’a encore activé les notifications téléphone. Elle apparaît dans le site pour tous les membres.'],
+  pushNoFn: ['تم النشر. إشعار الهاتف غير مفعل بعد على الخادم (الدالة push-notify)، والإشعار ظاهر داخل الموقع.', 'Publiée. La notification téléphone n’est pas encore activée côté serveur (fonction push-notify), elle apparaît dans le site.'],
+  pushNoKeys: ['تم النشر. مفاتيح VAPID غير مضافة في أسرار Supabase بعد.', 'Publiée. Les clés VAPID ne sont pas encore ajoutées dans les secrets Supabase.'],
+  pushFail: ['تم النشر لكن تعذر إرسال إشعار الهاتف. أغلق القائمة ثم افتحها من جديد لإعادة المحاولة.', 'Publiée, mais l’envoi de la notification téléphone a échoué. Fermez puis rouvrez la liste pour réessayer.']
+};
+const t = (k, a, b) => { const v = (T[k] || [k, k])[FR() ? 1 : 0]; return typeof v === 'function' ? v(a, b) : v; };
+const $id = id => document.getElementById(id);
+const ok = () => !!me && me.status === 'approved';
+const loc = () => FR() ? 'fr-FR' : 'ar-u-nu-latn';
+const asObj = x => typeof x === 'string' ? JSON.parse(x) : x;
+const hero = (icon, pill, h1, sub) => '<section class="dark ph"><span class="pill">' + ic(icon, 18) + ' ' + esc(pill) + '</span><h1>' + esc(h1) + '</h1><p>' + esc(sub) + '</p></section>';
+const ago = d => {
+  const s = (Date.now() - new Date(d).getTime()) / 1000, f = new Intl.RelativeTimeFormat(loc(), { numeric: 'auto' });
+  return s < 3600 ? f.format(-Math.max(1, Math.round(s / 60)), 'minute') : s < 86400 ? f.format(-Math.round(s / 3600), 'hour') : f.format(-Math.round(s / 86400), 'day');
+};
+
+// ===== الإشعارات داخل الموقع =====
+const fresh = () => ({ uid: null, at: 0, v: null, p: null, top: 0 });
+let NS = fresh();
+function loadNotices(force) {
+  if (!ok()) { NS = fresh(); return Promise.resolve(null); }
+  if (NS.uid !== me.id) { NS = fresh(); NS.uid = me.id; }
+  if (!force && NS.v && Date.now() - NS.at < 45000) return Promise.resolve(NS.v);
+  if (NS.p) return NS.p;
+  const st = NS;
+  st.p = (async () => {
+    let v = null;
+    try { const r = await sb.rpc('notices_feed'); const d = r && !r.error ? asObj(r.data) : null; if (d && typeof d === 'object' && Array.isArray(d.items)) v = d; } catch (e) {}
+    st.v = v; st.at = Date.now(); st.p = null; return v;
+  })();
+  return st.p;
+}
+function drawBell() {
+  const hd = $id('hd'); if (!hd) return;
+  hd.classList.toggle('b15hd', ok());
+  let b = $id('b15bell');
+  if (!ok()) { if (b) b.remove(); return; }
+  if (!b) { const mb = $id('mbtn'); if (!mb) return; mb.insertAdjacentHTML('beforebegin', '<a class="ib b15bell" id="b15bell" href="#notices">' + ic('bell', 26) + '<i class="b15n" hidden></i></a>'); b = $id('b15bell'); }
+  b.setAttribute('aria-label', t('bell'));
+  const n = NS.uid === me.id && NS.v ? Number(NS.v.unread) || 0 : 0, c = b.querySelector('.b15n');
+  c.hidden = n < 1; c.textContent = n > 9 ? '9+' : String(n);
+}
+async function refresh(force) {
+  const v = await loadNotices(force); if (!v || !ok()) return;
+  const top = v.items.length ? Number(v.items[0].id) : 0;
+  if (NS.top && top > NS.top && Number(v.unread) > 0 && view !== 'notices') toast(t('nToast', v.items[0].title));
+  NS.top = Math.max(NS.top, top); drawBell();
+  if (view === 'notices') { drawFeed(v); markSeen(); }
+}
+async function markSeen() {
+  const v = NS.v; if (!v || !v.items.length || !(Number(v.unread) > 0)) return;
+  try { const r = await sb.rpc('notices_seen', { p_upto: v.items[0].created_at }); if (!r.error && NS.v === v) { v.unread = 0; NS.at = 0; drawBell(); } } catch (e) {}
+}
+function drawFeed(v) {
+  const box = $id('n15list'); if (!box) return;
+  if (!v) { box.innerHTML = '<div class="pan c mut">' + esc(t('eSql')) + '</div>'; return; }
+  box.innerHTML = v.items.length ? v.items.map(x => '<a class="row' + (x.unread ? ' un' : '') + '" href="#lists"><span class="ic">' + ic(x.list_kind === 'trip' ? 'pin' : x.list_kind === 'attendance' ? 'check' : 'file', 22) + '</span><div class="tx"><b>' + esc(t('nList', x.title)) + '</b><small>' +
+    esc(t('k_' + x.list_kind)) + (x.list_status === 'closed' ? ' · ' + esc(t('nClosed')) : '') + ' · ' + esc(ago(x.created_at)) + '</small></div>' + (x.unread ? '<i class="dotb"></i>' : '') + '</a>').join('') : '<div class="pan c mut">' + esc(t('nNone')) + '</div>';
+}
+async function pNotices() {
+  main.innerHTML = hero('bell', t('pill'), t('h1'), t('sub')) + '<div class="sec n15" style="padding-top:12px"><div id="n15push"></div><div id="n15list">' + loader + '</div></div>';
+  drawPush();
+  const v = await loadNotices(true); if (view !== 'notices') return;
+  drawBell(); drawFeed(v); markSeen();
+}
+// ===== إشعارات الهاتف =====
+const FK = () => 'lst_push_' + (me && me.id);
+const getFlag = () => { try { return localStorage.getItem(FK()) === '1'; } catch (e) { return false; } };
+const setFlag = on => { try { on ? localStorage.setItem(FK(), '1') : localStorage.removeItem(FK()); } catch (e) {} };
+const b64uBytes = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const r = atob(s), a = new Uint8Array(r.length); for (let i = 0; i < r.length; i++) a[i] = r.charCodeAt(i); return a; };
+function env() {
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  return { ios, standalone, supported: 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window };
+}
+let REG = null;
+async function swReg() {
+  if (REG) return REG;
+  try { await navigator.serviceWorker.register('/sw.js'); } catch (e) { throw new Error('nosw'); }
+  REG = await Promise.race([navigator.serviceWorker.ready, new Promise((_, rej) => setTimeout(() => rej(new Error('nosw')), 8000))]);
+  return REG;
+}
+async function ensureSub(reg) {
+  let sub = await reg.pushManager.getSubscription();
+  const want = b64uBytes(VAPID_PUB);
+  if (sub) {
+    const k = sub.options && sub.options.applicationServerKey ? new Uint8Array(sub.options.applicationServerKey) : null;
+    if (!k || k.length !== want.length || k.some((x, i) => x !== want[i])) { try { await sub.unsubscribe(); } catch (e) {} sub = null; }
+  }
+  return sub || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: want });
+}
+async function saveSub(sub) {
+  const k = (sub.toJSON() || {}).keys || {};
+  const r = await sb.rpc('push_subscribe', { p_endpoint: sub.endpoint, p_p256dh: k.p256dh, p_auth: k.auth, p_lang: FR() ? 'fr' : 'ar', p_ua: String(navigator.userAgent).slice(0, 200) });
+  if (r.error) throw new Error(r.error.message || 'rpc');
+}
+async function pushState() {
+  const e = env();
+  if (e.ios && !e.standalone) return { s: 'ios' };
+  if (!e.supported) return { s: 'unsup' };
+  if (Notification.permission === 'denied') return { s: 'denied' };
+  try {
+    const reg = await swReg(), sub = await reg.pushManager.getSubscription();
+    if (sub && Notification.permission === 'granted' && getFlag()) { const r = await sb.rpc('push_mine', { p_endpoint: sub.endpoint }); if (!r.error && r.data === true) return { s: 'on' }; }
+    return { s: 'off' };
+  } catch (x) { return { s: x && x.message === 'nosw' ? 'nosw' : 'off' }; }
+}
+async function drawPush() {
+  const box = $id('n15push'); if (!box) return;
+  const st = await pushState(); if (!$id('n15push')) return;
+  const txt = st.s === 'on' ? t('pOnTxt') : st.s === 'off' ? t('pOffTxt') : '';
+  const note = { denied: 'pDenied', unsup: 'pUnsup', ios: 'pIos', nosw: 'pNoSw' }[st.s];
+  const btn = st.s === 'off' ? '<button type="button" class="btn navy sm" data-a="b15on">' + esc(t('pEnable')) + '</button>' : st.s === 'on' ? '<button type="button" class="btn line sm" data-a="b15off">' + esc(t('pDisable')) + '</button>' : '';
+  box.innerHTML = '<div class="pan card15" data-s="' + st.s + '"><div class="ar"><div class="who"><span class="av">' + ic('bell', 22) + '</span><div><b>' + esc(t('pTitle')) + '</b>' + (txt ? '<small class="mut" style="display:block">' + esc(txt) + '</small>' : '') + '</div></div>' + btn + '</div>' + (note ? '<p class="mut">' + esc(t(note)) + '</p>' : '') + '</div>';
+}
+let busy = false;
+async function enablePush() {
+  if (busy) return; busy = true; let sub = null, created = false;
+  try {
+    let perm = Notification.permission;
+    if (perm === 'default') perm = await Notification.requestPermission();
+    if (perm !== 'granted') { toast(t(perm === 'denied' ? 'pDenied' : 'pCancel')); return; }
+    const reg = await swReg(); const had = await reg.pushManager.getSubscription();
+    sub = await ensureSub(reg); created = !had;
+    await saveSub(sub); setFlag(true); toast(t('pOk'));
+  } catch (e) {
+    if (created && sub) { try { await sub.unsubscribe(); } catch (x) {} }
+    toast(e && e.message === 'nosw' ? t('pNoSw') : t('pFail'));
+  } finally { busy = false; removeAsk(); if (view === 'notices') drawPush(); }
+}
+async function dropDevice(clearFlag) {
+  let reg = REG; if (!reg && 'serviceWorker' in navigator) { try { reg = await navigator.serviceWorker.getRegistration('/'); } catch (e) {} }
+  const sub = reg && reg.pushManager ? await reg.pushManager.getSubscription() : null;
+  if (sub) { try { await sb.rpc('push_unsubscribe', { p_endpoint: sub.endpoint }); } catch (e) {} try { await sub.unsubscribe(); } catch (e) {} }
+  if (clearFlag) setFlag(false);
+}
+async function disablePush() {
+  if (busy) return; busy = true;
+  try { await dropDevice(true); toast(t('pOffDone')); } catch (e) { toast(t('pFail')); }
+  finally { busy = false; if (view === 'notices') drawPush(); }
+}
+let synced = null;
+async function syncPush() {
+  if (!ok() || synced === me.id || !getFlag()) return;
+  const e = env(); if (!e.supported || (e.ios && !e.standalone)) return;
+  synced = me.id;
+  if (Notification.permission !== 'granted') { if (Notification.permission === 'denied') setFlag(false); return; }
+  try { const reg = await swReg(); await saveSub(await ensureSub(reg)); } catch (x) {}
+}
+
+// ===== سؤال لطيف مرة واحدة =====
+const askKey = () => 'lst_push_ask_' + (me && me.id);
+const removeAsk = () => { const a = $id('b15ask'); if (a) a.remove(); };
+function maybeAsk() {
+  if (!ok() || $id('b15ask') || ['admin', 'notices', 'chat', 'dm', 'inbox', 'groups'].includes(view)) return;
+  const e = env(); if (!e.supported || (e.ios && !e.standalone) || Notification.permission !== 'default') return;
+  try { const ts = Number(localStorage.getItem(askKey())); if (ts && Date.now() - ts < 14 * 864e5) return; } catch (x) {}
+  document.body.insertAdjacentHTML('beforeend', '<div id="b15ask" class="b15ask" role="dialog"><p>' + esc(t('askTxt')) + '</p><div><button type="button" class="btn navy sm" data-a="b15ay">' + esc(t('askYes')) + '</button><button type="button" class="btn line sm" data-a="b15an">' + esc(t('askNo')) + '</button></div></div>');
+}
+let askTimer = null;
+const askLater = () => { if (!askTimer) askTimer = setTimeout(maybeAsk, 3000); };
+
+// ===== من ينشر القائمة يرسل إشعار الهاتف =====
+async function pushNotify(id) {
+  try {
+    const r = await sb.functions.invoke('push-notify', { body: { list_id: id } });
+    if (r.error) {
+      let j = null; try { j = await r.error.context.json(); } catch (e) {}
+      const m = String((r.error && r.error.message) || '') + ' ' + JSON.stringify(j || {});
+      return toast(/vapid/i.test(m) ? t('pushNoKeys') : /not found|404|Failed to send|fetch/i.test(m) ? t('pushNoFn') : t('pushFail'));
+    }
+    const d = r.data || {};
+    if (d.pending === false) return;
+    toast(d.total > 0 ? t('pushDone', d.sent, d.total) : t('pushNone'));
+  } catch (e) { toast(t('pushNoFn')); }
+}
+const _rpc = sb.rpc.bind(sb);
+sb.rpc = function (fn, args, opts) {
+  const p = _rpc(fn, args, opts);
+  if (fn !== 'list_set_status' || !args || args.p_status !== 'open') return p;
+  return Promise.resolve(p).then(r => { if (r && !r.error) setTimeout(() => pushNotify(args.p_id), 0); return r; });
+};
+
+// ===== التوجيه =====
+const _r = window.render;
+window.render = async function () {
+  const v0 = (location.hash || '#home').slice(1).split('/')[0];
+  if (v0 === 'notices') {
+    if (!me) return nav('#login');
+    if (!ok()) return nav('#home');
+    if (typeof leaveChat === 'function') leaveChat();
+    const mn = $id('menu'); if (mn) mn.style.display = 'none';
+    view = 'notices'; drawShell(); window.scrollTo(0, 0); const pb = $id('pinbar'); if (pb) pb.hidden = true;
+    return pNotices();
+  }
+  const r = await _r.apply(this, arguments);
+  if (ok()) { refresh(false); syncPush(); askLater(); }
+  return r;
+};
+const _ds = window.drawShell;
+window.drawShell = function () { _ds.apply(this, arguments); drawBell(); };
+
+// ===== الأزرار والأحداث =====
+document.addEventListener('click', async e => {
+  const out = e.target && e.target.closest ? e.target.closest('[data-a="out"]') : null;
+  if (out && out.dataset.b15 !== '1' && ok() && getFlag()) {
+    e.stopImmediatePropagation(); e.preventDefault();
+    try { await Promise.race([dropDevice(false), new Promise(r => setTimeout(r, 2500))]); } catch (x) {}
+    out.dataset.b15 = '1'; out.click(); return;
+  }
+  const el = e.target && e.target.closest ? e.target.closest('[data-a^="b15"]') : null; if (!el) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const a = el.dataset.a;
+  if (a === 'b15on' || a === 'b15ay') return enablePush();
+  if (a === 'b15off') return disablePush();
+  if (a === 'b15an') { try { localStorage.setItem(askKey(), String(Date.now())); } catch (x) {} return removeAsk(); }
+}, true);
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+  const d = e.data || {};
+  if (d.type === 'notice') refresh(true);
+  else if (d.type === 'go' && typeof d.url === 'string') { try { const u = new URL(d.url, location.origin); if (u.origin === location.origin) location.hash = u.hash || '#lists'; } catch (x) {} }
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && ok()) refresh(false); });
+setInterval(() => { if (document.visibilityState === 'visible' && ok()) refresh(false); }, 60000);
+setTimeout(() => { if ((location.hash || '').slice(1).split('/')[0] === 'notices' && me && view !== 'notices') window.render(); }, 0);
+const boot = async () => { if (ok()) { await refresh(false); syncPush(); askLater(); } };
+setTimeout(boot, 1500); setTimeout(boot, 4000);
+})();
+</script>
 </body>
 </html>
