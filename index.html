@@ -8137,6 +8137,12 @@ setTimeout(boot, 1400); setTimeout(boot, 3700);
 .b17 .ar{flex-wrap:wrap;gap:10px}
 .b17 .who>div{min-width:0}
 .b17 .pan p.d{margin:10px 0 0;line-height:1.9;text-align:start}
+.b17ph{margin:34px 0 14px;font-size:1.35rem;text-align:start}
+.b17hl .pan{margin-bottom:14px}
+.b17dg .rw{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bd);line-height:1.7;overflow-wrap:anywhere}
+.b17dg .rw:last-child{border-bottom:0}
+.b17dg .rw b{flex:0 0 auto}
+.b17dg .bad{color:var(--no)}
 </style>
 <script>
 (() => {
@@ -8187,7 +8193,12 @@ const T = {
   lpReg: ['سجل', 'S’inscrire'], lpFull: ['اكتملت المقاعد', 'Complet'], lpOpen: ['مفتوحة', 'Ouverte'],
   closesAt: ['تغلق: ', 'Clôture : '], regs: [n => n + ' مسجل', n => n + ' inscrit(s)'], seats: [(n, m) => n + ' / ' + m + ' مسجل', (n, m) => n + ' / ' + m + ' inscrit(s)'],
   k_attendance: ['حضور', 'Présence'], k_trip: ['رحلة', 'Sortie'], k_other: ['قائمة', 'Liste'],
-  choose: ['اختر', 'Choisir'], yes: ['نعم', 'Oui'], no: ['لا', 'Non']
+  choose: ['اختر', 'Choisir'], yes: ['نعم', 'Oui'], no: ['لا', 'Non'],
+  hPast: ['فعاليات سابقة', 'Événements passés'], hLists: ['قوائم التسجيل المفتوحة', 'Listes d’inscription ouvertes'],
+  dPill: ['فحص', 'Diagnostic'], dH1: ['فحص الفعاليات والقوائم العامة', 'Diagnostic des événements et listes publiques'], dSub: ['أرسل لقطة شاشة لهذه الصفحة للمطور إذا لم تعمل الخاصية.', 'Envoyez une capture de cette page au développeur si la fonction ne marche pas.'],
+  dCode: ['كود الدفعة 17 محمل في الموقع', 'Code du lot 17 chargé dans le site'], dUser: ['حالة الدخول', 'État de connexion'], dVisitor: ['زائر (بلا حساب)', 'Visiteur (sans compte)'],
+  dEv: ['عدد الفعاليات الظاهرة لك', 'Nombre d’événements visibles pour vous'], dPub: ['عدد القوائم العامة المفتوحة', 'Nombre de listes publiques ouvertes'], dCol: ['عمود الظهور في جدول الفعاليات', 'Colonne de visibilité des événements'],
+  dRdy: ['تنفيذ SQL الدفعة 17 (الجزء 1)', 'SQL du lot 17 exécuté (partie 1)'], dFn: ['دالة', 'Fonction'], dOk: ['تعمل', 'OK'], dHint: ['إذا ظهرت علامة ✗ فكود SQL غير منفذ بالكامل: نفذ الجزء 1 ثم الجزء 2 وانتظر دقيقة.', 'Si ✗ apparaît, le SQL n’est pas entièrement exécuté : exécutez la partie 1 puis la partie 2 et attendez une minute.']
 };
 const t = (k, a, b) => { const v = (T[k] || [k, k])[FR() ? 1 : 0]; return typeof v === 'function' ? v(a, b) : v; };
 const $id = id => document.getElementById(id);
@@ -8444,7 +8455,6 @@ async function doReg(f) {
     closeM(); toast(t('thanks')); refreshCard(n);
   } catch (e) { if (b) b.disabled = false; toast(t('eFail')); } finally { pend.delete('r' + n); }
 }
-
 // ===== صفحة القوائم العامة للزائر =====
 let PLS = [], PL = { n: 0, at: 0, p: null, drawn: -1 };
 const KICON = { attendance: 'check', trip: 'pin', other: 'file' };
@@ -8508,6 +8518,7 @@ async function doListReg(f) {
     if (r.error) { if (b) b.disabled = false; return toast(err(r.error.message, x)); }
     setGname(c.nm); GL.add(x.id); closeM(); toast(t('thanks'));
     if (view === 'lists17') pLists17();
+    else if (view === 'home') { const hb = $id('b17hlb'), u = $id('up'); if (hb) hb.remove(); if (u) delete u.dataset.b17l; sched(); }
   } catch (e) { if (b) b.disabled = false; toast(t('eFail')); } finally { pend.delete('s' + x.id); }
 }
 
@@ -8553,8 +8564,31 @@ function scan() {
     if (ac && p.querySelector('[data-a="l13del"]')) ac.insertAdjacentHTML('beforeend', '<button type="button" class="btn line sm" data-a="b17lv" data-id="' + id + '">' + esc(t('change')) + '</button>');
   });
 }
+// ===== الواجهة الرئيسية: كل الفعاليات والمنشورات بدل 3 فقط، ثم القوائم العامة للزائر =====
+function homeAll() {
+  if (view !== 'home' || typeof acts === 'undefined' || !Array.isArray(acts)) return;
+  const el = $id('up'); if (!el || el.dataset.b17a) return;
+  if (!el.querySelector('.cards, p.lead')) return;
+  el.dataset.b17a = '1';
+  const up = acts.filter(a => !isPast(a)), past = acts.filter(a => isPast(a)).sort((p, q) => String(q.event_date || '').localeCompare(String(p.event_date || '')));
+  if (up.length <= 3 && !past.length) return;
+  const card = a => window.evCard(a);
+  el.innerHTML = (up.length ? '<div class="cards">' + up.map(card).join('') + '</div>' : '<p class="lead" style="margin:10px auto 30px">' + esc(FR() ? 'Aucun événement à venir pour le moment – restez connectés.' : 'لا توجد فعاليات قادمة حاليا – تابعونا قريبا.') + '</p>') +
+    (past.length ? '<h3 class="b17ph">' + esc(t('hPast')) + '</h3><div class="cards">' + past.map(card).join('') + '</div>' : '');
+}
+async function homeLists() {
+  if (view !== 'home' || ok() || !isReady()) return;
+  const el = $id('up'); if (!el || !el.dataset.b17a || el.dataset.b17l) return;
+  el.dataset.b17l = '1';
+  let rows = null;
+  try { const r = await rpc0('public_lists'); if (r && !r.error) rows = (r.data || []).map(asObj); } catch (e) {}
+  if (view !== 'home' || $id('up') !== el || !rows) return;
+  PLS = rows; PL.n = rows.length; PL.at = Date.now(); redrawMenu();
+  if (!rows.length) return;
+  el.insertAdjacentHTML('beforeend', '<div id="b17hlb" class="b17 b17hl"><h3 class="b17ph">' + esc(t('hLists')) + '</h3>' + rows.map(plCard).join('') + '</div>');
+}
 let SCQ = 0;
-function sched() { if (SCQ) return; SCQ = setTimeout(() => { SCQ = 0; try { scan(); } catch (e) {} }, 60); }
+function sched() { if (SCQ) return; SCQ = setTimeout(() => { SCQ = 0; try { homeAll(); homeLists(); scan(); } catch (e) {} }, 60); }
 new MutationObserver(sched).observe(document.body, { childList: true, subtree: true });
 async function toggleEv(id) {
   const to = EVV[id] === 'members' ? 'public' : 'members';
@@ -8586,10 +8620,34 @@ async function showGuests(id) {
   box.innerHTML = rows.length ? '<p class="mut" style="margin:0 0 10px">' + esc(t('regs', rows.length)) + '</p>' + rows.map((g, i) => '<div class="gr"><b>' + (i + 1) + '. ' + esc(g.full_name) + '</b><small><a href="tel:' + esc(g.phone) + '" dir="ltr">' + esc(g.phone) + '</a>' + (g.email ? ' · <a href="mailto:' + esc(g.email) + '" dir="ltr">' + esc(g.email) + '</a>' : '') + ' · ' + esc(dtm(g.created_at)) + '</small><button type="button" class="btn no sm" data-a="b17gd" data-id="' + esc(String(g.id)) + '" data-e="' + id + '">' + esc(t('del')) + '</button></div>').join('') : '<p class="mut c">' + esc(t('gNone')) + '</p>';
 }
 
+// ===== صفحة فحص سريعة: #diag17 (تبين هل نفذ SQL وهل الكود محمل) =====
+async function pDiag17() {
+  main.innerHTML = hero('check', t('dPill'), t('dH1'), t('dSub')) + '<div class="sec b17" style="padding-top:12px"><div class="pan b17dg" id="b17dg">' + loader + '</div></div>';
+  const rows = [], add = (k, good, msg) => rows.push('<div class="rw"><b class="' + (good ? '' : 'bad') + '">' + (good ? '✓' : '✗') + '</b><div>' + esc(k) + (msg ? ' — <span dir="ltr">' + esc(String(msg).slice(0, 160)) + '</span>' : '') + '</div></div>');
+  add(t('dCode'), true, 'v17');
+  add(t('dUser'), true, me ? (me.status || '') + (me.role ? ' / ' + me.role : '') : t('dVisitor'));
+  const probe = async (name, args) => { try { const r = await rpc0(name, args); return r && !r.error ? { ok: true, data: r.data } : { ok: false, msg: (r && r.error && r.error.message) || '?' }; } catch (e) { return { ok: false, msg: String(e && e.message || e) }; } };
+  const rd = await probe('club_vis_ready');
+  add(t('dRdy'), rd.ok && rd.data === true, rd.ok ? (rd.data === true ? t('dOk') : String(rd.data)) : rd.msg);
+  try { const c = await from0('activities').select('id,visibility'); add(t('dCol'), !c.error, c.error ? c.error.message : t('dOk')); if (!c.error) add(t('dEv'), true, String((c.data || []).length) + ' (' + (c.data || []).filter(x => x.visibility === 'members').length + ' ' + t('vMem') + ')'); } catch (e) { add(t('dCol'), false, String(e && e.message || e)); }
+  for (const [n, a] of [['activity_counts'], ['activity_stats'], ['guest_mine', { p_dev: dev() }], ['event_comments', { p_activity: 0 }], ['public_lists']]) {
+    const r = await probe(n, a);
+    add(t('dFn') + ' ' + n, r.ok, r.ok ? (n === 'public_lists' ? t('dPub') + ': ' + (r.data || []).length : t('dOk')) : r.msg);
+  }
+  const box = $id('b17dg'); if (!box || view !== 'diag17') return;
+  box.innerHTML = rows.join('') + '<p class="mut" style="margin:14px 0 0;line-height:1.8">' + esc(t('dHint')) + '</p>';
+}
+
 // ===== القائمة والتوجيه =====
 const _r = window.render;
 window.render = async function () {
   const v0 = (location.hash || '#home').slice(1).split('/')[0];
+  if (v0 === 'diag17') {
+    if (typeof leaveChat === 'function') leaveChat();
+    const mn = $id('menu'); if (mn) mn.style.display = 'none'; closeM();
+    view = 'diag17'; drawShell(); window.scrollTo(0, 0); const pb = $id('pinbar'); if (pb) pb.hidden = true;
+    return pDiag17();
+  }
   if (v0 === 'lists' && !ok() && await ready()) {
     if (typeof leaveChat === 'function') leaveChat();
     const mn = $id('menu'); if (mn) mn.style.display = 'none'; closeM();
@@ -8642,8 +8700,13 @@ const fixFirst = () => {
   if (RR || !isReady() || typeof main === 'undefined' || !main || !main.querySelector) return;
   if ((view === 'events' || view === 'home') && main.querySelector('.cd.ev:not([data-b17])')) { RR = 1; window.render(); }
 };
+sched();
 ready().then(v => { if (!v) return; loadPub().then(redrawMenu); sched(); fixFirst(); setTimeout(fixFirst, 1200); setTimeout(fixFirst, 3000); });
-setTimeout(() => { if ((location.hash || '').slice(1).split('/')[0] === 'lists' && !ok() && view !== 'lists17') ready().then(v => { if (v && !ok() && view !== 'lists17') window.render(); }); }, 1500);
+setTimeout(() => {
+  const v0 = (location.hash || '').slice(1).split('/')[0];
+  if (v0 === 'diag17' && view !== 'diag17') window.render();
+  else if (v0 === 'lists' && !ok() && view !== 'lists17') ready().then(v => { if (v && !ok() && view !== 'lists17') window.render(); });
+}, 1500);
 })();
 </script>
 </body>
