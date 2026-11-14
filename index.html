@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'">
 <title>LST CLUB</title>
+<meta name="description" content="نادي رواد العلوم والتكنولوجيا بجامعة عبد الحميد ابن باديس - مستغانم: فعاليات وورش وقوائم تسجيل مفتوحة للجميع.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LST CLUB">
+<meta property="og:title" content="رواد العلوم والتكنولوجيا - LST CLUB">
+<meta property="og:description" content="فعاليات وورش وقوائم تسجيل مفتوحة للجميع في نادي رواد العلوم والتكنولوجيا بجامعة مستغانم.">
 <script>
 window.__FR_DICT = (window.__FR_DICT || '') + `
 100pkop|Établir les plans et organiser le temps
@@ -8707,6 +8712,244 @@ setTimeout(() => {
   if (v0 === 'diag17' && view !== 'diag17') window.render();
   else if (v0 === 'lists' && !ok() && view !== 'lists17') ready().then(v => { if (v && !ok() && view !== 'lists17') window.render(); });
 }, 1500);
+})();
+</script>
+<style id="b18css">
+.b18m .mut{line-height:1.7;overflow-wrap:anywhere}
+.b18pv{margin-top:14px;background:var(--blue);border-radius:14px;padding:12px 14px;font-size:.9rem;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere;max-height:170px;overflow:auto;text-align:start}
+.b18lk{display:flex;gap:8px;align-items:center;margin-top:14px}
+.b18lk input{flex:1;min-width:0;direction:ltr;text-align:left}
+.b18lk .btn{flex:0 0 auto}
+.b18g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.b18g .btn{width:100%;min-width:0;padding-inline:10px}
+.b18g .wide{grid-column:1/-1}
+.b18m .hint{margin:12px 0 0;font-size:.88rem;color:var(--mut);line-height:1.8}
+.b18hl{outline:3px solid var(--gold);outline-offset:3px;border-radius:18px;animation:b18p 1.3s ease 3}
+@keyframes b18p{50%{outline-color:transparent}}
+.b18nt{text-align:center;margin-bottom:14px;line-height:1.9}
+.b18nt .btn{margin-top:12px}
+.b18ev .cards{grid-template-columns:minmax(0,1fr);max-width:640px;margin-inline:auto}
+.b18ev .acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+</style>
+<script>
+(() => {
+'use strict';
+// ===== الدفعة 18: مشاركة الفعاليات والقوائم + روابط مباشرة =====
+if (typeof render !== 'function' || typeof sb === 'undefined' || typeof drawShell !== 'function' || typeof ic !== 'function' || typeof loadActs !== 'function' || typeof evCard !== 'function') return;
+if (sb.__b18) return;
+sb.__b18 = true;
+const FR = () => { try { return localStorage.getItem('lst_lang') === 'fr'; } catch (e) { return false; } };
+const T = {
+  shBtn: ['مشاركة', 'Partager'], shTitle: ['مشاركة', 'Partager'],
+  shWa: ['واتساب', 'WhatsApp'], shFb: ['فيسبوك', 'Facebook'], shTg: ['تيليغرام', 'Telegram'], shX: ['إكس', 'X'],
+  shCopyL: ['نسخ الرابط', 'Copier le lien'], shCopyT: ['نسخ النص كاملا', 'Copier le texte'], shMore: ['تطبيقات أخرى', 'Autres applications'],
+  shCopied: ['تم النسخ ✓', 'Copié ✓'], shFail: ['تعذر النسخ، انسخ الرابط يدويا', 'Échec de la copie, copiez le lien à la main'],
+  shMem: ['ملاحظة: هذا المحتوى للأعضاء فقط، فمن يفتح الرابط من الزوار سيحتاج إلى تسجيل الدخول كعضو.', 'Remarque : contenu réservé aux membres, les visiteurs devront se connecter pour ouvrir le lien.'],
+  goE: ['للتفاصيل والتسجيل:', 'Détails et inscription :'], goL: ['للتسجيل في القائمة:', 'Pour vous inscrire à la liste :'],
+  closesAt: ['آخر موعد: ', 'Clôture : '],
+  k_attendance: ['قائمة حضور', 'Liste de présence'], k_trip: ['رحلة', 'Sortie'], k_other: ['قائمة', 'Liste'],
+  ePill: ['فعالية', 'Événement'], eH1: ['تفاصيل الفعالية', 'Détails de l’événement'], eSub: ['شارك الرابط مع أصدقائك وسجل مشاركتك.', 'Partagez le lien avec vos amis et inscrivez-vous.'],
+  eNone: ['هذه الفعالية غير متاحة. قد تكون حذفت، أو أنها للأعضاء فقط.', 'Cet événement n’est pas disponible. Il a peut-être été supprimé ou réservé aux membres.'],
+  lNone: ['هذه القائمة غير متاحة: قد تكون مغلقة أو غير منشورة أو للأعضاء فقط.', 'Cette liste n’est pas disponible : elle est peut-être fermée, non publiée ou réservée aux membres.'],
+  login: ['تسجيل الدخول', 'Se connecter'], allEv: ['كل الفعاليات', 'Tous les événements'], eFail: ['حدث خطأ، حاول مرة أخرى', 'Une erreur est survenue, réessayez']
+};
+const t = k => (T[k] || [k, k])[FR() ? 1 : 0];
+const $id = id => document.getElementById(id);
+const asObj = x => typeof x === 'string' ? JSON.parse(x) : x;
+const loc = () => FR() ? 'fr-FR' : 'ar-u-nu-latn';
+const enc = encodeURIComponent;
+const clip = (s, n) => { s = String(s || '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1).trim() + '…' : s; };
+const dt = d => { const x = new Date(d); if (!d || isNaN(x)) return ''; const tm = x.getHours() || x.getMinutes(); return x.toLocaleDateString(loc(), { dateStyle: 'full' }) + (tm ? ' • ' + x.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' }) : ''); };
+const clubName = () => (typeof S === 'object' && S && S.club_name) || 'LST CLUB';
+const baseUrl = () => location.origin + location.pathname;
+const hero = (icon, pill, h1, sub) => '<section class="dark ph"><span class="pill">' + ic(icon, 18) + ' ' + esc(pill) + '</span><h1>' + esc(h1) + '</h1><p>' + esc(sub) + '</p></section>';
+const closeX = '<button class="ib" data-a="mx" style="position:absolute;left:14px;top:14px;font-size:1.2rem">✕</button>';
+const modalBox = html => { const m = $id('modal'); m.innerHTML = '<div class="box"><div class="b18m">' + closeX + html + '</div></div>'; m.style.display = 'flex'; };
+const closeM = () => { const m = $id('modal'); if (m) m.style.display = 'none'; };
+
+// ===== نص المشاركة والرابط =====
+function build(kind, x) {
+  const url = baseUrl() + (kind === 'e' ? '#e/' : '#l/') + x.id, L = [];
+  if (kind === 'e') {
+    L.push('📢 ' + x.title);
+    if (x.event_date) L.push('📅 ' + dt(x.event_date));
+    if (x.location) L.push('📍 ' + x.location);
+  } else {
+    L.push('📝 ' + x.title);
+    L.push(t('k_' + x.kind) === 'k_' + x.kind ? t('k_other') : t('k_' + x.kind));
+    if (x.event_date) L.push('📅 ' + dt(x.event_date));
+    if (x.location) L.push('📍 ' + x.location);
+    if (x.closes_at) L.push('⏳ ' + t('closesAt') + dt(x.closes_at));
+  }
+  const d = clip(x.description, 160), body = L.join('\n') + (d ? '\n\n' + d : '');
+  const text = body + '\n\n' + t(kind === 'e' ? 'goE' : 'goL') + '\n' + url + '\n\n— ' + clubName();
+  const short = clip(x.title + (x.event_date ? ' — ' + dt(x.event_date) : ''), 200);
+  return { title: x.title, body, text, url, short, priv: x.visibility === 'members' };
+}
+let SH = null, LR = {}, PUBR = [];
+const actById = id => (typeof acts !== 'undefined' && Array.isArray(acts)) ? acts.find(a => a.id === id) : null;
+async function copy(s) {
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(s); return true; } } catch (e) {}
+  try {
+    const ta = document.createElement('textarea'); ta.value = s; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, s.length);
+    const r = document.execCommand('copy'); ta.remove(); return !!r;
+  } catch (e) { return false; }
+}
+function openShare(el) {
+  const k = el.dataset.k, id = +el.dataset.id, x = k === 'e' ? actById(id) : LR[id];
+  if (!x) return toast(t('eFail'));
+  const it = SH = build(k, x);
+  const a = (cls, href, label) => '<a class="btn ' + cls + '" target="_blank" rel="noopener" href="' + esc(href) + '">' + esc(label) + '</a>';
+  modalBox('<h3 style="font-size:1.3rem;margin:0 0 4px;padding-inline-end:36px;line-height:1.6">' + esc(t('shTitle')) + '</h3><div class="mut">' + esc(it.title) + '</div>' +
+    '<div class="b18pv" dir="auto">' + esc(it.text) + '</div>' +
+    '<div class="b18lk"><input id="b18u" readonly dir="ltr" value="' + esc(it.url) + '"><button type="button" class="btn navy sm" data-a="b18cl">' + esc(t('shCopyL')) + '</button></div>' +
+    '<div class="b18g">' +
+    a('line', 'https://wa.me/?text=' + enc(it.text), t('shWa')) +
+    a('line', 'https://www.facebook.com/sharer/sharer.php?u=' + enc(it.url), t('shFb')) +
+    a('line', 'https://t.me/share/url?url=' + enc(it.url) + '&text=' + enc(it.body), t('shTg')) +
+    a('line', 'https://x.com/intent/tweet?text=' + enc(it.short) + '&url=' + enc(it.url), t('shX')) +
+    '<button type="button" class="btn line" data-a="b18ct">' + esc(t('shCopyT')) + '</button>' +
+    (typeof navigator.share === 'function' ? '<button type="button" class="btn gold" data-a="b18nat">' + esc(t('shMore')) + '</button>' : '') +
+    '</div>' + (it.priv ? '<p class="hint">' + esc(t('shMem')) + '</p>' : ''));
+}
+async function doCopy(s) { toast(t(await copy(s) ? 'shCopied' : 'shFail')); }
+async function doNative() {
+  if (!SH || typeof navigator.share !== 'function') return;
+  try { await navigator.share({ title: SH.title, text: SH.body, url: SH.url }); } catch (e) {}
+}
+
+// ===== زر المشاركة على بطاقة الفعالية =====
+const btnHtml = (k, id) => '<button type="button" class="btn line sm" data-a="b18sh" data-k="' + k + '" data-id="' + id + '">' + ic('send', 16) + ' ' + esc(t('shBtn')) + '</button>';
+const _ev = window.evCard;
+window.evCard = function (a) {
+  let h = _ev.apply(this, arguments);
+  if (!a || typeof h !== 'string' || h.indexOf('data-b18') > -1) return h;
+  h = h.replace('<div class="cd ev"', '<div class="cd ev" data-b18="1"');
+  const b = btnHtml('e', a.id);
+  return /<div class="row">/.test(h) ? h.replace(/(<div class="row">[\s\S]*?)(<\/div>)/, (m0, p1, p2) => p1 + b + p2) : h;
+};
+
+// ===== التقاط بيانات القوائم لبناء الرسالة =====
+const rpcP = sb.rpc;
+sb.rpc = function (name, args, opts) {
+  if (name !== 'lists_overview') return rpcP.call(sb, name, args, opts);
+  const q = Promise.resolve(rpcP.call(sb, name, args, opts));
+  q.then(r => { try { if (r && !r.error && Array.isArray(r.data)) r.data.map(asObj).forEach(x => { if (x && x.id != null) LR[x.id] = x; }); } catch (e) {} }, () => {});
+  return q;
+};
+let OV = { at: 0, p: null };
+function ovRows() {
+  if (OV.p) return OV.p;
+  OV.p = (async () => { try { await sb.rpc('lists_overview'); } catch (e) {} OV.at = Date.now(); OV.p = null; })();
+  return OV.p;
+}
+let PUB = { at: 0, p: null };
+function pubRows(force) {
+  if (PUB.p) return PUB.p;
+  if (!force && PUB.at && Date.now() - PUB.at < 45000) return Promise.resolve();
+  PUB.p = (async () => {
+    try { const r = await sb.rpc('public_lists'); if (r && !r.error && Array.isArray(r.data)) { PUBR = r.data.map(asObj); PUBR.forEach(x => { LR[x.id] = x; }); } } catch (e) {}
+    PUB.at = Date.now(); PUB.p = null;
+  })();
+  return PUB.p;
+}
+const titleOf = p => { const b = p.querySelector('.who b'); return b ? b.textContent : ''; };
+function pubFind(p) {
+  const ti = titleOf(p); if (!ti) return null;
+  const sibs = Array.prototype.filter.call(p.parentNode.children, c => c.classList.contains('pan')), i = sibs.indexOf(p);
+  return PUBR[i] && PUBR[i].title === ti ? PUBR[i] : (PUBR.find(y => y.title === ti) || null);
+}
+function addTo(p, id) { const ac = p.querySelector('.lb-acts'); if (ac && !ac.querySelector('[data-a="b18sh"]')) ac.insertAdjacentHTML('beforeend', btnHtml('l', id)); }
+function scan() {
+  const vc = Array.prototype.filter.call(document.querySelectorAll('#b17lc > .pan, #b17hlb > .pan'), p => !p.querySelector('[data-a="b18sh"]') && p.querySelector('.lb-acts'));
+  if (vc.length) {
+    if (vc.some(p => !pubFind(p)) && !PUB.p && Date.now() - PUB.at > 4000) pubRows(true).then(sched);
+    vc.forEach(p => { const x = pubFind(p); if (x) addTo(p, x.id); });
+  }
+  let miss = false;
+  document.querySelectorAll('#lc .pan').forEach(p => {
+    if (p.querySelector('[data-a="b18sh"]')) return;
+    const b = p.querySelector('[data-a="l13open"],[data-a="l13st"]'), id = b ? +b.dataset.id : 0, x = id ? LR[id] : null;
+    if (id && !x) { miss = true; return; }
+    if (!x || x.status !== 'open' || x.accepting === false) return;
+    addTo(p, id);
+  });
+  if (miss && !OV.p && Date.now() - OV.at > 4000) ovRows().then(sched);
+}
+let SCQ = 0;
+function sched() { if (SCQ) return; SCQ = setTimeout(() => { SCQ = 0; try { scan(); } catch (e) {} }, 80); }
+new MutationObserver(sched).observe(document.body, { childList: true, subtree: true });
+
+// ===== صفحة الفعالية المباشرة: #e/رقم =====
+async function pEvent18(id) {
+  if (typeof leaveChat === 'function') leaveChat();
+  const mn = $id('menu'); if (mn) mn.style.display = 'none'; closeM();
+  view = 'e18'; drawShell(); window.scrollTo(0, 0); const pb = $id('pinbar'); if (pb) pb.hidden = true;
+  main.innerHTML = hero('calendar', t('ePill'), t('eH1'), t('eSub')) + '<div class="sec b18ev" style="padding-top:12px"><div class="cards" id="e18c">' + loader + '</div><div class="acts"><a class="btn line" href="#events">' + esc(t('allEv')) + '</a></div></div>';
+  try { await loadActs(); } catch (e) {}
+  const box = $id('e18c'); if (view !== 'e18' || !box) return;
+  const a = actById(id);
+  if (a) { box.innerHTML = window.evCard(a); return; }
+  box.innerHTML = '<div class="pan c mut b18nt">' + esc(t('eNone')) + (!me ? '<br><a class="btn navy" href="#login">' + esc(t('login')) + '</a>' : '') + '</div>';
+}
+
+// ===== رابط القائمة المباشر: #l/رقم =====
+const note = (box, withLogin) => { if (box) box.insertAdjacentHTML('afterbegin', '<div class="pan c mut b18nt">' + esc(t('lNone')) + (withLogin ? '<br><a class="btn navy" href="#login">' + esc(t('login')) + '</a>' : '') + '</div>'); };
+function glow(card) {
+  card.classList.add('b18hl');
+  try { card.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+  setTimeout(() => card.classList.remove('b18hl'), 5200);
+}
+async function showList(id) {
+  if (view === 'lists17') {
+    await pubRows(true);
+    const cards = Array.prototype.filter.call(document.querySelectorAll('#b17lc > .pan'), p => p.querySelector('.who b')), x = PUBR.find(y => +y.id === id);
+    let card = null;
+    if (x) { const i = PUBR.indexOf(x); card = cards[i] && titleOf(cards[i]) === x.title ? cards[i] : cards.find(p => titleOf(p) === x.title) || null; }
+    if (card) glow(card); else note($id('b17lc'), true);
+  } else if (view === 'lists') {
+    const b = document.querySelector('#lc [data-a="l13open"][data-id="' + id + '"]'), card = b ? b.closest('.pan') : null;
+    if (card) glow(card); else note($id('lc'), false);
+  }
+}
+async function goList(id) {
+  try { history.replaceState(null, '', location.pathname + location.search + '#lists'); } catch (e) { location.hash = '#lists'; return; }
+  try { await window.render(); } catch (e) {}
+  try { await showList(id); } catch (e) {}
+}
+
+// ===== التوجيه =====
+const _r = window.render;
+window.render = async function () {
+  const p = (location.hash || '#home').slice(1).split('/'), v0 = p[0], arg = p[1] || '';
+  if (v0 === 'e' && /^[0-9]{1,12}$/.test(arg)) return pEvent18(+arg);
+  if (v0 === 'l' && /^[0-9]{1,12}$/.test(arg)) return goList(+arg);
+  return _r.apply(this, arguments);
+};
+
+// ===== الأزرار =====
+document.addEventListener('click', e => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-a^="b18"]') : null; if (!el) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const a = el.dataset.a;
+  if (a === 'b18sh') return openShare(el);
+  if (a === 'b18cl') return SH && doCopy(SH.url);
+  if (a === 'b18ct') return SH && doCopy(SH.text);
+  if (a === 'b18nat') return doNative();
+}, true);
+
+// ===== تشغيل أول مرة =====
+// لو رسمت الصفحة الأولى قبل تحميل هذا الكود: أعد الرسم مرة واحدة
+let RR = 0;
+const fixFirst = () => {
+  const p = (location.hash || '').slice(1).split('/'), v0 = p[0], num = /^[0-9]{1,12}$/.test(p[1] || '');
+  if (num && ((v0 === 'e' && view !== 'e18') || v0 === 'l')) { window.render(); return; }
+  if (RR || typeof main === 'undefined' || !main || !main.querySelector) return;
+  if ((view === 'events' || view === 'home') && main.querySelector('.cd.ev:not([data-b18])')) { RR = 1; window.render(); }
+};
+sched();
+setTimeout(fixFirst, 0); setTimeout(fixFirst, 1200); setTimeout(fixFirst, 3000);
 })();
 </script>
 </body>
